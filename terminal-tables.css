@@ -1,0 +1,54 @@
+/*
+  Shared table type for the research terminal.
+  Link this file from any page that shows a terminal table.
+  One size, tabular numerals, bold headers and key rows.
+  Do not set a different font-size on these tables in the page.
+*/
+.term-table{
+  font-family:"Courier New",Courier,monospace;
+  font-size:13px;
+  font-weight:600;
+  font-variant-numeric:tabular-nums;
+  font-feature-settings:"tnum" 1;
+}
+.term-table th,
+.term-table td{
+  font-family:inherit;
+  font-size:13px;
+  font-variant-numeric:tabular-nums;
+  font-feature-settings:"tnum" 1;
+}
+.term-table th,
+.term-table th:first-child{
+  font-weight:800;
+}
+.term-table td{
+  font-weight:600;
+}
+.term-table td:first-child{
+  font-weight:700;
+}
+.term-table th.latest,
+.term-table td.latest,
+.term-table tr.row-ending td,
+.term-table tr.row-total td,
+.term-table tr.row-stu td,
+.term-table tr.exp-latest td,
+.term-table tr.exp-total td{
+  font-size:13px;
+  font-weight:800;
+}
+.term-table tr.row-section td,
+.term-table tr.cftc-row-section td,
+.term-table tr.seas-section-row td,
+.term-table tr.exp-row-section td{
+  font-size:13px;
+  font-weight:800;
+}
+.term-table .gc,
+.term-table .rp,
+.term-table .cftc-note,
+.term-table .cftc-ref-sub{
+  font-size:13px;
+  font-variant-numeric:tabular-nums;
+}

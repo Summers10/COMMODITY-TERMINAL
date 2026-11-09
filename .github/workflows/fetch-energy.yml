@@ -1,0 +1,45 @@
+name: Fetch EIA energy
+
+on:
+  schedule:
+    - cron: '45 15 * * 1-5'
+    - cron: '45 20 * * 1-5'
+    - cron: '15 22 * * 1-5'
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+concurrency:
+  group: fetch-energy
+  cancel-in-progress: false
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+      - run: pip install -r requirements.txt
+      - name: Fetch published WPSR and WNGSR
+        id: energy
+        run: python scripts/fetch_energy.py
+      - name: Commit
+        if: always()
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if [ -f data/energy.json ]; then
+            git add data/energy.json
+            if ! git diff --staged --quiet; then
+              git commit -m "Update EIA energy $(date -u +%Y-%m-%dT%H:%MZ)"
+              git push
+            fi
+          fi
+      - name: Fail the run when the fetch failed
+        if: steps.energy.outcome == 'failure'
+        run: |
+          echo "::error::EIA fetch failed. The previous energy file was kept."
+          exit 1

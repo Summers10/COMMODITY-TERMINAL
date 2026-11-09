@@ -1,0 +1,496 @@
+#!/usr/bin/env python3
+"""
+USDA FAS Export Sales Reporting (ESR) fetcher.
+Pulls country-level weekly export sales via ESRQS's static XML report —
+no API key or registration required (confirmed by USDA-FAS for ESRQS).
+
+Source: https://apps.fas.usda.gov/esrqs/StaticReports/CWRCountryCommoditySummary.xml
+This report auto-updates each week with the current and prior report week,
+and includes built-in prior-marketing-year comparison fields, so no
+historical accumulation is needed for a YoY view.
+
+Note: the exact attribute names on this endpoint have not been directly
+confirmed (only the sibling CWRCommoditySummary.xml — national totals,
+no country breakdown — has been verified). This script is written
+defensively: if the expected attributes aren't found, it prints every
+attribute actually present on a sample record and exits non-zero, so a
+mismatch is caught and fixed in one pass rather than shipped silently.
+"""
+import os, sys, json, urllib.request, urllib.error, re, subprocess
+import xml.etree.ElementTree as ET
+from datetime import datetime
+
+OUT = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data", "export_sales.json")
+# Rolling weekly snapshots (net sales / exports / balances by country) so the page can show week-over-week.
+# The USDA file only ever holds the current week, so the history is built up by this script, one week at a time.
+HISTORY_OUT = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data", "export_sales_history.json")
+HISTORY_WEEKS = 110          # ~2 marketing years of weekly rows; totals only, so the file stays small
+HISTORY_FIELDS = ("net_sales", "weekly_exports", "outstanding_sales", "accumulated_exports", "total_commitment",
+                  "yoy_accum_exports_pct", "yoy_total_commitment_pct")
+REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+EXPORT_REPO_PATH = "data/export_sales.json"
+MAX_BACKFILL_COMMITS = 1500
+URL = "https://apps.fas.usda.gov/esrqs/StaticReports/CWRCountryCommoditySummary.xml"
+
+# Only keep commodities whose name contains one of these keywords.
+# Matching by keyword (not hardcoded numeric code) since exact codes for
+# every class weren't independently confirmed this session.
+COMMODITY_KEYWORDS = ["WHEAT", "CORN", "SOYBEAN", "OATS", "COTTON"]
+
+# Excluded even if they match a keyword above.
+EXCLUDE_COMMODITIES = ["WHEAT PRODUCTS", "OATS"]
+
+# Candidate attribute names per logical field — the country-level report's
+# exact attribute spelling wasn't directly confirmed, so try several.
+FIELD_CANDIDATES = {
+    "country_code": ["CountryCode", "Countrycode", "CtryCode"],
+    "country_name": ["CountryName", "Countryname", "CtryName"],
+    "commodity_code": ["CommodityCode"],
+    "commodity_name": ["CommodityName"],
+    "period_ending": ["PeriodEndingDate"],
+    "mkt_year": ["MarketingYear"],
+    "mkt_year_week": ["MarketingYearWeekNumber"],
+    "beginning_balance": ["BeginningBalance", "BeginingBalance"],
+    "new_sales": ["NewSales"],
+    "net_sales": ["NetSales"],
+    "outstanding_sales": ["OutstandingSales"],
+    "weekly_exports": ["WeeklyExports"],
+    "accumulated_exports": ["AccumulatedExports"],
+    "total_commitment": ["TotalCommitment"],
+    "prev_accumulated_exports": ["PreviousMKTYearAccumulatedExports", "PreviousYearAccumulatedExports"],
+    "prev_outstanding_sales": ["PreviousMKTYearOutstandingSales", "PreviousYearOutstandingSales"],
+}
+
+
+def fetch_xml(url):
+    req = urllib.request.Request(url, headers={
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+                      "(KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        "Accept-Language": "en-US,en;q=0.9",
+        "Referer": "https://apps.fas.usda.gov/esrqs/",
+    })
+    with urllib.request.urlopen(req, timeout=90) as resp:
+        return resp.read()
+
+
+def local_tag(elem):
+    """Strip XML namespace prefix, e.g. '{ns}Details' -> 'Details'."""
+    return elem.tag.split('}')[-1] if '}' in elem.tag else elem.tag
+
+
+def get_field(attrib, candidates):
+    for name in candidates:
+        if name in attrib:
+            return attrib[name]
+    return None
+
+
+def to_num(v):
+    """Parse a plain numeric attribute with no scaling (e.g. week numbers)."""
+    if v is None or v == "":
+        return None
+    try:
+        return float(v)
+    except (ValueError, TypeError):
+        return None
+
+
+def to_qty(v):
+    """Parse a quantity attribute. USDA's file expresses these values in
+    THOUSANDS of the reporting unit (confirmed in the report's own title
+    text); multiply by 1000 here so downstream figures are in actual
+    metric tons, matching how external sources (USDA's own press tables,
+    Hightower, etc.) display these figures — avoids a silent 1000x
+    mismatch when cross-checking against them."""
+    n = to_num(v)
+    return None if n is None else n * 1000
+
+
+def parse_period_date(s):
+    """Parse USDA's MM/DD/YYYY period-ending date into a sortable tuple."""
+    if not s:
+        return None
+    try:
+        mm, dd, yyyy = s.strip().split("/")
+        return (int(yyyy), int(mm), int(dd))
+    except (ValueError, AttributeError):
+        return None
+
+
+def parse_mkt_year_start(s):
+    """Extract the starting year from a MarketingYear string like
+    'Sep 2026/Aug 2027' -> 2026. Returns None if unparseable."""
+    if not s:
+        return None
+    m = re.search(r"(\d{4})", s)
+    return int(m.group(1)) if m else None
+
+
+def record_sort_key(mkt_year_str, period_key):
+    """Sort key for picking the 'latest' record. USDA's file can contain
+    BOTH the closing snapshot of an ending marketing year and the opening
+    snapshot of the new one on the SAME calendar date, right at a
+    commodity's marketing-year rollover (e.g. corn/soybeans roll over
+    Sept 1). Confirmed directly: on 09/03/2026, corn had both a
+    'Sep 2025/Aug 2026' (MY Ending) record and a 'Sep 2026/Aug 2027'
+    (MY Starting) record for the identical date. Comparing by date alone
+    ties in that case and silently keeps whichever the file lists first —
+    which turned out to be the stale, closing-out marketing year, not the
+    one everyone else reports as current. Marketing year start must be
+    compared FIRST, date only as a tiebreaker within the same year."""
+    my_start = parse_mkt_year_start(mkt_year_str)
+    return (my_start if my_start is not None else -1, period_key if period_key is not None else (0, 0, 0))
+
+
+def yoy_pct(cur, prev):
+    if cur is None or prev is None or prev == 0:
+        return None
+    return (cur - prev) / abs(prev) * 100
+
+
+def period_to_iso(period):
+    key = parse_period_date(period)
+    return f"{key[0]:04d}-{key[1]:02d}-{key[2]:02d}" if key else None
+
+
+def _slim_total(t):
+    """The weekly totals row kept per commodity per week (totals only - no country detail)."""
+    rec = {k: t.get(k) for k in HISTORY_FIELDS}
+    rec["mkt_year"] = t.get("mkt_year")
+    return rec
+
+
+def _normalise_old_snapshot(snap):
+    """Older history files nested the totals under 'total' and kept countries; flatten to the current shape."""
+    if "total" in snap and isinstance(snap["total"], dict):
+        rec = {k: snap["total"].get(k) for k in HISTORY_FIELDS}
+        rec["mkt_year"] = snap.get("mkt_year")
+    else:
+        rec = {k: snap.get(k) for k in HISTORY_FIELDS}
+        rec["mkt_year"] = snap.get("mkt_year")
+    if rec.get("total_commitment") is None and rec.get("outstanding_sales") is not None and rec.get("accumulated_exports") is not None:
+        rec["total_commitment"] = rec["outstanding_sales"] + rec["accumulated_exports"]
+    return rec
+
+
+def _git(*args):
+    return subprocess.run(["git", *args], cwd=REPO_ROOT, capture_output=True, text=True, timeout=120)
+
+
+def backfill_from_git(weeks, current):
+    """Recover earlier weeks from earlier committed versions of export_sales.json: the workflow commits that file on
+    every run, so each commit holds one week's national totals for every commodity. Oldest -> newest, so the latest
+    pull of any given week wins (USDA revises accumulated exports). Returns (weeks_added, snapshots_rejected).
+    A snapshot is rejected if its size is wildly out of line with today's (e.g. files saved before the old
+    1000x-units bug was fixed), so bad history can never end up in the table."""
+    log = _git("log", "--reverse", "-n", str(MAX_BACKFILL_COMMITS), "--format=%H", "--", EXPORT_REPO_PATH)
+    commits = log.stdout.split()
+    if log.returncode != 0 or not commits:
+        raise ValueError("no earlier commits of export_sales.json found - the workflow checkout must use fetch-depth: 0 "
+                         f"(git said: {log.stderr.strip() or 'nothing'})")
+    added, rejected = set(), 0
+    for c in commits:
+        shown = _git("show", f"{c}:{EXPORT_REPO_PATH}")
+        if shown.returncode != 0:
+            continue
+        try:
+            old = json.loads(shown.stdout)
+        except ValueError:
+            continue
+        for name, data in (old.get("commodities") or {}).items():
+            t = (data or {}).get("total") or {}
+            iso = period_to_iso(t.get("period_ending"))
+            if not iso:
+                continue
+            rec = _slim_total(t)
+            if rec.get("total_commitment") is None and rec.get("outstanding_sales") is not None and rec.get("accumulated_exports") is not None:
+                rec["total_commitment"] = rec["outstanding_sales"] + rec["accumulated_exports"]
+            if any(rec.get(k) is None for k in ("net_sales", "outstanding_sales", "accumulated_exports", "total_commitment")):
+                rejected += 1
+                continue
+            cur = ((current["commodities"].get(name) or {}).get("total") or {}).get("total_commitment")
+            if cur and rec["total_commitment"] and not (0.02 <= rec["total_commitment"] / cur <= 50):
+                rejected += 1
+                continue
+            weeks.setdefault(iso, {})[name] = rec
+            added.add(iso)
+    return len(added), rejected
+
+
+def update_history(result):
+    """Weekly national totals per commodity, one row per week, kept ~2 marketing years. Each run adds the current
+    week (re-runs of the same week overwrite it - USDA revises accumulated exports, so the latest pull wins). The
+    first time it runs it also rebuilds earlier weeks from the repo's past commits of export_sales.json."""
+    hist = {"weeks": {}}
+    if os.path.exists(HISTORY_OUT):
+        try:
+            with open(HISTORY_OUT) as f:
+                hist = json.load(f)
+            if not isinstance(hist.get("weeks"), dict):
+                raise ValueError("no 'weeks' object in file")
+        except Exception as e:
+            print(f"WARNING: could not read {HISTORY_OUT} ({e}) - starting a fresh history", file=sys.stderr)
+            print(f"::warning title=Export sales history was reset::{e}")
+            hist = {"weeks": {}}
+    meta = hist.get("_meta") or {}
+
+    # tolerate the earlier file shape (nested totals + per-country detail)
+    for iso, comms in hist["weeks"].items():
+        for name, snap in list(comms.items()):
+            comms[name] = _normalise_old_snapshot(snap)
+
+    # one-time rebuild of earlier weeks from git history (before adding the current week, so the current pull wins)
+    if not meta.get("git_backfill"):
+        try:
+            n_weeks, n_rejected = backfill_from_git(hist["weeks"], result)
+            meta["git_backfill"] = datetime.utcnow().strftime("%Y-%m-%d")
+            print(f"History backfill from git: {n_weeks} earlier weeks recovered" + (f" ({n_rejected} snapshots rejected as implausible)" if n_rejected else ""))
+        except Exception as e:
+            print(f"WARNING: could not rebuild earlier weeks from git history - {e}", file=sys.stderr)
+            print(f"::warning title=Export history backfill skipped::{e}")
+
+    snapped = 0
+    for name, data in result["commodities"].items():
+        t = data["total"]
+        iso = period_to_iso(t.get("period_ending"))
+        if not iso:
+            print(f"WARNING: no usable period-ending date for {name} - not added to history", file=sys.stderr)
+            continue
+        hist["weeks"].setdefault(iso, {})[name] = _slim_total(t)
+        snapped += 1
+
+    keep = sorted(hist["weeks"].keys())[-HISTORY_WEEKS:]
+    hist["weeks"] = {k: hist["weeks"][k] for k in keep}
+    meta.update({"fetched_at": datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ"), "weeks_kept": HISTORY_WEEKS})
+    hist["_meta"] = meta
+    os.makedirs(os.path.dirname(HISTORY_OUT), exist_ok=True)
+    with open(HISTORY_OUT, "w") as f:
+        json.dump(hist, f, separators=(",", ":"))
+    print(f"History: {snapped} commodity snapshots saved this run; {len(keep)} weeks on file ({keep[0]} .. {keep[-1]})")
+
+
+def main():
+    print(f"Fetching USDA FAS Export Sales (country-level) from {URL} ...")
+    try:
+        raw = fetch_xml(URL)
+    except urllib.error.HTTPError as e:
+        print(f"ERROR: HTTP {e.code} {e.reason}", file=sys.stderr)
+        try:
+            body = e.read(2000).decode("utf-8", errors="replace")
+            print("Response body (first 2000 chars):", file=sys.stderr)
+            print(body, file=sys.stderr)
+        except Exception:
+            pass
+        sys.exit(1)
+    except Exception as e:
+        print(f"ERROR: {e}", file=sys.stderr)
+        sys.exit(1)
+
+    try:
+        root = ET.fromstring(raw)
+    except ET.ParseError as e:
+        print(f"ERROR: Could not parse XML: {e}", file=sys.stderr)
+        sys.exit(1)
+
+    details = [el for el in root.iter() if local_tag(el) == "Details"]
+    if not details:
+        print("ERROR: No <Details> records found in the XML — report structure may have changed.", file=sys.stderr)
+        sys.exit(1)
+
+    # Fail loud with full diagnostics if the expected attributes aren't present,
+    # rather than silently mapping to the wrong field or defaulting to None everywhere.
+    sample_attrib = details[0].attrib
+    required_min = ["commodity_name", "net_sales", "outstanding_sales", "accumulated_exports"]
+    missing = [f for f in required_min if get_field(sample_attrib, FIELD_CANDIDATES[f]) is None]
+    if missing:
+        print("ERROR: Expected attributes not found on sample record. Missing logical fields:", file=sys.stderr)
+        for f in missing:
+            print(f"  - {f} (tried: {FIELD_CANDIDATES[f]})", file=sys.stderr)
+        print("\nAttributes actually present on the first <Details> record:", file=sys.stderr)
+        for k, v in sample_attrib.items():
+            print(f"  {k} = {v!r}", file=sys.stderr)
+        sys.exit(1)
+
+    if get_field(sample_attrib, FIELD_CANDIDATES["country_name"]) is None:
+        print("ERROR: No country-level field found — this may be the national-totals report, not the country-level one.", file=sys.stderr)
+        print("Attributes present on the first <Details> record:", file=sys.stderr)
+        for k, v in sample_attrib.items():
+            print(f"  {k} = {v!r}", file=sys.stderr)
+        sys.exit(1)
+
+    result = {"commodities": {}}
+    matched_commodities = set()
+    skipped_no_country = 0
+
+    for el in details:
+        attrib = el.attrib
+        commodity_name = get_field(attrib, FIELD_CANDIDATES["commodity_name"])
+        if not commodity_name or not any(kw in commodity_name.upper() for kw in COMMODITY_KEYWORDS):
+            continue
+        if any(excl in commodity_name.upper() for excl in EXCLUDE_COMMODITIES):
+            continue
+        # Cotton: USDA's export sales report breaks cotton into several staple-length
+        # subcategories plus Pima (ELS) cotton. Only the aggregate "All Upland Cotton"
+        # line is wanted here — drop everything else cotton-related.
+        if "COTTON" in commodity_name.upper() and "ALL UPLAND" not in commodity_name.upper():
+            continue
+
+        country_name = get_field(attrib, FIELD_CANDIDATES["country_name"])
+        if not country_name:
+            skipped_no_country += 1
+            continue
+
+        matched_commodities.add(commodity_name)
+
+        period = get_field(attrib, FIELD_CANDIDATES["period_ending"])
+        period_key = parse_period_date(period)
+        week_num = to_num(get_field(attrib, FIELD_CANDIDATES["mkt_year_week"]))
+
+        net_sales = to_qty(get_field(attrib, FIELD_CANDIDATES["net_sales"]))
+        weekly_exports = to_qty(get_field(attrib, FIELD_CANDIDATES["weekly_exports"]))
+        outstanding = to_qty(get_field(attrib, FIELD_CANDIDATES["outstanding_sales"]))
+        accum_exports = to_qty(get_field(attrib, FIELD_CANDIDATES["accumulated_exports"]))
+        total_commit = to_qty(get_field(attrib, FIELD_CANDIDATES["total_commitment"]))
+        prev_accum = to_qty(get_field(attrib, FIELD_CANDIDATES["prev_accumulated_exports"]))
+        prev_outstanding = to_qty(get_field(attrib, FIELD_CANDIDATES["prev_outstanding_sales"]))
+
+        comm = result["commodities"].setdefault(commodity_name, {
+            "code": get_field(attrib, FIELD_CANDIDATES["commodity_code"]),
+            "countries": {},
+            "total": None,
+        })
+
+        prev_total_commit = (prev_accum + prev_outstanding) if (prev_accum is not None and prev_outstanding is not None) else None
+
+        mkt_year_str = get_field(attrib, FIELD_CANDIDATES["mkt_year"])
+        sort_key = record_sort_key(mkt_year_str, period_key)
+
+        record = {
+            "period_ending": period,
+            "mkt_year": mkt_year_str,
+            "mkt_year_week": week_num,
+            "net_sales": net_sales,
+            "weekly_exports": weekly_exports,
+            "outstanding_sales": outstanding,
+            "accumulated_exports": accum_exports,
+            "total_commitment": total_commit,
+            "prev_yr_accumulated_exports": prev_accum,
+            "prev_yr_outstanding_sales": prev_outstanding,
+            "prev_yr_total_commitment": prev_total_commit,
+            "yoy_accum_exports_pct": yoy_pct(accum_exports, prev_accum),
+            "yoy_outstanding_sales_pct": yoy_pct(outstanding, prev_outstanding),
+            "yoy_total_commitment_pct": yoy_pct(total_commit, prev_total_commit),
+        }
+
+        # "Total Known and Unknown" is the authoritative commodity-wide total (all destinations).
+        # Capture it separately as the summary total; keep it out of the per-country list.
+        if country_name.strip().upper() == "TOTAL KNOWN AND UNKNOWN":
+            existing_total = comm.get("total")
+            existing_key = comm.get("_total_sort_key")
+            if existing_total is None or existing_key is None or sort_key > existing_key:
+                comm["total"] = record
+                comm["_total_sort_key"] = sort_key
+                comm["_total_raw_attrib"] = dict(attrib)  # diagnostic only, stripped before writing output
+            continue
+
+        # Skip other aggregate/rollup rows so per-country data stays clean.
+        if country_name.strip().upper() in ("TOTAL KNOWN", "TOTAL UNKNOWN",
+                                             "OPTIONAL ORIGIN", "EXPORTS FOR OWN ACCT", "UNKNOWN"):
+            continue
+
+        existing = comm["countries"].get(country_name)
+        # Keep only the latest record per country: marketing year first, calendar date as
+        # tiebreaker within the same year (see record_sort_key for why — the file can carry
+        # both the old and new marketing year's data on the identical date at a rollover).
+        existing_key = comm.get("_country_sort_keys", {}).get(country_name)
+        if existing is None or existing_key is None or sort_key > existing_key:
+            comm["countries"][country_name] = record
+            comm.setdefault("_country_sort_keys", {})[country_name] = sort_key
+
+    if not matched_commodities:
+        print("ERROR: No commodities matched the expected keywords (WHEAT, CORN, SOYBEAN, OATS).", file=sys.stderr)
+        print("Sample commodity names found in the file:", file=sys.stderr)
+        sample_names = sorted({get_field(d.attrib, FIELD_CANDIDATES["commodity_name"]) for d in details[:200]
+                                if get_field(d.attrib, FIELD_CANDIDATES["commodity_name"])})
+        for n in sample_names[:20]:
+            print(f"  - {n}", file=sys.stderr)
+        sys.exit(1)
+
+    if skipped_no_country > 0 and skipped_no_country == len(details):
+        print("ERROR: Every record was missing a country name — check FIELD_CANDIDATES['country_name'].", file=sys.stderr)
+        sys.exit(1)
+
+    missing_totals = [name for name, data in result["commodities"].items() if data["total"] is None]
+    if missing_totals:
+        print("ERROR: No 'Total Known and Unknown' row found for these matched commodities "
+              "(needed for the summary table) — the aggregate row's country-name text may have "
+              "changed on USDA's end:", file=sys.stderr)
+        for n in missing_totals:
+            print(f"  - {n}", file=sys.stderr)
+        sys.exit(1)
+
+    # The prior-marketing-year field names were only confirmed on the national summary
+    # file, not this country-level one — verify they actually resolved to real numbers here.
+    # If not, print the raw attributes so the exact real field names can be read off directly.
+    missing_yoy = {name: data for name, data in result["commodities"].items()
+                   if data["total"]["prev_yr_accumulated_exports"] is None
+                   or data["total"]["prev_yr_outstanding_sales"] is None}
+    if missing_yoy:
+        print("ERROR: Prior-marketing-year fields (needed for YoY) did not resolve on the "
+              "'Total Known and Unknown' row for these commodities:", file=sys.stderr)
+        for name in missing_yoy:
+            print(f"  - {name}", file=sys.stderr)
+        sample_name = next(iter(missing_yoy))
+        print(f"\nAll attributes on the 'Total Known and Unknown' row for '{sample_name}':", file=sys.stderr)
+        for k, v in result["commodities"][sample_name]["_total_raw_attrib"].items():
+            print(f"  {k} = {v!r}", file=sys.stderr)
+        sys.exit(1)
+
+    # Diagnostic-only fields — never persisted to the output file.
+    for data in result["commodities"].values():
+        data.pop("_total_raw_attrib", None)
+        data.pop("_total_sort_key", None)
+        data.pop("_country_sort_keys", None)
+
+    # The weekly-exports figure feeds the week-over-week view. Its attribute name was never confirmed against the
+    # real file, so check it actually resolved to numbers; if not, warn loudly (non-fatal: the rest is still valid).
+    n_rec = sum(len(d["countries"]) for d in result["commodities"].values())
+    n_wk = sum(1 for d in result["commodities"].values() for r in d["countries"].values() if r.get("weekly_exports") is not None)
+    if n_rec and n_wk == 0:
+        print(f"WARNING: 'WeeklyExports' did not resolve on any of {n_rec} country records - the week-over-week "
+              f"exports columns will be blank. Attributes on the first record: {sorted(sample_attrib.keys())}", file=sys.stderr)
+        print("::warning title=Weekly exports field not found::see log for the attribute names present")
+
+    update_history(result)
+
+    result["_meta"] = {
+        "fetched_at": datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "source": URL,
+    }
+
+    def compact_num(v):
+        if isinstance(v, float) and v.is_integer():
+            return int(v)
+        if isinstance(v, dict):
+            return {k: compact_num(x) for k, x in v.items()}
+        if isinstance(v, list):
+            return [compact_num(x) for x in v]
+        return v
+
+    os.makedirs(os.path.dirname(OUT), exist_ok=True)
+    with open(OUT, "w") as f:
+        json.dump(compact_num(result), f, separators=(",", ":"))
+        f.write("\n")
+
+    size = os.path.getsize(OUT)
+    print(f"\nCommodities matched ({len(result['commodities'])}):")
+    for name, data in result["commodities"].items():
+        t = data['total']
+        print(f"  {name}: {len(data['countries'])} countries, MY={t['mkt_year']}, period ending={t['period_ending']}, YTD accum exports={t['accumulated_exports']:,.0f} MT")
+    print(f"\nSaved {OUT} ({size:,} bytes)")
+
+
+
+if __name__ == "__main__":
+    main()

@@ -1,0 +1,44 @@
+name: Fetch cattle
+
+on:
+  schedule:
+    - cron: '20 21 * * 1-5'
+    - cron: '20 16 * * 5'
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+concurrency:
+  group: fetch-cattle
+  cancel-in-progress: false
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+      - run: pip install -r requirements.txt
+      - id: cattle
+        run: python scripts/fetch_cattle.py
+      - name: Commit
+        if: always()
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if [ -f data/cattle.json ]; then
+            git add data/cattle.json
+            if ! git diff --staged --quiet; then
+              git commit -m "Update cattle $(date -u +%Y-%m-%dT%H:%MZ)"
+              git push
+            fi
+          fi
+      - name: Fail the run when the fetch failed
+        if: steps.cattle.outcome == 'failure'
+        run: |
+          echo "::error::Cattle fetch failed. Sections that failed kept their previous values."
+          exit 1

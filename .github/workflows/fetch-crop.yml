@@ -1,0 +1,51 @@
+name: Fetch crop progress
+
+on:
+  schedule:
+    - cron: '17 13 * * *'
+    - cron: '17 22 * * *'
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+concurrency:
+  group: fetch-crop
+  cancel-in-progress: false
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+          cache: pip
+      - run: pip install -r requirements.txt
+      - name: Parser tests
+        working-directory: scripts/crop
+        run: python -m pytest -q test_parsers.py
+      - name: Fetch
+        id: crop
+        env:
+          NASS_API_KEY: ${{ secrets.NASS_API_KEY }}
+        run: python scripts/crop/run_all.py
+      - name: Commit
+        if: always()
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data
+          if git diff --staged --quiet; then
+            echo "No data changes"
+          else
+            git commit -m "Update crop progress $(date -u +%Y-%m-%dT%H:%MZ)"
+            git push
+          fi
+      - name: Fail the run when a source failed
+        if: steps.crop.outcome == 'failure'
+        run: |
+          echo "::error::One or more crop-progress sources failed. That source's previous file was kept."
+          exit 1
