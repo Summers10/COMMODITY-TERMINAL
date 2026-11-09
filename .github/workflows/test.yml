@@ -1,0 +1,20 @@
+name: Tests
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  pytest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+      - run: pip install -r requirements.txt
+      - name: Official-figure parsers
+        run: python -m pytest -q tests
+      - name: Crop progress parsers
+        working-directory: scripts/crop
+        run: python -m pytest -q test_parsers.py

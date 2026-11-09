@@ -1,0 +1,81 @@
+name: Fetch PSD, CFTC, exports, and weather
+
+on:
+  schedule:
+    - cron: '7 11 * * *'
+    - cron: '7 14 * * 1-5'
+    - cron: '17 18 * * 1-5'
+    - cron: '47 20 * * 1-5'
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+concurrency:
+  group: fetch-markets
+  cancel-in-progress: false
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+
+      - name: Install
+        run: pip install -r requirements.txt
+
+      - name: PSD
+        id: psd
+        continue-on-error: true
+        run: python scripts/fetch_psd.py
+
+      - name: CFTC
+        id: cftc
+        continue-on-error: true
+        run: python scripts/fetch_cftc.py
+
+      - name: Export sales
+        id: exports
+        continue-on-error: true
+        run: python scripts/fetch_exports.py
+
+      - name: Weather
+        id: weather
+        continue-on-error: true
+        env:
+          WEATHER_FORCE: ${{ github.event_name == 'workflow_dispatch' && '1' || '' }}
+        run: python scripts/fetch_weather.py
+
+      - name: Commit updated data
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          for f in data/psd_data.json data/cftc_data.json data/export_sales.json data/export_sales_history.json data/weather_data.json; do
+            if [ -f "$f" ]; then git add "$f"; fi
+          done
+          if git diff --staged --quiet; then
+            echo "No data changes to commit"
+            exit 0
+          fi
+          git commit -m "Update market data $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          for attempt in 1 2 3; do
+            if git pull --rebase -X theirs origin "${GITHUB_REF_NAME:-main}" && git push; then
+              exit 0
+            fi
+            git rebase --abort 2>/dev/null || true
+            sleep 5
+          done
+          echo "Could not push" >&2
+          exit 1
+
+      - name: Flag failed fetchers
+        if: steps.psd.outcome == 'failure' || steps.cftc.outcome == 'failure' || steps.exports.outcome == 'failure' || steps.weather.outcome == 'failure'
+        run: |
+          echo "::error::A fetcher failed (PSD=${{ steps.psd.outcome }}, CFTC=${{ steps.cftc.outcome }}, Exports=${{ steps.exports.outcome }}, Weather=${{ steps.weather.outcome }}). Failed sources kept their previous file."
+          exit 1

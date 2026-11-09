@@ -1,0 +1,38 @@
+name: Fetch CGC canola
+
+on:
+  schedule:
+    - cron: '30 22 * * 4'
+    - cron: '30 14 * * 5'
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+concurrency:
+  group: fetch-cgc
+  cancel-in-progress: false
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+      - run: pip install -r requirements.txt
+      - name: Fetch Grain Statistics Weekly
+        run: python scripts/fetch_cgc.py
+      - name: Commit
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/cgc.json
+          if git diff --staged --quiet; then
+            echo "No changes"
+          else
+            git commit -m "Update CGC canola $(date -u +%Y-%m-%d)"
+            git push
+          fi
