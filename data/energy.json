@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-11-12T02:59:19+00:00",
+ "generated_at": "2026-11-12T21:55:34+00:00",
  "source": "U.S. Energy Information Administration",
  "note": "5-year average is the WNGSR published figure. WPSR tables used here do not print a 5-year average, so those cells are null.",
  "series": [
@@ -7,16 +7,12 @@
    "key": "crude_stocks",
    "label": "Crude (ex-SPR)",
    "unit": "million barrels",
-   "period": "2026-10-30",
+   "period": "2026-11-06",
    "source": "WPSR Table 1",
    "source_url": "https://ir.eia.gov/wpsr/table1.csv",
    "ok": true,
    "error": null,
    "history": [
-    [
-     "2016-11-18",
-     489.029
-    ],
     [
      "2016-11-25",
      488.145
@@ -2092,35 +2088,35 @@
     [
      "2026-10-30",
      409.76
+    ],
+    [
+     "2026-11-06",
+     414.417
     ]
    ],
    "forward": [],
-   "value": 409.76,
-   "week_ago": 410.625,
-   "change": -0.865,
-   "year_ago": 421.168,
-   "year_ago_change": -11.408,
-   "year_ago_pct": -2.7,
+   "value": 414.417,
+   "week_ago": 409.76,
+   "change": 4.657,
+   "year_ago": 427.581,
+   "year_ago_change": -13.164,
+   "year_ago_pct": -3.1,
    "avg5": null,
    "vs_avg5": null,
    "vs_avg5_pct": null,
    "decimals": 3,
-   "checked_at": "2026-11-12T02:59:19+00:00"
+   "checked_at": "2026-11-12T21:55:34+00:00"
   },
   {
    "key": "gas_stocks",
    "label": "Gasoline",
    "unit": "million barrels",
-   "period": "2026-10-30",
+   "period": "2026-11-06",
    "source": "WPSR Table 1",
    "source_url": "https://ir.eia.gov/wpsr/table1.csv",
    "ok": true,
    "error": null,
    "history": [
-    [
-     "2016-11-18",
-     224.026
-    ],
     [
      "2016-11-25",
      226.123
@@ -4196,35 +4192,35 @@
     [
      "2026-10-30",
      208.958
+    ],
+    [
+     "2026-11-06",
+     210.757
     ]
    ],
    "forward": [],
-   "value": 208.958,
-   "week_ago": 209.18,
-   "change": -0.222,
-   "year_ago": 206.009,
-   "year_ago_change": 2.949,
-   "year_ago_pct": 1.4,
+   "value": 210.757,
+   "week_ago": 208.958,
+   "change": 1.799,
+   "year_ago": 205.064,
+   "year_ago_change": 5.693,
+   "year_ago_pct": 2.8,
    "avg5": null,
    "vs_avg5": null,
    "vs_avg5_pct": null,
    "decimals": 3,
-   "checked_at": "2026-11-12T02:59:19+00:00"
+   "checked_at": "2026-11-12T21:55:34+00:00"
   },
   {
    "key": "dist_stocks",
    "label": "Distillate",
    "unit": "million barrels",
-   "period": "2026-10-30",
+   "period": "2026-11-06",
    "source": "WPSR Table 1",
    "source_url": "https://ir.eia.gov/wpsr/table1.csv",
    "ok": true,
    "error": null,
    "history": [
-    [
-     "2016-11-18",
-     149.239
-    ],
     [
      "2016-11-25",
      154.196
@@ -6300,35 +6296,35 @@
     [
      "2026-10-30",
      99.259
+    ],
+    [
+     "2026-11-06",
+     103.33
     ]
    ],
    "forward": [],
-   "value": 99.259,
-   "week_ago": 102.824,
-   "change": -3.565,
-   "year_ago": 111.546,
-   "year_ago_change": -12.287,
-   "year_ago_pct": -11.0,
+   "value": 103.33,
+   "week_ago": 99.259,
+   "change": 4.071,
+   "year_ago": 110.909,
+   "year_ago_change": -7.579,
+   "year_ago_pct": -6.8,
    "avg5": null,
    "vs_avg5": null,
    "vs_avg5_pct": null,
    "decimals": 3,
-   "checked_at": "2026-11-12T02:59:19+00:00"
+   "checked_at": "2026-11-12T21:55:34+00:00"
   },
   {
    "key": "cushing",
    "label": "Crude (Cushing)",
    "unit": "million barrels",
-   "period": "2026-10-30",
+   "period": "2026-11-06",
    "source": "WPSR Table 4",
    "source_url": "https://ir.eia.gov/wpsr/table4.csv",
    "ok": true,
    "error": null,
    "history": [
-    [
-     "2016-11-18",
-     59.083
-    ],
     [
      "2016-11-25",
      61.502
@@ -8404,20 +8400,24 @@
     [
      "2026-10-30",
      27.25
+    ],
+    [
+     "2026-11-06",
+     27.356
     ]
    ],
    "forward": [],
-   "value": 27.25,
-   "week_ago": 26.97,
-   "change": 0.28,
-   "year_ago": 22.865,
+   "value": 27.356,
+   "week_ago": 27.25,
+   "change": 0.106,
+   "year_ago": 22.519,
    "year_ago_change": null,
-   "year_ago_pct": 19.2,
+   "year_ago_pct": 21.5,
    "avg5": null,
    "vs_avg5": null,
    "vs_avg5_pct": null,
    "decimals": 3,
-   "checked_at": "2026-11-12T02:59:19+00:00"
+   "checked_at": "2026-11-12T21:55:34+00:00"
   },
   {
    "key": "ng_storage",
@@ -8443,7 +8443,7 @@
    "vs_avg5_pct": 1.4,
    "avg5_label": "5-year (2021-25) average",
    "decimals": 0,
-   "checked_at": "2026-11-12T02:59:19+00:00"
+   "checked_at": "2026-11-12T21:55:34+00:00"
   }
  ]
 }
