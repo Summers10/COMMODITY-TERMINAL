@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-11-13T01:27:44+00:00",
+ "generated_at": "2026-11-13T02:38:18+00:00",
  "source": "U.S. Energy Information Administration",
  "note": "5-year average is the WNGSR published figure. WPSR tables used here do not print a 5-year average, so those cells are null.",
  "series": [
@@ -2105,7 +2105,7 @@
    "vs_avg5": null,
    "vs_avg5_pct": null,
    "decimals": 3,
-   "checked_at": "2026-11-13T01:27:44+00:00"
+   "checked_at": "2026-11-13T02:38:18+00:00"
   },
   {
    "key": "gas_stocks",
@@ -4209,7 +4209,7 @@
    "vs_avg5": null,
    "vs_avg5_pct": null,
    "decimals": 3,
-   "checked_at": "2026-11-13T01:27:44+00:00"
+   "checked_at": "2026-11-13T02:38:18+00:00"
   },
   {
    "key": "dist_stocks",
@@ -6313,7 +6313,7 @@
    "vs_avg5": null,
    "vs_avg5_pct": null,
    "decimals": 3,
-   "checked_at": "2026-11-13T01:27:44+00:00"
+   "checked_at": "2026-11-13T02:38:18+00:00"
   },
   {
    "key": "cushing",
@@ -8417,7 +8417,7 @@
    "vs_avg5": null,
    "vs_avg5_pct": null,
    "decimals": 3,
-   "checked_at": "2026-11-13T01:27:44+00:00"
+   "checked_at": "2026-11-13T02:38:18+00:00"
   },
   {
    "key": "ng_storage",
@@ -8443,7 +8443,7 @@
    "vs_avg5_pct": 1.4,
    "avg5_label": "5-year (2021-25) average",
    "decimals": 0,
-   "checked_at": "2026-11-13T01:27:44+00:00"
+   "checked_at": "2026-11-13T02:38:18+00:00"
   }
  ]
 }
