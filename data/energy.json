@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-11-13T02:38:18+00:00",
+ "generated_at": "2026-11-13T21:37:44+00:00",
  "source": "U.S. Energy Information Administration",
  "note": "5-year average is the WNGSR published figure. WPSR tables used here do not print a 5-year average, so those cells are null.",
  "series": [
@@ -2105,7 +2105,7 @@
    "vs_avg5": null,
    "vs_avg5_pct": null,
    "decimals": 3,
-   "checked_at": "2026-11-13T02:38:18+00:00"
+   "checked_at": "2026-11-13T21:37:44+00:00"
   },
   {
    "key": "gas_stocks",
@@ -4209,7 +4209,7 @@
    "vs_avg5": null,
    "vs_avg5_pct": null,
    "decimals": 3,
-   "checked_at": "2026-11-13T02:38:18+00:00"
+   "checked_at": "2026-11-13T21:37:44+00:00"
   },
   {
    "key": "dist_stocks",
@@ -6313,7 +6313,7 @@
    "vs_avg5": null,
    "vs_avg5_pct": null,
    "decimals": 3,
-   "checked_at": "2026-11-13T02:38:18+00:00"
+   "checked_at": "2026-11-13T21:37:44+00:00"
   },
   {
    "key": "cushing",
@@ -8417,7 +8417,7 @@
    "vs_avg5": null,
    "vs_avg5_pct": null,
    "decimals": 3,
-   "checked_at": "2026-11-13T02:38:18+00:00"
+   "checked_at": "2026-11-13T21:37:44+00:00"
   },
   {
    "key": "ng_storage",
@@ -8429,21 +8429,21 @@
    "error": null,
    "history": [],
    "forward": [],
-   "period": "2026-10-30",
-   "release": "2026-Nov-0",
-   "week_ago_period": "2026-10-23",
-   "value": 3801,
-   "week_ago": 3724,
-   "change": 77,
-   "year_ago": 3910,
-   "year_ago_change": -109,
-   "year_ago_pct": -2.8,
-   "avg5": 3747,
-   "vs_avg5": 54,
-   "vs_avg5_pct": 1.4,
+   "period": "2026-11-06",
+   "release": "2026-Nov-1",
+   "week_ago_period": "2026-10-30",
+   "value": 3862,
+   "week_ago": 3801,
+   "change": 61,
+   "year_ago": 3954,
+   "year_ago_change": -92,
+   "year_ago_pct": -2.3,
+   "avg5": 3787,
+   "vs_avg5": 75,
+   "vs_avg5_pct": 2.0,
    "avg5_label": "5-year (2021-25) average",
    "decimals": 0,
-   "checked_at": "2026-11-13T02:38:18+00:00"
+   "checked_at": "2026-11-13T21:37:44+00:00"
   }
  ]
 }
