@@ -5,6 +5,11 @@ on:
     - cron: '17 13 * * *'
     - cron: '17 22 * * *'
   workflow_dispatch: {}
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/fetch-crop.yml'
+      - 'scripts/crop/**'
 
 permissions:
   contents: write

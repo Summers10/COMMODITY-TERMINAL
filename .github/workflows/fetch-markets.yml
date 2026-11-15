@@ -7,6 +7,15 @@ on:
     - cron: '17 18 * * 1-5'
     - cron: '47 20 * * 1-5'
   workflow_dispatch: {}
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/fetch-markets.yml'
+      - 'scripts/fetch_psd.py'
+      - 'scripts/wasde_tables.py'
+      - 'scripts/fetch_cftc.py'
+      - 'scripts/fetch_exports.py'
+      - 'scripts/fetch_weather.py'
 
 permissions:
   contents: write
