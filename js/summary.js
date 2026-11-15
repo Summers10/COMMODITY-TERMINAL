@@ -128,7 +128,7 @@ function renderSummary(){
 
 function energySummary(){
   const st = energyStatus();
-  let html = `<div class="panel"><div class="panel-hdr"><span class="panel-title">Energy stocks</span>${provMark(['EIA WPSR Table 1 and Table 4, and the Weekly Natural Gas Storage Report.', ...st.parts, 'The natural gas 5-year average is the figure WNGSR prints. These petroleum tables do not print a 5-year average.'], st.stale)}</div>`;
+  let html = `<div class="panel"><div class="panel-hdr"><span class="panel-title">Energy stocks</span>${provMark(['EIA WPSR Table 1 and Table 4, and the Weekly Natural Gas Storage Report.', ...st.parts, 'The natural gas 5-year average is the figure WNGSR prints. Petroleum 5-year averages are computed from EIA weekly levels.'], st.stale)}</div>`;
   html += `<table class="term-table summary-table">${fitColgroup([1.8,1.1,0.9,1.1,1,1])}<thead><tr>
     <th>Market</th><th>Stocks</th><th>w/w</th><th>Year ago</th><th>5-yr avg</th><th>vs 5-yr</th></tr></thead><tbody>`;
   const order = ['crude_stocks','gas_stocks','dist_stocks','ng_storage'];

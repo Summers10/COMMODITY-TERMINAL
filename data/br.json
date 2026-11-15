@@ -12,52 +12,8 @@
  ],
  "rows": [
   {
-   "crop": "Rice",
-   "crop_local": "Arroz",
-   "season": "2026/27",
-   "region": "Brazil (6 estados)",
-   "metric": "planted",
-   "current": 63.1,
-   "prev_week": 50.9,
-   "last_year": 66.6,
-   "avg5": 65.6
-  },
-  {
-   "crop": "Rice",
-   "crop_local": "Arroz",
-   "season": "2026/27",
-   "region": "Brazil (6 estados)",
-   "metric": "harvested",
-   "current": 0.5,
-   "prev_week": 0.2,
-   "last_year": 0.0,
-   "avg5": 0.1
-  },
-  {
-   "crop": "Dry beans (1st)",
-   "crop_local": "Feijão 1ª",
-   "season": "2026/27",
-   "region": "Brazil (8 estados)",
-   "metric": "planted",
-   "current": 44.3,
-   "prev_week": 33.5,
-   "last_year": 38.8,
-   "avg5": 41.4
-  },
-  {
-   "crop": "Dry beans (1st)",
-   "crop_local": "Feijão 1ª",
-   "season": "2026/27",
-   "region": "Brazil (8 estados)",
-   "metric": "harvested",
-   "current": 4.1,
-   "prev_week": 0.0,
-   "last_year": 0.0,
-   "avg5": 0.8
-  },
-  {
    "crop": "Corn (1st crop)",
-   "crop_local": "Milho 1ª",
+   "crop_local": "Milho 1\u00aa",
    "season": "2026/27",
    "region": "Brazil (9 estados)",
    "metric": "planted",

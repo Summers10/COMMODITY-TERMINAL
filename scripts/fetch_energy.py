@@ -25,7 +25,7 @@ TABLE1 = "https://ir.eia.gov/wpsr/table1.csv"
 TABLE4 = "https://ir.eia.gov/wpsr/table4.csv"
 PSW04 = "https://ir.eia.gov/wpsr/psw04.xls"
 WNGSR = "https://ir.eia.gov/ngs/wngsr.json"
-NG_HIST = "https://ir.eia.gov/ngs/ngshistory.xls"
+NG_HIST = "https://www.eia.gov/dnav/ng/xls/NG_STOR_WKLY_S1_W.xls"
 
 
 def get(url):
@@ -159,27 +159,35 @@ def ng_from_json(blob):
     }
 
 
+def same_week_avg5(history, period_iso):
+    """Mean of the same ISO week in the five prior calendar years. None if a year is missing."""
+    target = dt.date.fromisoformat(period_iso)
+    week = target.isocalendar().week
+    by_year = {}
+    for day, val in history:
+        d = dt.date.fromisoformat(day)
+        if d.isocalendar().week == week and target.year - 5 <= d.year <= target.year - 1:
+            by_year[d.year] = val
+    years = range(target.year - 5, target.year)
+    if any(y not in by_year for y in years):
+        return None
+    return sum(by_year[y] for y in years) / 5
+
+
 def ng_history(blob):
-    """Weekly working-gas stocks only. The 5-year average is not in this file."""
+    """Lower 48 working gas from EIA's weekly storage workbook. No average is stored in the file."""
     book = xlrd.open_workbook(file_contents=blob)
-    sh = book.sheet_by_index(0)
+    sh = book.sheet_by_name("Data 1") if "Data 1" in book.sheet_names() else book.sheet_by_index(0)
     out = []
     for r in range(sh.nrows):
-        row = [sh.cell_value(r, c) for c in range(min(3, sh.ncols))]
-        # Accept a date in col 0 and a number in col 1.
-        d = row[0]
-        if isinstance(d, (int, float)) and d > 20000:
+        d = sh.cell_value(r, 0)
+        v = sh.cell_value(r, 1) if sh.ncols > 1 else None
+        if isinstance(d, (int, float)) and d > 20000 and isinstance(v, (int, float)):
             day = xlrd.xldate_as_datetime(d, book.datemode).date()
-            if isinstance(row[1], (int, float)):
-                out.append([day.isoformat(), int(round(row[1]))])
-        elif isinstance(d, str) and len(d) >= 8 and d[:4].isdigit():
-            try:
-                day = dt.date.fromisoformat(d[:10])
-            except ValueError:
-                continue
-            if isinstance(row[1], (int, float)):
-                out.append([day.isoformat(), int(round(row[1]))])
-    return out[-400:]
+            out.append([day.isoformat(), int(round(v))])
+    if len(out) < 200:
+        raise ValueError(f"natural gas history is too short ({len(out)})")
+    return out
 
 
 def main():
@@ -209,10 +217,20 @@ def main():
             if last[0] != period_iso or abs(last[1] - rec["value"]) > 0.001:
                 raise ValueError(f"{key} history {last} != published {period_iso} {rec['value']}")
             # Cushing's table4 row has a shorter header. Year-ago percent column differs.
+            hist_rows = hist[key][-520:]
+            avg5 = same_week_avg5(hist_rows, period_iso)
+            if avg5 is None:
+                raise ValueError(f"{key} same-week 5-year average could not be formed")
+            avg5 = round(avg5, 3)
+            rec = dict(rec)
+            rec["avg5"] = avg5
+            rec["vs_avg5"] = round(rec["value"] - avg5, 3)
+            rec["vs_avg5_pct"] = round((rec["value"] - avg5) / avg5 * 100, 1)
+            rec["avg5_basis"] = "computed from EIA weekly levels"
             series.append({
                 "key": key, "label": label, "unit": unit, "period": period_iso,
                 "source": table, "source_url": url, "ok": True, "error": None,
-                "history": hist[key][-520:], "forward": [],
+                "history": hist_rows, "forward": [],
                 **rec,
             })
         ng_blob = get(WNGSR)
@@ -224,6 +242,10 @@ def main():
             print(f"NG history file not used ({e})", file=sys.stderr)
         if ngh and ngh[-1][0] == ng["period"] and ngh[-1][1] != ng["value"]:
             raise ValueError(f"NG history {ngh[-1]} != WNGSR {ng['value']}")
+        ng["avg5_computed"] = None if not ngh else (
+            None if same_week_avg5(ngh, ng["period"]) is None else round(same_week_avg5(ngh, ng["period"]))
+        )
+        ng["avg5_basis"] = "WNGSR published 5-year average"
         series.append({
             "key": "ng_storage", "label": "Natural gas (Lower 48)", "unit": "Bcf",
             "source": "WNGSR", "source_url": "https://ir.eia.gov/ngs/wngsr.html",
@@ -249,7 +271,7 @@ def main():
         json.dump({
             "generated_at": now,
             "source": "U.S. Energy Information Administration",
-            "note": "5-year average is the WNGSR published figure. WPSR tables used here do not print a 5-year average, so those cells are null.",
+            "note": "Natural gas 5-year average is the WNGSR published figure. Petroleum 5-year averages are the same-week mean of the five prior years of EIA weekly levels.",
             "series": series,
         }, f, indent=1)
         f.write("\n")

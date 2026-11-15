@@ -14,6 +14,12 @@ from common import DATA, now_iso, write_country
 
 SOURCES = {"us": us_nass, "br": br_conab, "fr": fr_cereobs, "ar": ar_magyp}
 
+def _keep_crop(name: str) -> bool:
+    c = name.lower()
+    if any(b in c for b in ("peanut", "rice", "sorghum", "barley", "sunflower", "sugarbeet", "silage", "sweet", "dry bean", "durum", "mani", "arroz", "orge", "girasol")):
+        return False
+    return any(k in c for k in ("corn", "maize", "soy", "wheat", "oat", "cotton", "algod", "soja", "milho", "blé"))
+
 
 def main(only: list[str]) -> int:
     DATA.mkdir(exist_ok=True)
@@ -27,6 +33,7 @@ def main(only: list[str]) -> int:
         entry["last_attempt"] = now_iso()
         try:
             data = mod.fetch()
+            data["rows"] = [r for r in data["rows"] if _keep_crop(r.get("crop", ""))]
             write_country(code, data)
             entry.update(ok=True, error=None, last_success=data["fetched_at"],
                          report_date=data["report_date"], rows=len(data["rows"]))

@@ -774,11 +774,134 @@ function buildMetricByCountryTable(countryList, countries, years, metric){
   return html;
 }
 
+let SD = null;
+function loadSd(){
+  if(SD) return Promise.resolve(SD);
+  return fetch('data/sd.json').then(r=>r.ok?r.json():null).then(d=>{ SD=d; return d; }).catch(()=>null);
+}
+function renderCanolaCgcPage(root){
+  const unit = document.getElementById('unit-toggle');
+  if(unit) unit.style.display = 'none';
+  const conv = document.getElementById('conv-label');
+  if(conv) conv.textContent = 'Canada canola, thousand tonnes';
+  if(!SD || !SD.crops || !SD.crops.canola){
+    root.innerHTML = usdaBanner()+`<p class="legend-line">${na()}</p>`;
+    if(typeof renderCgc==='function') root.insertAdjacentHTML('beforeend', renderCgc());
+    return;
+  }
+  const C = SD.crops.canola, Y = C.years, fc = C.forecast_year, P = C.prior;
+  const statYears = Object.keys(Y).filter(cy=>Y[cy].src==='StatsCan' && cy!==fc).sort();
+  const estYears = (C.aafc_years||[]).filter(cy=>cy!==fc && Y[cy] && Y[cy].src==='AAFC');
+  const cols = [...statYears.slice(-5), ...estYears, fc].filter(cy=>Y[cy]);
+  const rows = [
+    {k:'ac_harv', n:'Area harvested (1000 ac)', d:0},
+    {k:'bu_ac', n:'Yield (bu/ac)', d:1},
+    {sec:'Supply'},
+    {k:'beg', n:'Beginning stocks'},
+    {k:'prod', n:'Production'},
+    {k:'imp', n:'Imports'},
+    {k:'supply', n:'Total supply', cls:'row-total'},
+    {sec:'Use'},
+    {k:'exp', n:'Exports'},
+    {k:'fi', n:'Crush / food & industrial'},
+    {k:'fwd', n:'Feed, waste & dockage'},
+    {k:'seed_other', n:'Seed / other'},
+    {k:'dom', n:'Total domestic', cls:'row-total'},
+    {k:'total_use', n:'Total use', cls:'row-total'},
+    {sec:'Balance'},
+    {k:'end', n:'Ending stocks', cls:'row-ending'},
+    {k:'su', n:'Stocks / use', cls:'row-stu', pct:true},
+    {k:'price', n:'AAFC avg price ($/t)', d:0},
+  ];
+  const show = (v, row) => v==null ? na() : (row.pct ? Number(v).toFixed(1)+'%' : (row.d ? Number(v).toFixed(row.d) : Math.round(v).toLocaleString()));
+  const mark = cy => cy===fc ? ' f' : (estYears.includes(cy) ? ' e' : '');
+  let head = `<tr><th>Item</th>`;
+  cols.forEach(cy=>{ head += `<th class="${cy===fc?'latest':''}">${cy.slice(0,4)}${mark(cy)}</th>`; });
+  head += `<th class="grp-l">Prior</th><th>Chg</th></tr>`;
+  let body = '';
+  rows.forEach(row=>{
+    if(row.sec){ body += `<tr class="row-section"><td colspan="${cols.length+3}">${row.sec}</td></tr>`; return; }
+    body += `<tr class="${row.cls||''}"><td>${row.n}</td>`;
+    cols.forEach(cy=>{ body += `<td class="${cy===fc?'latest':''}">${show(Y[cy][row.k], row)}</td>`; });
+    const cur = Y[fc] ? Y[fc][row.k] : null;
+    const pv = P ? P[row.k] : null;
+    const chg = (cur!=null && pv!=null) ? cur-pv : null;
+    const dec = row.pct ? 1 : (row.d||0);
+    const pp = chg==null ? null : chg.toFixed(1);
+    const ppTxt = pp==null ? na() : (Number(pp)===0 ? '0.0pp' : (Number(pp)>0?'+':'')+pp+'pp');
+    body += `<td class="grp-l prior">${show(pv, row)}</td><td class="${chgClass(chg, dec)}">${chg==null?na():(row.pct?ppTxt:fmtChg(chg, dec))}</td></tr>`;
+  });
+  const dated = SD.aafc && SD.aafc.date ? SD.aafc.date : '';
+  const priorDated = SD.aafc && SD.aafc.prior_date ? SD.aafc.prior_date : '';
+  root.insertAdjacentHTML('beforeend', `<p class="legend-line">StatsCan 32-10-0013 and 32-10-0359. AAFC Outlook ${dated}. Prior report ${priorDated}. f = AAFC forecast, e = AAFC estimate.</p>`);
+  root.insertAdjacentHTML('beforeend', `<div class="sec-hdr">Canada canola</div>`);
+  root.insertAdjacentHTML('beforeend', panelWrap('CANADA', '1000 tonnes, crop year Aug–Jul',
+    `<table class="term-table bal-table"><thead>${head}</thead><tbody>${body}</tbody></table>`));
+  root.insertAdjacentHTML('beforeend', paceTable(Y[fc], fc));
+  if(typeof renderCgc==='function') root.insertAdjacentHTML('beforeend', renderCgc());
+}
+function paceTable(forecast, fc){
+  if(!forecast || !CGC || !CGC.grains || !CGC.grains.canola) return '';
+  const g = CGC.grains.canola, w = CGC.latest_week, cur = CGC.current;
+  function at(arr, week){ return arr && week>=1 && week<=arr.length ? arr[week-1] : null; }
+  function finalOf(cy, key){
+    const a = (g[cy]||{})[key] || [];
+    for(let i=a.length-1;i>=0;i--) if(a[i]!=null) return a[i];
+    return null;
+  }
+  function implied(key){
+    const now = at((g[cur]||{})[key], w);
+    const hist = (CGC.years||[]).slice(1).filter(cy => (CGC.dates[cy]||[]).length >= 50);
+    const shares = hist.map(cy=>{
+      const fin = finalOf(cy, key), v = at((g[cy]||{})[key], w);
+      return (fin && v!=null) ? v/fin : null;
+    }).filter(x=>x);
+    if(now==null || !shares.length) return null;
+    const avg = shares.reduce((a,b)=>a+b,0)/shares.length;
+    return now/avg;
+  }
+  const exp = implied('exp_cy');
+  const dom = implied('dom_cy');
+  if(exp==null) return `<div class="sec-hdr">At CGC pace</div><p class="legend-line">${na()}</p>`;
+  const v = Object.assign({}, forecast);
+  v.exp = exp;
+  if(dom!=null && forecast.fi!=null && forecast.dom!=null){
+    v.fi = dom;
+    v.dom = forecast.dom - forecast.fi + dom;
+  }
+  v.total_use = v.exp + v.dom;
+  v.end = v.supply - v.total_use;
+  v.su = v.total_use ? v.end / v.total_use * 100 : null;
+  const lines = [
+    ['Exports', 'exp', 0],
+    ['Crush / food & industrial', 'fi', 0],
+    ['Total domestic', 'dom', 0],
+    ['Total use', 'total_use', 0],
+    ['Ending stocks', 'end', 0],
+    ['Stocks / use', 'su', 1],
+  ];
+  let html = `<table class="term-table bal-table">${fitColgroup([2.2,1.2,1])}<thead><tr><th>${fc} at CGC pace</th><th>Pace</th><th>vs forecast</th></tr></thead><tbody>`;
+  lines.forEach(([name, key, dec])=>{
+    const pace = v[key], base = forecast[key];
+    const dlt = (pace!=null && base!=null) ? pace-base : null;
+    const txt = pace==null ? na() : (key==='su' ? pace.toFixed(1)+'%' : Math.round(pace).toLocaleString());
+    const vs = dlt==null ? na() : (key==='su' ? (dlt>=0?'+':'')+dlt.toFixed(1)+'pp' : fmtChg(dlt, dec));
+    html += `<tr><td>${name}</td><td class="latest">${txt}</td><td class="${chgClass(dlt, dec)}">${vs}</td></tr>`;
+  });
+  html += `</tbody></table>`;
+  return `<div class="sec-hdr">At CGC pace</div>`+panelWrap('CGC PACE', `Week ${w}. Exports and crush follow the share of the crop year reached in earlier years.`, html);
+}
 function render(){
   const root = document.getElementById('root');
   root.innerHTML = '';
   const comm = currentComm;
-  updateUsdaMeta();   // the "data as of" line depends on the selected commodity
+  updateUsdaMeta();
+  if(comm==='Rapeseed/Canola' && typeof usdaSource!=='undefined' && usdaSource==='cgc'){
+    const go = ()=>renderCanolaCgcPage(root);
+    if(SD) go();
+    else loadSd().then(go);
+    return;
+  }
 
   const convLabel = document.getElementById('conv-label');
   const unitToggleEl = document.getElementById('unit-toggle');

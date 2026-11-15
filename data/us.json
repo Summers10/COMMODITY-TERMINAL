@@ -57,39 +57,6 @@
    "avg5": 63.0
   },
   {
-   "crop": "Sorghum",
-   "crop_local": null,
-   "season": null,
-   "region": "United States",
-   "metric": "harvested",
-   "current": 70.0,
-   "prev_week": 64.0,
-   "last_year": null,
-   "avg5": 85.0
-  },
-  {
-   "crop": "Peanuts",
-   "crop_local": null,
-   "season": null,
-   "region": "United States",
-   "metric": "harvested",
-   "current": 77.0,
-   "prev_week": 66.0,
-   "last_year": null,
-   "avg5": 81.0
-  },
-  {
-   "crop": "Sunflower",
-   "crop_local": null,
-   "season": null,
-   "region": "United States",
-   "metric": "harvested",
-   "current": 74.0,
-   "prev_week": 61.0,
-   "last_year": null,
-   "avg5": 71.0
-  },
-  {
    "crop": "Wheat, Winter",
    "crop_local": null,
    "season": null,
