@@ -2717,7 +2717,7 @@ setTimeout(function(){
     setTimeout(function(){
       var el = document.createElement('pre');
       el.id = 'audit';
-      el.textContent = document.documentElement.scrollWidth + ' ' + document.documentElement.clientWidth;
+      el.textContent = document.documentElement.scrollWidth + ' ' + document.documentElement.clientWidth + ' ' + document.documentElement.scrollHeight;
       document.body.appendChild(el);
     }, 400);
   }

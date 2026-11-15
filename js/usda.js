@@ -201,8 +201,11 @@ function renderCgc(){
     for(let w=n; w>=start; w--){
       const i=w-1;
       const dt = (CGC.dates[cur]||[])[i] || na();
-      const at = (arr)=> (arr && arr[i]!=null) ? arr[i].toLocaleString() : na();
-      inner += `<tr class="${w===n?'row-ending':''}"><td>${dt}</td><td>${at(series.del_wk)}</td><td>${at(series.del_cy)}</td><td>${at(series.exp_wk)}</td><td>${at(series.exp_cy)}</td><td>${at(series.stk)}</td></tr>`;
+      const cell = (arr, official)=>{
+        if(w===n && official!=null) return official.toLocaleString();
+        return (arr && arr[i]!=null) ? arr[i].toLocaleString() : na();
+      };
+      inner += `<tr class="${w===n?'row-ending':''}"><td>${dt}</td><td>${cell(series.del_wk,h.del_wk)}</td><td>${cell(series.del_cy,h.del_cy)}</td><td>${cell(series.exp_wk,h.exp_wk)}</td><td>${cell(series.exp_cy,h.exp_cy)}</td><td>${cell(series.stk,h.stk)}</td></tr>`;
     }
     inner += `</tbody></table>`;
   }
