@@ -60,7 +60,7 @@ OUTLOOK_VARS = {
     "precip_mean": ["precipitation_mean", "precipitation_sum"],
 }
  
-FRESH_HOURS = 20   # skip the fetch if the saved file is newer than this (the workflow runs several times a day)
+FRESH_HOURS = 20   # legacy gate; scheduled runs pass WEATHER_FORCE so they always re-read the source
  
 HISTORY_YEARS = 10
 PAST_DAYS = 92       # Open-Meteo's documented max for this parameter; still covers the 90-day trailing window
@@ -461,7 +461,26 @@ def main():
         "outlook_source": "ECMWF SEAS5 via Open-Meteo Seasonal API",
         "outlook_error": outlook_error,
     }
- 
+
+    def observations(doc):
+        meta = doc.get("_meta") or {}
+        return {
+            "regions": doc.get("regions"),
+            "outlook_label": meta.get("outlook_label"),
+            "outlook_error": meta.get("outlook_error"),
+        }
+
+    if os.path.exists(OUT):
+        try:
+            with open(OUT) as f:
+                previous = json.load(f)
+        except Exception:
+            previous = None
+        if previous and observations(previous) == observations(result):
+            print("Weather observations unchanged since "
+                  f"{(previous.get('_meta') or {}).get('fetched_at')}. Not rewriting the file.")
+            return
+
     os.makedirs(os.path.dirname(OUT), exist_ok=True)
     with open(OUT, "w") as f:
         json.dump(result, f, separators=(",", ":"))
