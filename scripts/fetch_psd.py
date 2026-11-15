@@ -501,11 +501,27 @@ def main():
     if release is not None:
         earlier = [d for d in schedule if d < release]
         prior_release = max(earlier).isoformat() if earlier else None
+    # Country rows that WASDE's summary tables do not print (Canada wheat, Brazil
+    # soybeans, and so on) take the previous PSD vintage. WASDE's own previous-month
+    # column replaces those keys where it exists.
+    git_prior = get_prior_snapshot(result, release, schedule)
+    merged = {}
+    if git_prior and git_prior.get("data"):
+        merged = git_prior["data"]
+    for comm, countries in (prior_wasde or {}).items():
+        for country, years in countries.items():
+            for year, fields in years.items():
+                slot = merged.setdefault(comm, {}).setdefault(country, {}).setdefault(year, {})
+                slot.update(fields)
+    # The previous file stored WASDE wheat "total use" under domestic consumption.
+    wheat_prior = merged.get("Wheat", {}).get("World", {}).get("2026")
+    if wheat_prior is not None:
+        wheat_prior.pop("dc", None)
     prior = {
         "release": prior_release,
-        "source": f"WASDE-{wasde_parsed.get('wasde_number')} previous-month column",
-        "data": prior_wasde,
-    } if prior_wasde else None
+        "source": f"WASDE-{wasde_parsed.get('wasde_number')} previous-month column, otherwise the previous PSD vintage",
+        "data": merged,
+    } if merged else None
  
     # The page only reads these balance-sheet fields. Drop the rest so the file stays small.
     keep = set(PRIOR_KEYS) | {"ts", "yl", "ah_ac", "yl_bu"}
