@@ -101,7 +101,7 @@ function renderSummary(){
     </tr></thead><tbody>`;
   SUM_ROWS.forEach(row=>{
     const us = stuPair(row.comm, 'United States', false);
-    const worldCountry = row.comm==='Rapeseed/Canola' ? null : 'World';
+    const worldCountry = 'World';
     const w = worldCountry ? stuPair(row.comm, 'World', true) : {cur:null,yoy:null,mom:null};
     let flow = row.cgc ? cgcFlow() : flowYoY(row.flow);
     const season = row.crop ? cropDelta(row.crop) : null;

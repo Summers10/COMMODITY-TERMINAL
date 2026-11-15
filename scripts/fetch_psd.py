@@ -231,6 +231,117 @@ def get_prior_snapshot(result, current_release, schedule):
     print(f"WARNING: prior-WASDE comparison unavailable - {problem}", file=sys.stderr)
     print(f"::warning title=Prior WASDE comparison unavailable::{problem}")
     return None
+
+
+WORLD_PRIOR_KEYS = ("ah", "bs", "pr", "im", "ts", "dc", "ex", "es", "yl")
+
+
+def _load_json_url(url):
+    req = urllib.request.Request(url, headers={"User-Agent": "COMMODITY-TERMINAL"})
+    with urllib.request.urlopen(req, timeout=90) as resp:
+        return json.loads(resp.read().decode("utf-8"))
+
+
+def grain_world_at_release(prior_release):
+    """Read-only World rows for the prior WASDE release from GRAIN-TERMINAL.
+
+    Returns (commodity -> year -> fields, commit sha). Never writes to that repo.
+    """
+    try:
+        listed = subprocess.run(
+            ["gh", "api", "repos/Summers10/GRAIN-TERMINAL/commits?path=data/psd_data.json&per_page=40"],
+            capture_output=True, text=True, timeout=60,
+        )
+        commits = json.loads(listed.stdout) if listed.returncode == 0 else []
+    except Exception as e:
+        print(f"WARNING: GRAIN-TERMINAL commit list failed ({e})", file=sys.stderr)
+        commits = []
+    prior_d = date.fromisoformat(prior_release)
+    newer, older = [], None
+    for c in commits:
+        cdt = datetime.fromisoformat(c["commit"]["committer"]["date"].replace("Z", "+00:00")).date()
+        if cdt >= prior_d:
+            newer.append(c["sha"])
+        else:
+            older = c["sha"]
+            break
+    candidates = []
+    if newer:
+        candidates.append(newer[-1])
+    if older:
+        candidates.append(older)
+    known = "b07a2a51cabd626f8959bfebb8773c949c055af3"
+    if known not in candidates:
+        candidates.append(known)
+    for sha in candidates:
+        url = f"https://raw.githubusercontent.com/Summers10/GRAIN-TERMINAL/{sha}/data/psd_data.json"
+        try:
+            doc = _load_json_url(url)
+        except Exception as e:
+            print(f"WARNING: could not read GRAIN-TERMINAL {sha[:10]} ({e})", file=sys.stderr)
+            continue
+        prel = (doc.get("_prior") or {}).get("release")
+        meta_rel = (doc.get("_meta") or {}).get("wasde_release")
+        worlds = {}
+        if prel == prior_release:
+            for comm, countries in ((doc.get("_prior") or {}).get("data") or {}).items():
+                world = (countries or {}).get("World")
+                if isinstance(world, dict) and world:
+                    worlds[comm] = world
+            if worlds:
+                print(f"GRAIN-TERMINAL prior World from {sha[:10]} _prior release {prel}")
+                return worlds, sha
+        if meta_rel == prior_release:
+            for comm, countries in doc.items():
+                if comm.startswith("_") or not isinstance(countries, dict):
+                    continue
+                world = countries.get("World")
+                if isinstance(world, dict) and world:
+                    worlds[comm] = world
+            if worlds:
+                print(f"GRAIN-TERMINAL prior World from {sha[:10]} wasde_release {meta_rel}")
+                return worlds, sha
+    print(f"WARNING: no GRAIN-TERMINAL World snapshot for {prior_release}", file=sys.stderr)
+    return {}, None
+
+
+def fill_world_prior_gaps(result, merged, grain_worlds, grain_sha, wheat_use):
+    """Fill missing World prior fields. Own history wins; GRAIN fills gaps.
+
+    A wheat domestic-use figure that is actually WASDE total use is treated as a
+    gap when GRAIN has a different domestic-consumption figure.
+    """
+    sources = {}
+    label = f"GRAIN-TERMINAL {grain_sha[:10]}" if grain_sha else "GRAIN-TERMINAL"
+    for comm, countries in result.items():
+        if comm.startswith("_") or not isinstance(countries, dict) or "World" not in countries:
+            continue
+        years = [y for y in countries["World"] if str(y).isdigit()]
+        if not years:
+            continue
+        latest = max(years)
+        slot = merged.setdefault(comm, {}).setdefault("World", {}).setdefault(latest, {})
+        grain = ((grain_worlds or {}).get(comm) or {}).get(latest) or {}
+        src = {}
+        for key in WORLD_PRIOR_KEYS:
+            have = slot.get(key)
+            grain_val = grain.get(key)
+            bad_wheat_dc = (
+                comm == "Wheat" and key == "dc" and have is not None and wheat_use is not None
+                and grain_val is not None and abs(have - wheat_use) <= 50 and abs(grain_val - wheat_use) > 50
+            )
+            if have is None or bad_wheat_dc:
+                if grain_val is not None:
+                    slot[key] = grain_val
+                    src[key] = label
+                elif have is not None:
+                    src[key] = "own history"
+                else:
+                    src[key] = "missing"
+            else:
+                src[key] = "own history"
+        sources[comm] = src
+    return sources
  
  
 def parse_csv_zip(zipdata, result, world_by_country, unmapped_attrs, official_world):
@@ -508,18 +619,28 @@ def main():
     merged = {}
     if git_prior and git_prior.get("data"):
         merged = git_prior["data"]
+    grain_worlds, grain_sha = grain_world_at_release(prior_release) if prior_release else ({}, None)
+    wheat_use = ((wasde_parsed.get("wheat_world") or {}).get("prior") or {}).get("dc")
+    prior_sources = fill_world_prior_gaps(result, merged, grain_worlds, grain_sha, wheat_use)
     for comm, countries in (prior_wasde or {}).items():
         for country, years in countries.items():
             for year, fields in years.items():
                 slot = merged.setdefault(comm, {}).setdefault(country, {}).setdefault(year, {})
-                slot.update(fields)
-    # The previous file stored WASDE wheat "total use" under domestic consumption.
-    wheat_prior = merged.get("Wheat", {}).get("World", {}).get("2026")
-    if wheat_prior is not None:
-        wheat_prior.pop("dc", None)
+                for key, val in fields.items():
+                    if val is None:
+                        continue
+                    slot[key] = val
+                    if country == "World":
+                        prior_sources.setdefault(comm, {})[key] = "WASDE previous-month column"
+    print("\nWorld prior sources:")
+    for comm in sorted(prior_sources):
+        fields = prior_sources[comm]
+        bits = ", ".join(f"{k}={fields[k]}" for k in ("pr", "es", "dc", "ah", "bs", "im", "ex", "ts") if k in fields)
+        print(f"  {comm}: {bits}")
+    meta["world_prior_sources"] = prior_sources
     prior = {
         "release": prior_release,
-        "source": f"WASDE-{wasde_parsed.get('wasde_number')} previous-month column, otherwise the previous PSD vintage",
+        "source": "WASDE previous-month column, else this repo's prior PSD vintage, else GRAIN-TERMINAL's prior-release World row",
         "data": merged,
     } if merged else None
  
