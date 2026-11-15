@@ -81,7 +81,7 @@ function wasdeBeefBlock(w){
   let html = `<div class="panel"><div class="panel-hdr"><span class="panel-title">WASDE beef</span><span class="panel-sub">million pounds</span></div>`;
   if(!w || !w.beef_current) return html+`<p class="legend-line">not available</p></div>`;
   const cur = w.beef_current, pri = w.beef_prior || {};
-  html += `<table class="term-table bal-table">${fitColgroup([1.6,1,1,1])}<thead><tr><th>2026</th><th>Oct</th><th>Sep</th><th>MoM</th></tr></thead><tbody>`;
+  html += `<table class="term-table bal-table">${fitColgroup([1.6,1,1,1])}<thead><tr><th>2026</th><th>Current</th><th>Prior month</th><th>MoM</th></tr></thead><tbody>`;
   [['Production','pr'],['Imports','im'],['Exports','ex'],['Total supply','ts'],['Ending stocks','es'],['Total use','dc']].forEach(([label,k])=>{
     const a=cur[k], b=pri[k];
     const ch=(a!=null&&b!=null)?a-b:null;
@@ -89,8 +89,10 @@ function wasdeBeefBlock(w){
   });
   const sp = w.steer_price;
   if(sp){
-    const ch = sp.oct-sp.sep;
-    html += `<tr><td>Steer price, $/cwt</td><td class="latest">${sp.oct.toFixed(2)}</td><td>${sp.sep.toFixed(2)}</td><td class="${dir(ch)}">${signed(ch,2)}</td></tr>`;
+    const curP = sp.current!=null ? sp.current : sp.oct;
+    const priP = sp.prior!=null ? sp.prior : sp.sep;
+    const ch = curP-priP;
+    html += `<tr><td>Steer price, $/cwt</td><td class="latest">${curP.toFixed(2)}</td><td>${priP.toFixed(2)}</td><td class="${dir(ch)}">${signed(ch,2)}</td></tr>`;
   }
   html += `</tbody></table></div>`;
   return html;

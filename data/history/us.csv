@@ -26,3 +26,13 @@ report_date,crop,season,region,metric,current,last_year,avg5
 2026-11-01,"Wheat, Winter",,United States,emerged,65.0,60.1,69.6
 2026-11-01,"Wheat, Winter",,United States,planted,83.0,75.4,87.1
 2026-11-01,"Wheat, Winter",,United States,condition_ge,44.0,,41.5
+2026-11-08,Corn,,United States,harvested,81.0,,86.0
+2026-11-08,Soybeans,,United States,harvested,92.0,,91.0
+2026-11-08,Cotton,,United States,bolls opening,94.0,,98.0
+2026-11-08,Cotton,,United States,harvested,71.0,,63.0
+2026-11-08,Sorghum,,United States,harvested,70.0,,85.0
+2026-11-08,Peanuts,,United States,harvested,77.0,,81.0
+2026-11-08,Sunflower,,United States,harvested,74.0,,71.0
+2026-11-08,"Wheat, Winter",,United States,planted,89.0,,90.0
+2026-11-08,"Wheat, Winter",,United States,emerged,76.0,,74.0
+2026-11-08,"Wheat, Winter",,United States,condition_ge,49.0,,
