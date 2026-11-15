@@ -4,6 +4,9 @@ on:
   schedule:
     - cron: '30 22 * * 4'
     - cron: '30 14 * * 5'
+    # AAFC's monthly outlook usually lands in the second half of the month.
+    - cron: '30 16 20 * *'
+    - cron: '30 16 27 * *'
   workflow_dispatch: {}
 
 permissions:
@@ -24,15 +27,29 @@ jobs:
           python-version: '3.12'
       - run: pip install -r requirements.txt
       - name: Fetch Grain Statistics Weekly
+        id: weekly
+        continue-on-error: true
         run: python scripts/fetch_cgc.py
+      - name: Fetch StatsCan and AAFC canola balance
+        id: sd
+        continue-on-error: true
+        run: python scripts/fetch_sd.py
+      - name: Trust audit
+        run: python -m pytest -q tests/test_trust.py
       - name: Commit
+        if: success()
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/cgc.json
+          git add data/cgc.json data/sd.json data/aafc || true
           if git diff --staged --quiet; then
             echo "No changes"
           else
             git commit -m "Update CGC canola $(date -u +%Y-%m-%d)"
             git push
           fi
+      - name: Fail if a fetch failed
+        if: steps.weekly.outcome == 'failure' || steps.sd.outcome == 'failure'
+        run: |
+          echo "::error::CGC fetch failed (weekly=${{ steps.weekly.outcome }}, balance=${{ steps.sd.outcome }}). The last good file was kept."
+          exit 1

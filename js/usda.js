@@ -226,8 +226,7 @@ function ensureSourceToggle(){
   el.querySelectorAll('.tbtn').forEach(b=>b.addEventListener('click', ()=>{
     usdaSource = b.dataset.s;
     el.querySelectorAll('.tbtn').forEach(x=>x.classList.toggle('active', x===b));
-    if(typeof refreshOrigin==='function') refreshOrigin();
-    else render();
+    render();
   }));
 }
 const _initToggles = initToggles;
@@ -236,8 +235,7 @@ initToggles = function(){
   ensureSourceToggle();
   const src = document.getElementById('src-toggle');
   const show = ()=>{
-    const onCanada = currentComm==='Rapeseed/Canola' && (typeof originPick==='undefined' || !originPick[currentComm] || originPick[currentComm]==='Canada');
-    if(src) src.style.display = onCanada ? '' : 'none';
+    if(src) src.style.display = currentComm==='Rapeseed/Canola' ? '' : 'none';
     if(currentComm!=='Rapeseed/Canola') usdaSource='usda';
   };
   window.syncCgcToggle = show;

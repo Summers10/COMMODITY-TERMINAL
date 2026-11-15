@@ -7,15 +7,13 @@ const CP_COUNTRIES = [
 let CP = {}, CP_STATUS = {}, cpHide = false;
 function cpGroup(name){
   const c = String(name||'').toLowerCase();
-  if(/silage|sweet/.test(c)) return null;
+  if(/peanut|rice|sorghum|barley|sunflower|sugarbeet|silage|sweet|dry bean|durum|mani|arroz|orge|girasol/.test(c)) return null;
+  if(/oat/.test(c)) return 'Oats';
+  if(/spring/.test(c) && /wheat|blé|trigo/.test(c)) return 'Spring wheat';
   if(/wheat|blé|trigo/.test(c)) return 'Wheat';
   if(/corn|maize|maïs|maiz|milho/.test(c)) return 'Corn';
-  if(/canola|rapeseed|colza/.test(c)) return 'Canola';
   if(/soybean|soja/.test(c)) return 'Soybeans';
   if(/cotton|algod/.test(c)) return 'Cotton';
-  if(/rice|arroz/.test(c)) return 'Rice';
-  if(/sunflower|girasol/.test(c)) return 'Sunflower';
-  if(/peanut|mani/.test(c)) return 'Peanuts';
   return null;
 }
 function cpLabel(name){

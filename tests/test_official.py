@@ -74,7 +74,8 @@ def test_energy_file_keeps_published_gas_average():
     assert ng["vs_avg5_pct"] is not None
     assert ng["change"] == ng["value"] - ng["week_ago"]
     crude = next(s for s in energy["series"] if s["key"] == "crude_stocks")
-    assert crude["avg5"] is None
+    assert crude.get("avg5_basis") == "computed from EIA weekly levels"
+    assert crude["avg5"] is not None
     assert abs((crude["value"] - crude["week_ago"]) - crude["change"]) < 0.002
 
 
@@ -102,6 +103,25 @@ def test_aggregate_yield_is_production_over_area_not_a_sum_of_yields():
     summed = sum((r["pr"] / r["ah"]) * bu / acres for r in records)
     assert abs(ratio - (2 * bu / acres)) < 1e-9
     assert abs(ratio - summed) > 1
+
+
+def test_canola_balance_sheet_adds_up_every_year():
+    from scripts.fetch_sd import TOL, check_sheet
+    path = ROOT / "data" / "sd.json"
+    if not path.exists():
+        return
+    doc = json.loads(path.read_text())
+    crop = doc["crops"]["canola"]
+    errs = []
+    for cy, sheet in crop["years"].items():
+        check_sheet(cy, sheet, errs)
+        assert abs((sheet["beg"] + sheet["prod"] + sheet["imp"]) - sheet["supply"]) <= TOL
+        assert abs((sheet["exp"] + sheet["dom"] + sheet["end"]) - sheet["supply"]) <= TOL
+    assert not errs
+    prior = crop.get("prior")
+    if prior:
+        check_sheet("prior", prior, errs)
+        assert not errs
 
 
 def test_world_total_supply_is_beginning_stocks_plus_production_every_year():

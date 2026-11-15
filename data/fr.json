@@ -1,19 +1,19 @@
 {
  "code": "fr",
  "country": "France",
- "source": "FranceAgriMer Céré'Obs",
+ "source": "FranceAgriMer C\u00e9r\u00e9'Obs",
  "source_url": "https://cereobs.franceagrimer.fr/cereobs-sp/",
  "report_date": "2026-11-09",
  "fetched_at": "2026-11-15T19:23:06+00:00",
  "beta": false,
  "notes": [
-  "Week-ending date shown (Céré'Obs publishes Fridays).",
-  "Condition = % Bonnes + Très bonnes (good + excellent). Céré'Obs stops updating a region's condition once its harvest passes 50%."
+  "Week-ending date shown (C\u00e9r\u00e9'Obs publishes Fridays).",
+  "Condition = % Bonnes + Tr\u00e8s bonnes (good + excellent). C\u00e9r\u00e9'Obs stops updating a region's condition once its harvest passes 50%."
  ],
  "rows": [
   {
    "crop": "Soft wheat",
-   "crop_local": "Blé tendre",
+   "crop_local": "Bl\u00e9 tendre",
    "season": null,
    "region": "France",
    "metric": "planted",
@@ -24,7 +24,7 @@
   },
   {
    "crop": "Soft wheat",
-   "crop_local": "Blé tendre",
+   "crop_local": "Bl\u00e9 tendre",
    "season": null,
    "region": "France",
    "metric": "emerged",
@@ -35,7 +35,7 @@
   },
   {
    "crop": "Soft wheat",
-   "crop_local": "Blé tendre",
+   "crop_local": "Bl\u00e9 tendre",
    "season": null,
    "region": "France",
    "metric": "tillering",
@@ -43,79 +43,6 @@
    "prev_week": 1.0,
    "last_year": 6.0,
    "avg5": 7.0
-  },
-  {
-   "crop": "Winter barley",
-   "crop_local": "Orge d'hiver",
-   "season": null,
-   "region": "France",
-   "metric": "planted",
-   "current": 96.0,
-   "prev_week": 89.0,
-   "last_year": 93.0,
-   "avg5": 91.0
-  },
-  {
-   "crop": "Winter barley",
-   "crop_local": "Orge d'hiver",
-   "season": null,
-   "region": "France",
-   "metric": "emerged",
-   "current": 75.0,
-   "prev_week": 60.0,
-   "last_year": 82.0,
-   "avg5": 78.0
-  },
-  {
-   "crop": "Winter barley",
-   "crop_local": "Orge d'hiver",
-   "season": null,
-   "region": "France",
-   "metric": "tillering",
-   "current": 1.0,
-   "prev_week": 1.0,
-   "last_year": 10.0,
-   "avg5": 13.0
-  },
-  {
-   "crop": "Winter barley",
-   "crop_local": "Orge d'hiver",
-   "season": null,
-   "region": "France",
-   "metric": "condition_ge",
-   "current": 94.0,
-   "prev_week": 96.0,
-   "last_year": 98.0,
-   "avg5": null,
-   "dist": {
-    "vp": 0.0,
-    "pr": 0.0,
-    "fr": 5.0,
-    "gd": 90.0,
-    "ex": 4.0
-   }
-  },
-  {
-   "crop": "Durum wheat",
-   "crop_local": "Blé dur",
-   "season": null,
-   "region": "France",
-   "metric": "planted",
-   "current": 70.0,
-   "prev_week": 24.0,
-   "last_year": 44.0,
-   "avg5": 37.0
-  },
-  {
-   "crop": "Durum wheat",
-   "crop_local": "Blé dur",
-   "season": null,
-   "region": "France",
-   "metric": "emerged",
-   "current": 7.0,
-   "prev_week": 1.0,
-   "last_year": 11.0,
-   "avg5": 10.0
   }
  ]
 }
