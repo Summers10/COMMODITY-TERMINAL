@@ -3,6 +3,7 @@ import json
 from pathlib import Path
 
 from scripts.fetch_cattle import parse_cof, parse_cutout, parse_inventory
+from scripts.fetch_psd import fill_world_prior_gaps
 from scripts.wasde_tables import parse_wasde
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -89,3 +90,26 @@ def test_wasde_world_wheat_is_the_published_row():
     assert parsed["wheat_world"]["oct"]["es"] == 276040
     assert parsed["beef"]["oct"]["pr"] == 24870
     assert parsed["beef"]["sep"]["pr"] == 24945
+
+
+def test_grain_fills_missing_world_prior_and_replaces_mislabeled_wheat_use():
+    result = {
+        "Wheat": {"World": {"2026": {"pr": 827505, "dc": 824000}}},
+        "Rapeseed/Canola": {"World": {"2026": {"pr": 100246}}},
+    }
+    merged = {"Wheat": {"World": {"2026": {"pr": 822390, "dc": 827900}}}}
+    grain = {
+        "Wheat": {"2026": {"pr": 822390, "es": 276038, "dc": 820000, "ah": 220000}},
+        "Rapeseed/Canola": {"2026": {"pr": 99571, "es": 11599, "ah": 45000}},
+    }
+    sources = fill_world_prior_gaps(result, merged, grain, "b07a2a51ca", 827900)
+    wheat = merged["Wheat"]["World"]["2026"]
+    assert wheat["pr"] == 822390
+    assert wheat["dc"] == 820000
+    assert wheat["es"] == 276038
+    assert sources["Wheat"]["dc"].startswith("GRAIN-TERMINAL")
+    assert sources["Wheat"]["pr"] == "own history"
+    canola = merged["Rapeseed/Canola"]["World"]["2026"]
+    assert canola["pr"] == 99571
+    assert canola["ah"] == 45000
+    assert sources["Rapeseed/Canola"]["pr"].startswith("GRAIN-TERMINAL")
