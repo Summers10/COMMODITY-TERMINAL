@@ -1,19 +1,19 @@
 {
  "code": "fr",
  "country": "France",
- "source": "FranceAgriMer C\u00e9r\u00e9'Obs",
+ "source": "FranceAgriMer Céré'Obs",
  "source_url": "https://cereobs.franceagrimer.fr/cereobs-sp/",
  "report_date": "2026-11-09",
- "fetched_at": "2026-11-15T19:23:06+00:00",
+ "fetched_at": "2026-11-15T23:52:51+00:00",
  "beta": false,
  "notes": [
-  "Week-ending date shown (C\u00e9r\u00e9'Obs publishes Fridays).",
-  "Condition = % Bonnes + Tr\u00e8s bonnes (good + excellent). C\u00e9r\u00e9'Obs stops updating a region's condition once its harvest passes 50%."
+  "Week-ending date shown (Céré'Obs publishes Fridays).",
+  "Condition = % Bonnes + Très bonnes (good + excellent). Céré'Obs stops updating a region's condition once its harvest passes 50%."
  ],
  "rows": [
   {
    "crop": "Soft wheat",
-   "crop_local": "Bl\u00e9 tendre",
+   "crop_local": "Blé tendre",
    "season": null,
    "region": "France",
    "metric": "planted",
@@ -24,7 +24,7 @@
   },
   {
    "crop": "Soft wheat",
-   "crop_local": "Bl\u00e9 tendre",
+   "crop_local": "Blé tendre",
    "season": null,
    "region": "France",
    "metric": "emerged",
@@ -35,7 +35,7 @@
   },
   {
    "crop": "Soft wheat",
-   "crop_local": "Bl\u00e9 tendre",
+   "crop_local": "Blé tendre",
    "season": null,
    "region": "France",
    "metric": "tillering",
