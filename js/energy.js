@@ -3,14 +3,14 @@ function renderEnergy(){
   if(!root) return;
   const st = energyStatus();
   if(!ENERGY || !ENERGY.series){
-    root.innerHTML = `<div class="panel"><div class="panel-hdr"><span class="panel-title">Stocks</span>${provMark(['Source: EIA','Release: not available','Last fetch: not available'], null)}</div><p class="legend-line">not available</p></div>`;
+    root.innerHTML = `<div class="panel"><div class="panel-hdr"><span class="panel-title">Stocks</span>${provMark(['Source: EIA','Release: —','Last fetch: —'], null)}</div><p class="legend-line">${na()}</p></div>`;
     return;
   }
   let html = `<div class="panel"><div class="panel-hdr"><span class="panel-title">Weekly stocks</span>${provMark(['EIA Weekly Petroleum Status Report Tables 1 and 4, and the Weekly Natural Gas Storage Report.', ...st.parts, 'Natural gas 5-year average and percent are the numbers WNGSR prints. These petroleum tables do not print a 5-year average.'], st.stale)}</div>`;
   html += `<table class="term-table bal-table">${fitColgroup([1.7,1,0.8,1,0.9,0.8,1])}<thead><tr><th>Item</th><th>Latest</th><th>w/w</th><th>Year ago</th><th>5-yr avg</th><th>vs 5-yr</th><th>Week</th></tr></thead><tbody>`;
   ENERGY.series.forEach(s=>{
     if(!s || s.ok===false && s.value==null){
-      html += `<tr><td>${s.label||s.key}</td><td colspan="6">not available</td></tr>`;
+      html += `<tr><td>${s.label||s.key}</td><td colspan="6">${na()}</td></tr>`;
       return;
     }
     const d = s.decimals||0;
@@ -33,7 +33,7 @@ function drawEnergy(s){
   if(!box || !s) return;
   if(title) title.textContent = s.label + ' level';
   const h = (s.history||[]).slice(-260);
-  if(h.length<2){ box.innerHTML = `<p class="legend-line">not available</p>`; return; }
+  if(h.length<2){ box.innerHTML = `<p class="legend-line">${na()}</p>`; return; }
   const vals = h.map(p=>p[1]);
   let lo = Math.min(...vals), hi = Math.max(...vals);
   const pad = (hi-lo)*0.08 || 1; lo -= pad; hi += pad;

@@ -4,6 +4,14 @@
   One size, tabular numerals, bold headers and key rows.
   Do not set a different font-size on these tables in the page.
 */
+.na{
+  color:var(--na, #8a847c);
+  fill:var(--na, #8a847c);
+  font-family:"Courier New",Courier,monospace;
+  font-size:13px;
+  font-weight:600;
+  font-variant-numeric:tabular-nums;
+}
 .term-table{
   font-family:"Courier New",Courier,monospace;
   font-size:13px;
