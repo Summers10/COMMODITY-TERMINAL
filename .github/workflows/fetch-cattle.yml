@@ -5,6 +5,12 @@ on:
     - cron: '20 21 * * 1-5'
     - cron: '20 16 * * 5'
   workflow_dispatch: {}
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/fetch-cattle.yml'
+      - 'scripts/fetch_cattle.py'
+      - 'scripts/wasde_tables.py'
 
 permissions:
   contents: write
