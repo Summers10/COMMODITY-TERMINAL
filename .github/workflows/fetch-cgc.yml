@@ -46,7 +46,15 @@ jobs:
             echo "No changes"
           else
             git commit -m "Update CGC canola $(date -u +%Y-%m-%d)"
-            git push
+            for attempt in 1 2 3; do
+              if git pull --rebase -X theirs origin main && git push; then
+                exit 0
+              fi
+              git rebase --abort 2>/dev/null || true
+              sleep 5
+            done
+            echo "Could not push" >&2
+            exit 1
           fi
       - name: Fail if a fetch failed
         if: steps.weekly.outcome == 'failure' || steps.sd.outcome == 'failure'
