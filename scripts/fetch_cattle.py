@@ -240,18 +240,26 @@ def parse_steer(text: str) -> dict:
     }
 
 
+def _money(raw: str) -> float:
+    """AMS prints a decline in parentheses, for example (1.95)."""
+    raw = raw.strip().replace(",", "")
+    if raw.startswith("(") and raw.endswith(")"):
+        return -float(raw[1:-1])
+    return float(raw)
+
+
 def parse_cutout(text: str) -> dict:
-    dated = re.search(r"Market News\s+([A-Z][a-z]+ \d{1,2}, \d{4})", text)
+    dated = re.search(r"Agricultural Marketing Service\s+([A-Z][a-z]+ \d{1,2}, \d{4})", text)
     vals = re.search(r"Current Cutout Values:\s+([\d.]+)\s+([\d.]+)", text)
-    chg = re.search(r"Change from prior day:\s+([-+\d.]+)\s+([-+\d.]+)", text)
+    chg = re.search(r"Change from prior day:\s+(\(?[-+\d.]+\)?)\s+(\(?[-+\d.]+\)?)", text)
     if not (vals and chg):
         raise ValueError("boxed beef cutout values not found")
     return {
         "as_of": dated.group(1) if dated else None,
         "choice": num(vals.group(1)),
         "select": num(vals.group(2)),
-        "choice_change": num(chg.group(1)),
-        "select_change": num(chg.group(2)),
+        "choice_change": _money(chg.group(1)),
+        "select_change": _money(chg.group(2)),
         "unit": "$/cwt",
         "source_url": "https://www.ams.usda.gov/mnreports/ams_2453.pdf",
     }

@@ -373,7 +373,7 @@ def main():
         wasde_text, wasde_url = fetch_wasde_pdf_text()
         wasde_parsed = parse_wasde(wasde_text)
         us_psd = result.get("Wheat", {}).get("United States", {}).get("2026", {}).get("pr")
-        us_wasde = wasde_parsed["wheat_us"]["oct"]["pr"]
+        us_wasde = wasde_parsed["wheat_us"]["current"]["pr"]
         if us_psd is None or abs(us_psd - us_wasde) > 100:
             raise ValueError(f"U.S. wheat production PSD {us_psd} vs WASDE {us_wasde}")
         prior_wasde = apply_to_psd(result, wasde_parsed)
@@ -470,7 +470,7 @@ def main():
     } if prior_wasde else None
  
     # The page only reads these balance-sheet fields. Drop the rest so the file stays small.
-    keep = set(PRIOR_KEYS) | {"ts", "yl"}
+    keep = set(PRIOR_KEYS) | {"ts", "yl", "ah_ac", "yl_bu"}
     for comm, countries in result.items():
         if comm.startswith("_"):
             continue

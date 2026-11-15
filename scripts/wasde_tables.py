@@ -24,20 +24,32 @@ def _kt(raw: str) -> int:
 
 
 _FIVE = r"([\d,.]+) ([\d,.]+) ([\d,.]+) ([\d,.]+) ([\d,.]+)"
+# The two projection columns are the previous month and the current month.
+# WASDE renames them each release (Sep/Oct, then Oct/Nov), so the month is not fixed.
+_MON = (
+    r"(?:Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|"
+    r"Aug(?:ust)?|Sep(?:t(?:ember)?)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)"
+)
 _WHEAT_TAIL = (
     rf"2024/25 {_FIVE} 2025/26 \(Est.\) {_FIVE} "
-    rf"2026/27 \(Proj.\) Sep {_FIVE} 2026/27 \(Proj.\) Oct {_FIVE}"
+    rf"2026/27 \(Proj.\) {_MON} {_FIVE} 2026/27 \(Proj.\) {_MON} {_FIVE}"
 )
 
 
 def _five_rows(groups):
-    """pr, ts, ex, dc, es for 2024, 2025, sep, oct."""
+    """pr, ts, ex, dc, es for 2024, 2025, the prior month, and the current month.
+
+    Keys 'sep' and 'oct' are the prior and current columns. The names stay so
+    older callers keep working after WASDE rolls the month labels.
+    """
     keys = ("pr", "ts", "ex", "dc", "es")
     labels = ("2024", "2025", "sep", "oct")
     out = {}
     for i, label in enumerate(labels):
         chunk = groups[i * 5:(i + 1) * 5]
         out[label] = {k: _kt(v) for k, v in zip(keys, chunk)}
+    out["prior"] = out["sep"]
+    out["current"] = out["oct"]
     return out
 
 
@@ -66,7 +78,7 @@ def parse_wasde(text: str) -> dict:
 
     wheat_world = _parse_wheat_block(world_block)
     wheat_us = _parse_wheat_block(us_block)
-    if not wheat_world or wheat_world["oct"]["pr"] < 700_000:
+    if not wheat_world or wheat_world["current"]["pr"] < 700_000:
         raise ValueError("WASDE world wheat production was not read")
     if not wheat_us:
         raise ValueError("WASDE U.S. wheat balance was not read")
@@ -113,16 +125,13 @@ def _parse_corn(flat: str):
         r"World 3/ ([\d,.]+) ([\d,.]+) ([\d,.]+) ([\d,.]+) ([\d,.]+) ([\d,.]+) ([\d,.]+) ",
         chunk[y_at:],
     ) if y_at >= 0 else None
+    seven = r"([\d,.]+) ([\d,.]+) ([\d,.]+) ([\d,.]+) ([\d,.]+) ([\d,.]+) ([\d,.]+)"
     cur = re.search(
-        r"World Corn Supply and Use 1/ \(Cont'd\.\).*?World 3/ Sep "
-        r"([\d,.]+) ([\d,.]+) ([\d,.]+) ([\d,.]+) ([\d,.]+) ([\d,.]+) ([\d,.]+) Oct "
-        r"([\d,.]+) ([\d,.]+) ([\d,.]+) ([\d,.]+) ([\d,.]+) ([\d,.]+) ([\d,.]+)",
+        rf"World Corn Supply and Use 1/ \(Cont'd\.\).*?World 3/ {_MON} {seven} {_MON} {seven}",
         flat,
     )
     us = re.search(
-        r"World Corn Supply and Use 1/ \(Cont'd\.\).*?United States Sep "
-        r"([\d,.]+) ([\d,.]+) ([\d,.]+) ([\d,.]+) ([\d,.]+) ([\d,.]+) ([\d,.]+) Oct "
-        r"([\d,.]+) ([\d,.]+) ([\d,.]+) ([\d,.]+) ([\d,.]+) ([\d,.]+) ([\d,.]+)",
+        rf"World Corn Supply and Use 1/ \(Cont'd\.\).*?United States {_MON} {seven} {_MON} {seven}",
         flat,
     )
     if not (hist and y2526 and cur and us):
@@ -138,16 +147,13 @@ def _parse_corn(flat: str):
 
 
 def _parse_soy(flat: str):
+    seven = r"([\d,.]+) ([\d,.]+) ([\d,.]+) ([\d,.]+) ([\d,.]+) ([\d,.]+) ([\d,.]+)"
     cur = re.search(
-        r"World Soybean Supply and Use.*?2026/27 Proj\..*?World 2/ Sep "
-        r"([\d,.]+) ([\d,.]+) ([\d,.]+) ([\d,.]+) ([\d,.]+) ([\d,.]+) ([\d,.]+) Oct "
-        r"([\d,.]+) ([\d,.]+) ([\d,.]+) ([\d,.]+) ([\d,.]+) ([\d,.]+) ([\d,.]+)",
+        rf"World Soybean Supply and Use.*?2026/27 Proj\..*?World 2/ {_MON} {seven} {_MON} {seven}",
         flat,
     )
     us = re.search(
-        r"World Soybean Supply and Use.*?2026/27 Proj\..*?United States Sep "
-        r"([\d,.]+) ([\d,.]+) ([\d,.]+) ([\d,.]+) ([\d,.]+) ([\d,.]+) ([\d,.]+) Oct "
-        r"([\d,.]+) ([\d,.]+) ([\d,.]+) ([\d,.]+) ([\d,.]+) ([\d,.]+) ([\d,.]+)",
+        rf"World Soybean Supply and Use.*?2026/27 Proj\..*?United States {_MON} {seven} {_MON} {seven}",
         flat,
     )
     y2425 = re.search(
@@ -175,16 +181,13 @@ def _six(groups):
 
 
 def _parse_soyoil(flat: str):
+    six = r"([\d,.]+) ([\d,.]+) ([\d,.]+) ([\d,.]+) ([\d,.]+) ([\d,.]+)"
     cur = re.search(
-        r"World Soybean Oil Supply and Use.*?World 2/ Sep "
-        r"([\d,.]+) ([\d,.]+) ([\d,.]+) ([\d,.]+) ([\d,.]+) ([\d,.]+) Oct "
-        r"([\d,.]+) ([\d,.]+) ([\d,.]+) ([\d,.]+) ([\d,.]+) ([\d,.]+)",
+        rf"World Soybean Oil Supply and Use.*?World 2/ {_MON} {six} {_MON} {six}",
         flat,
     )
     us = re.search(
-        r"World Soybean Oil Supply and Use.*?2026/27 Proj\..*?United States Sep "
-        r"([\d,.]+) ([\d,.]+) ([\d,.]+) ([\d,.]+) ([\d,.]+) ([\d,.]+) Oct "
-        r"([\d,.]+) ([\d,.]+) ([\d,.]+) ([\d,.]+) ([\d,.]+) ([\d,.]+)",
+        rf"World Soybean Oil Supply and Use.*?2026/27 Proj\..*?United States {_MON} {six} {_MON} {six}",
         flat,
     )
     if not (cur and us):
@@ -201,10 +204,9 @@ def _parse_soymeal(flat: str):
     """Soybean meal world table, if this edition prints one. None when it does not."""
     if "World Soybean Meal Supply and Use" not in flat and "World Soybean Meal" not in flat:
         return None
+    six = r"([\d,.]+) ([\d,.]+) ([\d,.]+) ([\d,.]+) ([\d,.]+) ([\d,.]+)"
     cur = re.search(
-        r"World Soybean Meal Supply and Use.*?World 2/ Sep "
-        r"([\d,.]+) ([\d,.]+) ([\d,.]+) ([\d,.]+) ([\d,.]+) ([\d,.]+) Oct "
-        r"([\d,.]+) ([\d,.]+) ([\d,.]+) ([\d,.]+) ([\d,.]+) ([\d,.]+)",
+        rf"World Soybean Meal Supply and Use.*?World 2/ {_MON} {six} {_MON} {six}",
         flat,
     )
     if not cur:
@@ -215,12 +217,12 @@ def _parse_soymeal(flat: str):
 def _parse_cotton(flat: str):
     m = re.search(
         r"Supply and Use for Cotton.*?World 2024/25 "
-        rf"{_FIVE} 2025/26 \(Est.\) {_FIVE} 2026/27 \(Proj.\) Sep {_FIVE} 2026/27 \(Proj.\) Oct {_FIVE}",
+        rf"{_FIVE} 2025/26 \(Est.\) {_FIVE} 2026/27 \(Proj.\) {_MON} {_FIVE} 2026/27 \(Proj.\) {_MON} {_FIVE}",
         flat,
     )
     us = re.search(
         r"Supply and Use for Cotton.*?United States 2024/25 "
-        rf"{_FIVE} 2025/26 \(Est.\) {_FIVE} 2026/27 \(Proj.\) Sep {_FIVE} 2026/27 \(Proj.\) Oct {_FIVE}",
+        rf"{_FIVE} 2025/26 \(Est.\) {_FIVE} 2026/27 \(Proj.\) {_MON} {_FIVE} 2026/27 \(Proj.\) {_MON} {_FIVE}",
         flat,
     )
     if not (m and us):
@@ -235,8 +237,8 @@ def _lbs(raw: str) -> int:
 def _parse_beef(flat: str):
     m = re.search(
         r"Beef 2025 ([\d,]+) ([\d,]+) ([\d,]+) ([\d,]+) ([\d,]+) ([\d,]+) ([\d,]+) ([\d.]+) "
-        r"2026 Proj\. Sep ([\d,]+) ([\d,]+) ([\d,]+) ([\d,]+) ([\d,]+) ([\d,]+) ([\d,]+) ([\d.]+) "
-        r"Oct ([\d,]+) ([\d,]+) ([\d,]+) ([\d,]+) ([\d,]+) ([\d,]+) ([\d,]+) ([\d.]+)",
+        rf"2026 Proj\. {_MON} ([\d,]+) ([\d,]+) ([\d,]+) ([\d,]+) ([\d,]+) ([\d,]+) ([\d,]+) ([\d.]+) "
+        rf"{_MON} ([\d,]+) ([\d,]+) ([\d,]+) ([\d,]+) ([\d,]+) ([\d,]+) ([\d,]+) ([\d.]+)",
         flat,
     )
     if not m:
@@ -251,18 +253,20 @@ def _parse_beef(flat: str):
             vals[k] = _f(raw) if k == "per_capita" else _lbs(raw)
         return vals
 
-    return {"2025": row(0), "sep": row(8), "oct": row(16)}
+    prior, current = row(8), row(16)
+    return {"2025": row(0), "sep": prior, "oct": current, "prior": prior, "current": current}
 
 
 def _parse_steer_price(flat: str):
-    """Annual 5-area steer price, Sep and Oct projections, dollars per cwt."""
+    """Annual 5-area steer price. The two columns are the prior month and this month."""
     m = re.search(
-        r"Sep Proj\. ([\d.]+) [\d.]+ [\d.]+ [\d.]+ [\d.]+ [\d.]+ Oct Proj\. ([\d.]+)",
+        rf"Annual {_MON} Proj\. ([\d.]+) [\d.]+ [\d.]+ [\d.]+ [\d.]+ [\d.]+ {_MON} Proj\. ([\d.]+)",
         flat,
     )
     if not m:
         return None
-    return {"sep": _f(m.group(1)), "oct": _f(m.group(2)), "unit": "$/cwt",
+    prior, current = _f(m.group(1)), _f(m.group(2))
+    return {"sep": prior, "oct": current, "prior": prior, "current": current, "unit": "$/cwt",
             "note": "WASDE annual 5-area direct steer price, total all grades"}
 
 
@@ -275,8 +279,14 @@ def attach_official_us_units(result: dict, prior: dict, text: str) -> None:
         flat,
     )
     corn = re.search(
-        r"CORN September October Million Acres Area Planted [\d.]+ [\d.]+ [\d.]+ [\d.]+ "
-        r"Area Harvested ([\d.]+) ([\d.]+) ([\d.]+) ([\d.]+) Bushels "
+        rf"CORN {_MON} {_MON} (?:Filler )*Million Acres Area Planted [\d.]+ [\d.]+ [\d.]+ [\d.]+ "
+        r"Area Harvested ([\d.]+) ([\d.]+) ([\d.]+) ([\d.]+) (?:Filler )*Bushels "
+        r"Yield per Harvested Acre ([\d.]+) ([\d.]+) ([\d.]+) ([\d.]+)",
+        flat,
+    )
+    soy = re.search(
+        rf"SOYBEANS {_MON} {_MON} (?:Filler )*Million Acres Area Planted [\d.]+ [\d.]+ [\d.]+ [\d.]+ "
+        r"Area Harvested ([\d.]+) ([\d.]+) ([\d.]+) ([\d.]+) (?:Filler )*Bushels "
         r"Yield per Harvested Acre ([\d.]+) ([\d.]+) ([\d.]+) ([\d.]+)",
         flat,
     )
@@ -298,6 +308,9 @@ def attach_official_us_units(result: dict, prior: dict, text: str) -> None:
     if corn:
         g = [float(x) for x in corn.groups()]
         write("Corn", g[:4], g[4:])
+    if soy:
+        g = [float(x) for x in soy.groups()]
+        write("Soybeans", g[:4], g[4:])
 
 
 def apply_to_psd(result: dict, parsed: dict) -> dict:

@@ -76,8 +76,8 @@ function cropDelta(group){
   const harvested = rows.find(r => r.metric==='harvested' && r.current>5 && r.current<99);
   const cond = rows.find(r => r.metric==='condition_ge');
   const planted = rows.find(r => r.metric==='planted' && r.current>1 && r.current<99);
-  const row = harvested || cond || planted || null;
-  if(!row || row.current==null || row.avg5==null) return null;
+  const row = [harvested, cond, planted].find(r => r && r.current!=null && r.avg5!=null) || null;
+  if(!row) return null;
   const label = row.metric==='condition_ge' ? 'cond' : row.metric.slice(0,4);
   return {text: label+' '+(row.current-row.avg5>=0?'+':'')+(Math.round((row.current-row.avg5)*10)/10), v: row.current-row.avg5};
 }
@@ -178,9 +178,11 @@ function cattleRow(name, latest, cmp, dirV){
 }
 function cattleStale(){
   const of = CATTLE && CATTLE.on_feed && CATTLE.on_feed[CATTLE.on_feed.length-1];
-  if(!of || !of.as_of) return null;
-  const age = (Date.now() - new Date(of.as_of+'T00:00:00Z'))/86400000;
-  return age > 45;
+  if(!of) return null;
+  const stamp = of.released ? Date.parse(of.released) : (of.as_of ? Date.parse(of.as_of+'T00:00:00Z') : NaN);
+  if(!isFinite(stamp)) return null;
+  // The report is monthly. Forty days from the release is past the next one.
+  return (Date.now()-stamp)/86400000 > 40;
 }
 function energyStatus(){
   const gen = ENERGY && ENERGY.generated_at;

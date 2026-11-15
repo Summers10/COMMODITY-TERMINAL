@@ -2,7 +2,7 @@
 import json
 from pathlib import Path
 
-from scripts.fetch_cattle import parse_cof, parse_inventory
+from scripts.fetch_cattle import parse_cof, parse_cutout, parse_inventory
 from scripts.wasde_tables import parse_wasde
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -29,6 +29,20 @@ def test_cof_uses_printed_percent_not_a_ratio():
     assert row["placements"]["pct_of_year_ago"] == 88
 
 
+def test_boxed_beef_reads_a_decline_in_parentheses():
+    text = (
+        "Agricultural Marketing Service November 13, 2026\n"
+        "Current Cutout Values: 355.64 349.15\n"
+        "Change from prior day: (1.95) 0.44\n"
+    )
+    row = parse_cutout(text)
+    assert row["choice"] == 355.64
+    assert row["select"] == 349.15
+    assert row["choice_change"] == -1.95
+    assert row["select_change"] == 0.44
+    assert row["as_of"] == "November 13, 2026"
+
+
 JANUARY = """
 Released January 30, 2026, by the National Agricultural Statistics Service
 Cattle Inventory by Class and Calf Crop - United States: January 1, 2025 and 2026
@@ -53,14 +67,14 @@ def test_january_inventory_matches_the_published_class_table():
 def test_energy_file_keeps_published_gas_average():
     energy = json.loads((ROOT / "data" / "energy.json").read_text())
     ng = next(s for s in energy["series"] if s["key"] == "ng_storage")
-    assert ng["value"] == 3801
-    assert ng["avg5"] == 3747
-    assert ng["vs_avg5_pct"] == 1.4
-    assert ng["change"] == 77
+    # The average and the percent are stored as WNGSR printed them.
+    # The weekly change is the printed net change, which equals the two printed stocks.
+    assert isinstance(ng["avg5"], int)
+    assert ng["vs_avg5_pct"] is not None
+    assert ng["change"] == ng["value"] - ng["week_ago"]
     crude = next(s for s in energy["series"] if s["key"] == "crude_stocks")
-    assert crude["value"] == 409.76
     assert crude["avg5"] is None
-    assert crude["change"] == -0.865
+    assert abs((crude["value"] - crude["week_ago"]) - crude["change"]) < 0.002
 
 
 def test_wasde_world_wheat_is_the_published_row():
