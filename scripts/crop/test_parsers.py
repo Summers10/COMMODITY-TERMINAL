@@ -283,7 +283,7 @@ def test_ui_marks_interpolated_values():
     text += (root / "index.html").read_text(encoding="utf-8")
     for phrase in (
         "Hide †‡",
-        "not available",
+        'title="Not available"',
         "avg5_observed",
         "interpolated",
         "estimated",

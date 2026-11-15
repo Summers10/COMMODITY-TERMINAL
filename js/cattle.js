@@ -13,7 +13,7 @@ function renderCattle(){
   const hist = C.on_feed || [];
   const latest = hist[hist.length-1];
   if(!latest){
-    html += `<p class="legend-line">not available</p></div>`;
+    html += `<p class="legend-line">${na()}</p></div>`;
   } else {
     const items = [
       ['On feed', latest.on_feed],
@@ -37,7 +37,7 @@ function renderCattle(){
 }
 function inventoryBlock(rows){
   let html = `<div class="panel"><div class="panel-hdr"><span class="panel-title">Cattle inventory</span><span class="panel-sub">January and July</span></div>`;
-  if(!rows || !rows.length){ return html+`<p class="legend-line">not available</p></div>`; }
+  if(!rows || !rows.length){ return html+`<p class="legend-line">${na()}</p></div>`; }
   rows.slice().reverse().forEach(rep=>{
     html += `<table class="term-table bal-table">${fitColgroup([2,1.2,1,0.8])}<thead><tr><th>${rep.as_of}</th><th>000 head</th><th>Year ago</th><th>%</th></tr></thead><tbody>`;
     [['All cattle','all_cattle'],['Beef cows','beef_cows'],['Heifers retained','heifers_retained'],['Calf crop','calf_crop']].forEach(([label,k])=>{
@@ -51,7 +51,7 @@ function inventoryBlock(rows){
 }
 function slaughterBlock(s){
   let html = `<div class="panel"><div class="panel-hdr"><span class="panel-title">Federally inspected slaughter</span></div>`;
-  if(!s) return html+`<p class="legend-line">not available</p></div>`;
+  if(!s) return html+`<p class="legend-line">${na()}</p></div>`;
   html += `<table class="term-table bal-table">${fitColgroup([2,1,1,1])}<thead><tr><th>${s.week_end||''}</th><th>Head</th><th>Year ago</th><th>5-yr avg</th></tr></thead><tbody>`;
   html += `<tr><td>Cattle</td><td class="latest">${s.cattle_head.toLocaleString()}</td><td>${s.year_ago_head==null?na():s.year_ago_head}</td><td>${s.avg5_head==null?na():s.avg5_head}</td></tr>`;
   const d = s.dressed_lbs||{};
@@ -68,18 +68,18 @@ function priceBlock(C){
   if(s && s.live_fob_steer){
     const a=s.live_fob_steer, b=s.live_fob_steer_week_ago, y=s.live_fob_steer_year_ago;
     html += `<tr><td>5-area live FOB steer</td><td class="latest">${a.price.toFixed(2)}</td><td class="${dir(a.price-(b&&b.price))}">${b?b.price.toFixed(2):na()}</td><td class="${dir(a.price-(y&&y.price))}">${y?y.price.toFixed(2):na()}</td></tr>`;
-  } else html += `<tr><td>5-area live FOB steer</td><td colspan="3">not available</td></tr>`;
-  html += `<tr><td>Feeder cattle index</td><td colspan="3">not available</td></tr>`;
+  } else html += `<tr><td>5-area live FOB steer</td><td colspan="3">${na()}</td></tr>`;
+  html += `<tr><td>Feeder cattle index</td><td colspan="3">${na()}</td></tr>`;
   if(c){
     html += `<tr><td>Choice cutout</td><td class="latest">${c.choice.toFixed(2)}</td><td class="${dir(c.choice_change)}">${signed(c.choice_change,2)} d/d</td><td>${na()}</td></tr>`;
     html += `<tr><td>Select cutout</td><td class="latest">${c.select.toFixed(2)}</td><td class="${dir(c.select_change)}">${signed(c.select_change,2)} d/d</td><td>${na()}</td></tr>`;
-  } else html += `<tr><td>Boxed beef</td><td colspan="3">not available</td></tr>`;
+  } else html += `<tr><td>Boxed beef</td><td colspan="3">${na()}</td></tr>`;
   html += `</tbody></table></div>`;
   return html;
 }
 function wasdeBeefBlock(w){
   let html = `<div class="panel"><div class="panel-hdr"><span class="panel-title">WASDE beef</span><span class="panel-sub">million pounds</span></div>`;
-  if(!w || !w.beef_current) return html+`<p class="legend-line">not available</p></div>`;
+  if(!w || !w.beef_current) return html+`<p class="legend-line">${na()}</p></div>`;
   const cur = w.beef_current, pri = w.beef_prior || {};
   html += `<table class="term-table bal-table">${fitColgroup([1.6,1,1,1])}<thead><tr><th>2026</th><th>Current</th><th>Prior month</th><th>MoM</th></tr></thead><tbody>`;
   [['Production','pr'],['Imports','im'],['Exports','ex'],['Total supply','ts'],['Ending stocks','es'],['Total use','dc']].forEach(([label,k])=>{

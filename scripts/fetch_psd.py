@@ -233,7 +233,7 @@ def get_prior_snapshot(result, current_release, schedule):
     return None
  
  
-def parse_csv_zip(zipdata, result, world_by_country, unmapped_attrs):
+def parse_csv_zip(zipdata, result, world_by_country, unmapped_attrs, official_world):
     count = 0
     unseen = set()
     zf = zipfile.ZipFile(io.BytesIO(zipdata))
@@ -281,9 +281,13 @@ def parse_csv_zip(zipdata, result, world_by_country, unmapped_attrs):
  
                 val = round(v, 2) if short == "yl" else int(round(v))
  
-                if short in SUM_ATTRS and country != "World":
+                if country == "World":
+                    # PSD's own world aggregate, when the bulk file prints one.
+                    official_world.setdefault(comm_name, {}).setdefault(year, {})[short] = val
+                elif short in SUM_ATTRS:
+                    # Every PSD country, not only the ones kept for the country tables.
                     world_by_country.setdefault(comm_name, {}).setdefault(year, {}).setdefault(short, {})[country] = val
- 
+
                 if country in COUNTRIES:
                     result.setdefault(comm_name, {}).setdefault(country, {}).setdefault(year, {})
                     result[comm_name][country][year][short] = val
@@ -297,6 +301,31 @@ def parse_csv_zip(zipdata, result, world_by_country, unmapped_attrs):
     return count
  
  
+def build_world(result, world_by_country, official_world):
+    """One World row per commodity and marketing year.
+
+    Prefer the World aggregate PSD itself publishes. Otherwise sum every country
+    in the bulk file. Yield is not summed: a sum of yields is not a yield.
+    """
+    for comm in set(world_by_country) | set(official_world):
+        years = set(world_by_country.get(comm, {})) | set(official_world.get(comm, {}))
+        world = {}
+        for year in years:
+            official = official_world.get(comm, {}).get(year)
+            if official:
+                world[year] = dict(official)
+                continue
+            summed = {}
+            for attr, countries in world_by_country.get(comm, {}).get(year, {}).items():
+                if attr == "yl":
+                    continue
+                summed[attr] = sum(countries.values())
+            if summed:
+                world[year] = summed
+        if world:
+            result.setdefault(comm, {})["World"] = world
+
+
 def fetch_wasde_pdf_text():
     """Latest WASDE PDF from the ESMIS publication page. Returns (text, url)."""
     import io
@@ -338,6 +367,7 @@ def main():
  
     result = {}
     world_by_country = {}
+    official_world = {}
     unmapped_attrs = {}
     downloaded = []
  
@@ -346,7 +376,7 @@ def main():
             print(f"  {filename}...", end=" ", flush=True)
             data = download_zip(filename)
             print(f"OK ({len(data):,} bytes)")
-            count = parse_csv_zip(data, result, world_by_country, unmapped_attrs)
+            count = parse_csv_zip(data, result, world_by_country, unmapped_attrs, official_world)
             if count > 0:
                 downloaded.append(filename)
             if filename == "psd_alldata_csv.zip" and count > 0:
@@ -365,8 +395,16 @@ def main():
         print("\nERROR: No data fetched from any source.", file=sys.stderr)
         sys.exit(1)
  
-    # The PSD bulk file has country rows only. World figures come from the WASDE
-    # published world tables (never a sum of PSD countries).
+    # World history is the PSD world aggregate when the file has one, otherwise the
+    # sum of every PSD country (deduped). WASDE is applied afterwards as a check.
+    print("\nBuilding World rows from PSD...")
+    build_world(result, world_by_country, official_world)
+    for comm in ("Wheat", "Corn", "Soybeans", "Rapeseed/Canola"):
+        w = result.get(comm, {}).get("World", {})
+        latest = max(w) if w else None
+        pr = (w.get(latest) or {}).get("pr") if latest else None
+        print(f"  {comm} {latest}: production {pr:,} " if pr else f"  {comm}: no World production")
+
     print("\nReading the latest WASDE world and U.S. tables...")
     try:
         from wasde_tables import apply_to_psd, parse_wasde
@@ -457,7 +495,7 @@ def main():
     wasde_meta, schedule, release = get_wasde_meta(datetime.now(timezone.utc))
     meta.update(wasde_meta)
     meta["wasde_number"] = wasde_parsed.get("wasde_number")
-    meta["world_note"] = "World rows are the WASDE published world table, not a sum of PSD countries."
+    meta["world_note"] = "World rows are the PSD world aggregate, or the sum of every PSD country when PSD does not print one. The current marketing year uses the WASDE figure when the two disagree by more than rounding."
     # Prior month is the WASDE Sep column of this edition (the previous month's estimate).
     prior_release = None
     if release is not None:

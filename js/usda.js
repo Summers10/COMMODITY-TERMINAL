@@ -64,7 +64,7 @@ function paint(v, dec){
 }
 function balanceTable(comm, country, world){
   const years = showYears(comm);
-  if(!years.length) return `<p class="legend-line">not available</p>`;
+  if(!years.length) return `<p class="legend-line">${na()}</p>`;
   const latest = years[years.length-1];
   const rows = balanceRows(comm);
   const colW = [2.4, ...years.map(()=>1), 1.15, 0.85];
@@ -174,12 +174,12 @@ function renderCgc(){
   const lines = [
     'Canadian Grain Commission Grain Statistics Weekly, Summary tab, canola only.',
     'Week, crop-year and year-ago cells are the published Summary figures. Crush is the Process sheet.',
-    h ? `Week ${CGC.latest_week} ending ${CGC.latest_date}.` : 'Release: not available',
+    h ? `Week ${CGC.latest_week} ending ${CGC.latest_date}.` : 'Release: —',
     'Last fetch: '+fmtStamp(CGC && CGC.updated)
   ];
   let inner;
   if(!h){
-    inner = `<p class="legend-line">not available</p>`;
+    inner = `<p class="legend-line">${na()}</p>`;
   } else {
     const rows = [
       ['Producer deliveries', h.del_wk, h.del_cy, h.del_ya],
@@ -210,46 +210,6 @@ function renderCgc(){
     inner += `</tbody></table>`;
   }
   return `<div class="panel"><div class="panel-hdr"><span class="panel-title">CGC canola</span>${provMark(lines, null)}</div>${inner}</div>`;
-}
-
-function render(){
-  const root = document.getElementById('root');
-  if(!root) return;
-  updateUsdaMeta();
-  const comm = currentComm;
-  const unitToggleEl = document.getElementById('unit-toggle');
-  const convLabel = document.getElementById('conv-label');
-  if(unitToggleEl) unitToggleEl.style.display = (usdaSource==='cgc' || NO_BUSHEL_COMMS.has(comm)) ? 'none' : '';
-  if(convLabel){
-    if(usdaSource==='cgc') convLabel.textContent = 'CGC Grain Statistics Weekly, thousand tonnes';
-    else if(comm==='Cotton') convLabel.textContent = '1000 bales (480 lb)';
-    else if(NO_BUSHEL_COMMS.has(comm)) convLabel.textContent = '1000 MT';
-    else convLabel.textContent = currentUnit==='bu' ? 'Million bushels' : '1000 MT';
-  }
-  if(comm==='Rapeseed/Canola' && usdaSource==='cgc'){
-    root.innerHTML = renderCgc();
-    return;
-  }
-  const oils = comm==='Vegoils';
-  const meals = comm==='Meal';
-  const base = oils ? 'Soybean Oil' : meals ? 'Soybean Meal' : comm;
-  if(!DATA || !DATA[base]){
-    root.innerHTML = `<div id="err">not available</div>`;
-    return;
-  }
-  let html = '';
-  const places = oils || meals
-    ? [['World', true], ['United States', false], ['Argentina', false], ['Brazil', false]]
-    : [['United States', false], ['World', true]];
-  places.forEach(([country, world])=>{
-    html += sheet(country==='World'?'World':country, '', balanceTable(base, country, world));
-  });
-  if(!(oils||meals)){
-    html += sheet('Exporters', 'Listed origins are a sum of these rows, not the World total', exporterTable(base));
-    const imp = importRow(base);
-    if(imp) html += sheet('Imports', '', imp);
-  }
-  root.innerHTML = html;
 }
 
 function ensureSourceToggle(){

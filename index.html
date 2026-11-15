@@ -17,13 +17,13 @@ body{
 }
 body.dark{
   --bg:#000;--bg1:#060606;--bg2:#0a0a0a;--border:#141414;--border2:#1e1e1e;
-  --text:#d4b896;--text2:#8a7a68;--text3:#6a5a4a;
+  --text:#d4b896;--text2:#8a7a68;--text3:#6a5a4a;--na:#8d8478;
   --amber:#f5a623;--green:#2e8f52;--red:#b83838;
   --th-bg:#040404;--section-bg:#050505;--row-alt:#030303;--row-latest:#0c0800;--grp-line:#4a4034;--ref-color:#8496bd;--ref-bg:rgba(132,150,189,.07);
 }
 body.light{
   --bg:#FFFFFF;--bg1:#F7F8FA;--bg2:#F0F1F4;--border:#E0E2E8;--border2:#C8CCD4;
-  --text:#1A1D24;--text2:#3A3F4A;--text3:#6B7280;
+  --text:#1A1D24;--text2:#3A3F4A;--text3:#6B7280;--na:#8b909a;
   --amber:#B8720A;--green:#0E7A3A;--red:#C4302B;
   --th-bg:#F2F3F6;--section-bg:#ECEDF0;--row-alt:#F7F8FA;--row-latest:#FFF3DC;--grp-line:#9AA1AD;--ref-color:#5b6f94;--ref-bg:rgba(91,111,148,.07);
 }
@@ -195,7 +195,17 @@ document.querySelectorAll('.page-tab').forEach(function(btn){
 const COMMS = ["Wheat","Corn","Soybeans","Rapeseed/Canola","Oats","Cotton","Coffee","Sugar","Vegoils","Meal"];
 const BU_PER_MT = {Wheat:36.7437, Corn:39.3680, Soybeans:36.7437, "Rapeseed/Canola":44.0924, Oats:68.8955};
 const ACRES_PER_HA = 2.47105;
-const HIST_YEARS = 7;
+const HIST_YEARS = 10;
+const LEAD_SHEETS = {
+  Wheat: ["World","United States","Canada"],
+  Corn: ["World","United States"],
+  Soybeans: ["World","United States","Brazil"],
+  "Rapeseed/Canola": ["World","Canada"],
+  Oats: ["Canada","United States"],
+  Cotton: ["World","United States"],
+  Coffee: ["World","Brazil"],
+  Sugar: ["World","Brazil","India"]
+};
 
 const EXPORTERS = {
   Wheat: ["United States","European Union","Russia","Canada","Australia","Ukraine","Argentina"],
@@ -223,15 +233,18 @@ let currentComm = "Wheat";
 let currentUnit = "mt";
 let currentTheme = "light";
 
+function na(){
+  return '<span class="na" title="Not available" aria-label="Not available">—</span>';
+}
 function fmt(v){
-  if(v===null || v===undefined || isNaN(v)) return '—';
+  if(v===null || v===undefined || isNaN(v)) return na();
   return Math.round(v).toLocaleString();
 }
 function fmt2(v){
-  if(v===null || v===undefined || isNaN(v)) return '—';
+  if(v===null || v===undefined || isNaN(v)) return na();
   return v.toFixed(1);
 }
-function fmtStu(v){ return v===null ? 'not available' : v.toFixed(1)+'%'; }
+function fmtStu(v){ return v===null ? na() : v.toFixed(1)+'%'; }
 function fitColgroup(weights){
   const t = weights.reduce((a,b)=>a+b,0);
   return `<colgroup>${weights.map(w=>`<col style="width:${(w/t*100).toFixed(3)}%">`).join('')}</colgroup>`;
@@ -248,7 +261,7 @@ function ordinal(n){
   }
 }
 function fmtYoy(v){
-  if(v===null) return '—';
+  if(v===null) return na();
   const s = v>=0?'+':'';
   return s+v.toFixed(1)+'%';
 }
@@ -278,7 +291,7 @@ function priorHeader(){
 }
 // signed change, e.g. +1,250 / -80 / 0 (0 decimals unless told otherwise)
 function fmtChg(v, d){
-  if(v===null || v===undefined || isNaN(v)) return '—';
+  if(v===null || v===undefined || isNaN(v)) return na();
   const dec = d || 0;
   const r = Number(v.toFixed(dec));
   if(r === 0) return '0';
@@ -295,9 +308,13 @@ function getRaw(yearData, key){
   return (v!==undefined && !isNaN(v)) ? v : null;
 }
 function getTotalRaw(yearData, keys){
-  let sum=0, any=false;
-  for(const k of keys){ const v=getRaw(yearData,k); if(v!==null){sum+=v;any=true;} }
-  return any?sum:null;
+  let sum=0;
+  for(const k of keys){
+    const v=getRaw(yearData,k);
+    if(v===null) return null;
+    sum+=v;
+  }
+  return sum;
 }
 // World stocks-to-use is ending stocks / domestic use. Trade is not extra use once every
 // origin is added together. A country, or a group of countries, uses ending stocks /
@@ -313,7 +330,7 @@ function getStu(yearData, world){
   }
   return denom>0 ? (end/denom)*100 : null;
 }
-const STU_DEF = 'World stocks-to-use is ending stocks / domestic use. Country and group rows are ending stocks / (domestic use + exports). A missing input shows as not available.';
+const STU_DEF = 'World stocks-to-use is ending stocks / domestic use. Country and group rows are ending stocks / (domestic use + exports). A missing input shows as an em dash.';
 // Commodities with no bushel weight — no MT/BU toggle makes sense for these; Cotton also
 // stays in its native bales unit, while Cocoa/Coffee/Sugar stay in MT (just no bushel toggle).
 const NO_BUSHEL_COMMS = new Set(['Cotton', 'Cocoa', 'Coffee', 'Sugar']);
@@ -411,9 +428,9 @@ function buildBalanceTable(comm, yearDataFn, years, includeYoy, allYearsFull, wo
     {type:'row', key:'im', label:'Imports'},
     {type:'total', keys:['bs','pr','im'], label:'Total supply'},
     {type:'section', label:'Use'},
-    {type:'row', key:'dc', label: isCotton ? 'Mill use' : 'Dom. consumption'},
+    {type:'row', key:'dc', label: isCotton ? 'Mill use' : 'Domestic use'},
     {type:'row', key:'ex', label:'Exports'},
-    {type:'total', keys:['dc','ex'], label:'Total demand'},
+    {type:'total', keys:['dc','ex'], label:'Total use'},
     {type:'section', label:'Balance'},
     {type:'row', key:'es', label:'Ending stocks', cls:'row-ending'},
     {type:'stu', label: worldStu ? 'Stocks / use % — ending / domestic use' : 'Stocks / use % — ending / (domestic use + exports)', cls:'row-stu'},
@@ -422,14 +439,24 @@ function buildBalanceTable(comm, yearDataFn, years, includeYoy, allYearsFull, wo
 
   // value of a row for one year-record (works for the current numbers and for the prior-WASDE `_p` record alike)
   function valFromYd(row, yd){
-    if(row.area) return acresK(getRaw(yd,'ah'));
+    if(row.area){
+      if(yd && yd.ah_ac!=null) return yd.ah_ac;
+      return acresK(getRaw(yd,'ah'));
+    }
     if(row.yield){
+      if(yd && yd.yl_bu!=null && !isCotton && !usesLbAcYield && comm!=='Coffee') return yd.yl_bu;
       if(isCotton) return yieldLbAcCotton(getRaw(yd,'pr'), getRaw(yd,'ah'));
       if(comm==='Coffee') return yieldLbAcCoffee(getRaw(yd,'pr'), getRaw(yd,'ah'));
       if(usesLbAcYield) return yieldLbAc(getRaw(yd,'pr'), getRaw(yd,'ah'));
       return yieldBuAc(getRaw(yd,'pr'), getRaw(yd,'ah'), comm);
     }
-    if(row.type==='total') return convertVal(getTotalRaw(yd, row.keys), currentUnit, comm);
+    if(row.type==='total'){
+      if(row.keys.join()==='bs,pr,im'){
+        const published = getRaw(yd, 'ts');
+        if(published!==null) return convertVal(published, currentUnit, comm);
+      }
+      return convertVal(getTotalRaw(yd, row.keys), currentUnit, comm);
+    }
     if(row.type==='stu') return getStu(yd, worldStu);
     return convertVal(getRaw(yd, row.key), currentUnit, comm);
   }
@@ -441,7 +468,7 @@ function buildBalanceTable(comm, yearDataFn, years, includeYoy, allYearsFull, wo
   const priorYd = latestYd && latestYd._p ? latestYd._p : null;
   // prior-WASDE cells for one row; a total is only compared when every component exists in BOTH vintages
   function priorCells(row){
-    const blank = '<td class="grp-l prior">—</td><td class="prior">—</td>';
+    const blank = `<td class="grp-l prior">${na()}</td><td class="prior">${na()}</td>`;
     if(row.type==='stu_pctile' || !priorYd) return blank;
     if(row.type==='total' && !row.keys.every(k=>getRaw(priorYd,k)!==null && getRaw(latestYd,k)!==null)) return blank;
     const pv = valFromYd(row, priorYd), cv = valFromYd(row, latestYd);
@@ -449,7 +476,7 @@ function buildBalanceTable(comm, yearDataFn, years, includeYoy, allYearsFull, wo
     const d = (row.type==='stu' || row.yield) ? 1 : 0;
     const chg = cv!==null ? cv - pv : null;
     const pText = row.type==='stu' ? fmtStu(pv) : (row.yield ? fmt2(pv) : fmt(pv));
-    const cText = chg===null ? '—' : fmtChg(chg, d) + (row.type==='stu' && chg!==null && Number(chg.toFixed(1))!==0 ? 'pp' : '');
+    const cText = chg===null ? na() : fmtChg(chg, d) + (row.type==='stu' && chg!==null && Number(chg.toFixed(1))!==0 ? 'pp' : '');
     return `<td class="grp-l prior">${pText}</td><td class="${chgClass(chg, d)}">${cText}</td>`;
   }
 
@@ -480,19 +507,19 @@ function buildBalanceTable(comm, yearDataFn, years, includeYoy, allYearsFull, wo
       if(row.type==='stu_pctile' && v!==null){
         tdCls += v<=25 ? ' pctile-tight' : (v>=75 ? ' pctile-loose' : ' pctile-mid');
       }
-      const text = row.type==='stu' ? fmtStu(v) : (row.type==='stu_pctile' ? (v===null?'—':ordinal(v)) : (row.yield ? fmt2(v) : fmt(v)));
+      const text = row.type==='stu' ? fmtStu(v) : (row.type==='stu_pctile' ? (v===null?na():ordinal(v)) : (row.yield ? fmt2(v) : fmt(v)));
       html += `<td class="${tdCls.trim()}">${text}</td>`;
     }
     if(includeYoy){
       if(row.type==='stu_pctile'){
-        html += `<td class="latest">—</td>`;
+        html += `<td class="latest">${na()}</td>`;
       } else {
         const cur = displayVal(row, latestYear);
         const prev = prevYear ? displayVal(row, prevYear) : null;
         const yoy = row.type==='stu' ? (cur!==null&&prev!==null?cur-prev:null) : yoyPct(cur,prev);
         let cls = 'latest';
         if(yoy!==null){ cls += yoy>0?' up':(yoy<0?' dn':''); }
-        const text = row.type==='stu' ? (yoy===null?'—':(yoy>=0?'+':'')+yoy.toFixed(1)+'pp') : fmtYoy(yoy);
+        const text = row.type==='stu' ? (yoy===null?na():(yoy>=0?'+':'')+yoy.toFixed(1)+'pp') : fmtYoy(yoy);
         html += `<td class="${cls}">${text}</td>`;
       }
       html += priorCells(row);
@@ -644,41 +671,43 @@ function render(){
   if(!years10.length){ root.innerHTML = '<div id="err">No years of data available</div>'; return; }
 
   const expList = (EXPORTERS[comm]||[]).filter(c=>countries[c]);
-  const impList = (IMPORTERS[comm]||[]).filter(c=>countries[c]);
-
-  // Oats: simplified view — just the two country balance sheets, nothing else.
-  if(comm === 'Oats'){
-    root.insertAdjacentHTML('beforeend', `<div class="sec-hdr">Oats — Canada / United States Balance Sheets</div>`);
-    const stackOats = document.createElement('div');
-    stackOats.className = 'stack-wrap';
-    ['Canada','United States'].filter(c=>countries[c]).forEach(c=>{
-      stackOats.insertAdjacentHTML('beforeend', panelWrap(c.toUpperCase(), unitLabel(),
-        buildBalanceTable(comm, y=>(countries[c]||{})[y], years10, true, yearsAll, false)));
-    });
-    root.appendChild(stackOats);
-    return;
+  if(unitToggleEl && comm==='Rapeseed/Canola' && typeof usdaSource!=='undefined' && usdaSource==='cgc'){
+    unitToggleEl.style.display = 'none';
   }
 
-  root.insertAdjacentHTML('beforeend', `<div class="sec-hdr">World Balance Sheet — ${comm}</div>`);
-  root.insertAdjacentHTML('beforeend', panelWrap('WORLD', unitLabel(),
-    buildBalanceTable(comm, y=>(countries['World']||{})[y], years10, true, yearsAll, true)));
+  const leads = (LEAD_SHEETS[comm] || ["World"]).filter(c => c==="World" || countries[c]);
+  root.insertAdjacentHTML('beforeend', `<div class="sec-hdr">${comm==='Rapeseed/Canola'?'Canola':comm} — Balance Sheets</div>`);
+  const leadStack = document.createElement('div');
+  leadStack.className = 'stack-wrap';
+  leads.forEach(c=>{
+    if(comm==='Rapeseed/Canola' && c==='Canada' && typeof usdaSource!=='undefined' && usdaSource==='cgc' && typeof renderCgc==='function'){
+      leadStack.insertAdjacentHTML('beforeend', renderCgc());
+      return;
+    }
+    const world = c==='World';
+    leadStack.insertAdjacentHTML('beforeend', panelWrap(world ? 'WORLD' : panelTitleWithHarvest(comm, c), unitLabel(),
+      buildBalanceTable(comm, y=>((countries[c]||{})[y]), years10, true, yearsAll, world)));
+  });
+  root.appendChild(leadStack);
+
+  // Oats is the two country sheets only, matching GRAIN.
+  if(comm === 'Oats') return;
 
   root.insertAdjacentHTML('beforeend', `<div class="sec-hdr">Major Exporters — Aggregate Balance Sheet</div>`);
   root.insertAdjacentHTML('beforeend', panelWrap('MAJOR EXPORTERS', expList.join(', '),
     buildBalanceTable(comm, y=>sumCountries(countries, expList, y), years10, true, yearsAll, false)));
 
-  root.insertAdjacentHTML('beforeend', `<div class="sec-hdr">Major Importers — Aggregate Balance Sheet</div>`);
-  root.insertAdjacentHTML('beforeend', panelWrap('MAJOR IMPORTERS', impList.join(', '),
-    buildBalanceTable(comm, y=>sumCountries(countries, impList, y), years10, true, yearsAll, false)));
-
-  root.insertAdjacentHTML('beforeend', `<div class="sec-hdr">Major Exporters — Individual Balance Sheets</div>`);
-  const stack = document.createElement('div');
-  stack.className = 'stack-wrap';
-  expList.forEach(c=>{
-    stack.insertAdjacentHTML('beforeend', panelWrap(panelTitleWithHarvest(comm, c), unitLabel(),
-      buildBalanceTable(comm, y=>(countries[c]||{})[y], years10, true, yearsAll, false)));
-  });
-  root.appendChild(stack);
+  const individuals = expList.filter(c => !leads.includes(c));
+  if(individuals.length){
+    root.insertAdjacentHTML('beforeend', `<div class="sec-hdr">Major Exporters — Individual Balance Sheets</div>`);
+    const stack = document.createElement('div');
+    stack.className = 'stack-wrap';
+    individuals.forEach(c=>{
+      stack.insertAdjacentHTML('beforeend', panelWrap(panelTitleWithHarvest(comm, c), unitLabel(),
+        buildBalanceTable(comm, y=>(countries[c]||{})[y], years10, true, yearsAll, false)));
+    });
+    root.appendChild(stack);
+  }
 
   // Exporters: Acres / Production / Exports, each as its own 10-year country x year table
   root.insertAdjacentHTML('beforeend', `<div class="sec-hdr">Major Exporters — 10-Year Country Breakout</div>`);
@@ -689,14 +718,6 @@ function render(){
   root.insertAdjacentHTML('beforeend', panelWrap('EXPORTS', 'Exporters — ' + unitLabel(),
     buildMetricByCountryTable(expList, countries, years10, 'ex')));
 
-  // Importers: Production / Imports / Ending Stocks, same layout
-  root.insertAdjacentHTML('beforeend', `<div class="sec-hdr">Major Importers — 10-Year Country Breakout</div>`);
-  root.insertAdjacentHTML('beforeend', panelWrap('PRODUCTION', 'Importers — ' + unitLabel(),
-    buildMetricByCountryTable(impList, countries, years10, 'pr')));
-  root.insertAdjacentHTML('beforeend', panelWrap('IMPORTS', 'Importers — ' + unitLabel(),
-    buildMetricByCountryTable(impList, countries, years10, 'im')));
-  root.insertAdjacentHTML('beforeend', panelWrap('ENDING STOCKS', 'Importers — ' + unitLabel(),
-    buildMetricByCountryTable(impList, countries, years10, 'es')));
 }
 
 function initToggles(){
@@ -776,12 +797,12 @@ function ageDays(d){
   return Math.floor((t - d.getTime()) / 86400000);
 }
 function fmtCaDate(d){
-  if(!d) return 'not available';
+  if(!d) return '—';
   return d.getUTCDate()+' '+CA_MONTHS[d.getUTCMonth()]+' '+d.getUTCFullYear();
 }
 function fmtStamp(s){
   const d = parseStamp(s);
-  if(!d) return 'not available';
+  if(!d) return '—';
   const hh = String(d.getUTCHours()).padStart(2,'0');
   const mm = String(d.getUTCMinutes()).padStart(2,'0');
   return fmtCaDate(d)+', '+hh+':'+mm+' UTC';
@@ -804,13 +825,13 @@ function usdaStatus(comm){
       : (days > STALE_WASDE_FETCH_DAYS || (release ? ageDays(release) > STALE_WASDE_RELEASE_DAYS : false));
   }
   const parts = [
-    semi ? 'Source release: not available' : ('Source release: '+(release ? fmtCaDate(release)+' WASDE' : 'not available')),
+    semi ? 'Source release: —' : ('Source release: '+(release ? fmtCaDate(release)+' WASDE' : '—')),
     'Last fetch: '+fmtStamp(fetched)
   ];
   return {parts, stale};
 }
 function usdaProv(){
-  if(!DATA || !DATA._meta) return provMark(['Source: USDA PSD','Release: not available','Last fetch: not available', STU_DEF], null);
+  if(!DATA || !DATA._meta) return provMark(['Source: USDA PSD','Release: —','Last fetch: —', STU_DEF], null);
   const s = usdaStatus(typeof currentComm==='undefined' ? 'Wheat' : currentComm);
   return provMark(['Source: USDA PSD', ...s.parts, STU_DEF], s.stale);
 }
@@ -824,8 +845,8 @@ function cftcStatus(){
     stale = (asOf ? ageDays(asOf) > STALE_CFTC_ASOF_DAYS : false) || (days!==null && days > STALE_WEEKLY_FETCH_DAYS);
   }
   return {parts:[
-    'Source release: not available',
-    'Positions as of: '+(asOf ? fmtCaDate(asOf) : 'not available'),
+    'Source release: —',
+    'Positions as of: '+(asOf ? fmtCaDate(asOf) : '—'),
     'Last fetch: '+fmtStamp(fetched)
   ], stale};
 }
@@ -839,8 +860,8 @@ function exportsStatus(){
     stale = (week ? ageDays(week) > STALE_EXPORT_WEEK_DAYS : false) || (days!==null && days > STALE_WEEKLY_FETCH_DAYS);
   }
   return {parts:[
-    'Source release: not available',
-    'Week ending: '+(week ? fmtCaDate(week) : 'not available'),
+    'Source release: —',
+    'Week ending: '+(week ? fmtCaDate(week) : '—'),
     'Last fetch: '+fmtStamp(fetched)
   ], stale};
 }
@@ -849,7 +870,7 @@ function weatherStatus(){
   const fetchDate = parseStamp(fetched);
   let stale = null;
   if(fetchDate) stale = (Date.now()-fetchDate.getTime())/36e5 > STALE_WEATHER_HOURS;
-  return {parts:['Source: Open-Meteo','Release: not available','Last fetch: '+fmtStamp(fetched)], stale};
+  return {parts:['Source: Open-Meteo','Release: —','Last fetch: '+fmtStamp(fetched)], stale};
 }
 function seasonalsStatus(){
   const raw = (typeof SEASONALS_REVIEWED==='string') ? SEASONALS_REVIEWED : null;
@@ -863,9 +884,9 @@ function seasonalsStatus(){
     stale = t > exp.getTime();
   }
   return {parts:[
-    'Source release: not available',
-    'Last reviewed: '+(reviewed ? fmtCaDate(reviewed) : 'not available'),
-    'Last fetch: not available'
+    'Source release: —',
+    'Last reviewed: '+(reviewed ? fmtCaDate(reviewed) : '—'),
+    'Last fetch: —'
   ], stale};
 }
 function summarySourceStale(){
@@ -894,7 +915,7 @@ function summaryProv(){
   const cftc = cftcStatus(), exp = exportsStatus();
   const stale = [usdaStale, cftc.stale, exp.stale].some(s=>s===true);
   return provMark([
-    'USDA PSD. WASDE release: '+(release?fmtCaDate(release):'not available')+'. Coffee and sugar release: not available. Last fetch: '+fmtStamp(fetched)+'.',
+    'USDA PSD. WASDE release: '+(release?fmtCaDate(release):'—')+'. Coffee and sugar release: —. Last fetch: '+fmtStamp(fetched)+'.',
     'CFTC. '+cftc.parts.join('. ')+'.',
     'Export sales. '+exp.parts.join('. ')+'.',
     'Seasonals: fixed scores typed into the page. No external feed.',
@@ -1076,15 +1097,15 @@ function ensureWeather(){
     });
 }
 
-function cftcFmt(v){ return (v===null||v===undefined||isNaN(v)) ? '—' : Math.round(v).toLocaleString(); }
-function cftcPct(v){ return (v===null||v===undefined||isNaN(v)) ? '—' : v.toFixed(1)+'%'; }
+function cftcFmt(v){ return (v===null||v===undefined||isNaN(v)) ? na() : Math.round(v).toLocaleString(); }
+function cftcPct(v){ return (v===null||v===undefined||isNaN(v)) ? na() : v.toFixed(1)+'%'; }
 function cftcSignedPct(v, dec){
-  if(v===null||v===undefined||isNaN(v)) return '—';
+  if(v===null||v===undefined||isNaN(v)) return na();
   const s = v>=0?'+':'';
   return s+v.toFixed(dec===undefined?1:dec)+'%';
 }
 function cftcSignedNum(v){
-  if(v===null||v===undefined||isNaN(v)) return '—';
+  if(v===null||v===undefined||isNaN(v)) return na();
   const s = v>=0?'+':'';
   return s+Math.round(v).toLocaleString();
 }
@@ -1219,7 +1240,7 @@ function buildCftcRow(entry, hist){
     html += `<td class="grp-l ${m.net>=0?'cftc-up':'cftc-dn'}">${cftcFmt(m.net)}</td>`;
     html += `<td class="${m.weeklyChange>=0?'cftc-up':'cftc-dn'}">${cftcSignedNum(m.weeklyChange)}</td>`;
     html += `<td class="grp-l ${m.netPctOi>=0?'cftc-up':'cftc-dn'}">${cftcPct(m.netPctOi)}</td>`;
-    html += `<td class="${netExtremeClass(m.netPctile)}">${m.netPctile===null?'—':cftcOrdinal(m.netPctile)}</td>`;
+    html += `<td class="${netExtremeClass(m.netPctile)}">${m.netPctile===null?na():cftcOrdinal(m.netPctile)}</td>`;
     // gross long / short: yellow when unusually large vs the lookback; hover for the position as a share of open interest
     const yrs = CFTC_DATA._meta?.years_history;
     const grossTip = (what, v, pctOi, pctile)=> `${what}: ${cftcFmt(v)} contracts = ${cftcPct(pctOi)} of open interest` + (pctile===null||pctile===undefined ? '' : ` · ${cftcOrdinal(pctile)} percentile${yrs ? ' of the '+yrs+'-yr window' : ''}`);
@@ -1234,7 +1255,7 @@ function buildCftcRow(entry, hist){
      ['maxGrossLong','maxGrossLongPct','Largest gross long', false],['maxGrossShort','maxGrossShortPct','Largest gross short', false]].forEach(([k, kp, what, showPct], i)=>{
       const e = m[k], ep = m[kp];
       const tip = e ? `${what}: ${cftcFmt(e.v)} contracts, set ${e.date}` + (ep ? ` · largest % of OI: ${cftcPct(ep.v)}, set ${ep.date}` : '') : '';
-      html += `<td class="cftc-ref${i===0?' grp-l':''}"${tip?` title="${tip}"`:''}><span class="rf">${e ? cftcFmt(e.v) : '—'}</span>${showPct ? `<span class="rp">${ep ? cftcPct(ep.v) : ''}</span>` : ''}</td>`;
+      html += `<td class="cftc-ref${i===0?' grp-l':''}"${tip?` title="${tip}"`:''}><span class="rf">${e ? cftcFmt(e.v) : na()}</span>${showPct ? `<span class="rp">${ep ? cftcPct(ep.v) : ''}</span>` : ''}</td>`;
     });
   }
   html += `</tr>`;
@@ -1664,12 +1685,12 @@ function summaryPctileClass(p){
   return 'pctile-mid';
 }
 
-function summaryPctileText(p){ return p===null||p===undefined ? '—' : cftcOrdinal(p); }
+function summaryPctileText(p){ return p===null||p===undefined ? na() : cftcOrdinal(p); }
 // Stocks-to-use cell: just the rank vs history (the actual stocks/use % is in the hover text)
 function summaryStuCell(o, first, world){
   const cls = (first ? 'grp-l ' : '') + summaryPctileClass(o ? o.p : null);
   const def = world ? 'ending stocks / domestic use' : 'ending stocks / (domestic use + exports)';
-  if(!o) return `<td class="${cls}" title="${def} — not available">not available</td>`;
+  if(!o) return `<td class="${cls}">${na()}</td>`;
   return `<td class="${cls}" title="Rank vs history (higher = looser) · ${def} ${fmtStu(o.v)}">${summaryPctileText(o.p)}</td>`;
 }
 
@@ -1782,7 +1803,7 @@ function buildSummaryTable(){
     seasPair.forEach((seas, k)=>{
       const first = k===0 ? 'grp-l' : '';
       if(!seas){
-        html += `<td class="${first}" style="color:var(--text3)">not available</td>`;
+        html += `<td class="${first}">${na()}</td>`;
       } else {
         const text = (seas.value>0?'+':'')+seas.value;
         html += `<td class="${first}" style="background:${seasonalColor(seas.value)};color:#111;font-weight:800" title="Week of ${seas.label}">${text}</td>`;
@@ -1792,13 +1813,13 @@ function buildSummaryTable(){
       html += `<td class="grp-l" colspan="3" style="text-align:left;color:var(--text3)">No CFTC data</td>`;
     } else {
       html += `<td class="grp-l ${m.netPctOi>=0?'cftc-up':'cftc-dn'}">${cftcPct(m.netPctOi)}</td>`;
-      html += `<td class="${netExtremeClass(m.netPctile)}">${m.netPctile===null?'—':cftcOrdinal(m.netPctile)}</td>`;
+      html += `<td class="${netExtremeClass(m.netPctile)}">${m.netPctile===null?na():cftcOrdinal(m.netPctile)}</td>`;
       const chgCls = (m.weeklyChange===null || m.weeklyChange===0) ? '' : (m.weeklyChange>0 ? 'cftc-up' : 'cftc-dn');
       html += `<td class="${chgCls}" title="${posActionText(m.net, m.weeklyChange)} (net position vs last week, contracts)">${cftcSignedNum(m.weeklyChange)}</td>`;
     }
     html += `<td class="grp-l ${domesticYoY>=0?'cftc-up':'cftc-dn'}">${cftcSignedPct(domesticYoY,1)}</td>`;
     html += `<td class="${exportersYoY>=0?'cftc-up':'cftc-dn'}">${cftcSignedPct(exportersYoY,1)}</td>`;
-    html += `<td class="grp-l ${totalCommitYoY>=0?'cftc-up':'cftc-dn'}">${totalCommitYoY===null?'—':cftcSignedPct(totalCommitYoY,1)}</td>`;
+    html += `<td class="grp-l ${totalCommitYoY>=0?'cftc-up':'cftc-dn'}">${totalCommitYoY===null?na():cftcSignedPct(totalCommitYoY,1)}</td>`;
     html += summaryStuCell(domesticStu, true, false);
     html += summaryStuCell(worldStu, false, true);
     html += `</tr>`;
@@ -1856,9 +1877,9 @@ const CROP_CALENDAR = [
 ];
 const CAL_MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
-function fmtPctNormal(v){ return (v===null||v===undefined||isNaN(v)) ? '—' : Math.round(v)+'%'; }
+function fmtPctNormal(v){ return (v===null||v===undefined||isNaN(v)) ? na() : Math.round(v)+'%'; }
 function fmtTempDep(v){
-  if(v===null||v===undefined||isNaN(v)) return '—';
+  if(v===null||v===undefined||isNaN(v)) return na();
   const s = v>=0?'+':'';
   return s+v.toFixed(1)+'°C';
 }
@@ -1882,9 +1903,9 @@ function fmtPctNormalWithMm(v, mm){
   return `${pct} <span style="color:var(--text3)">(${Math.round(mm)}mm)</span>`;
 }
 function fmtHiLo(hi, lo){
-  if((hi===null||hi===undefined||isNaN(hi)) && (lo===null||lo===undefined||isNaN(lo))) return '—';
-  const hiTxt = (hi===null||hi===undefined||isNaN(hi)) ? '—' : Math.round(hi)+'°';
-  const loTxt = (lo===null||lo===undefined||isNaN(lo)) ? '—' : Math.round(lo)+'°';
+  if((hi===null||hi===undefined||isNaN(hi)) && (lo===null||lo===undefined||isNaN(lo))) return na();
+  const hiTxt = (hi===null||hi===undefined||isNaN(hi)) ? na() : Math.round(hi)+'°';
+  const loTxt = (lo===null||lo===undefined||isNaN(lo)) ? na() : Math.round(lo)+'°';
   return `${hiTxt} / ${loTxt}`;
 }
 
@@ -1906,8 +1927,8 @@ function buildWeatherFootnote(){
   if(hasOutlook) txt += '; outlook from the ECMWF SEAS5 seasonal ensemble (a lean, not a forecast)';
   txt += '.';
   if(when) txt += ' Last successful fetch ' + escHtml(when) + '.';
-  else txt += ' Last successful fetch: not available.';
-  txt += ' Source release date: not available.';
+  else txt += ' Last successful fetch: —.';
+  txt += ' Source release date: —.';
   if(meta.outlook_error) txt += ' Outlook incomplete: ' + escHtml(meta.outlook_error) + '.';
   return txt;
 }
@@ -2043,10 +2064,10 @@ function renderWeatherPage(){
   if(WEATHER_DATA){
     root.insertAdjacentHTML('beforeend', `<div class="tbl-wrap">${buildWeatherTable()}</div><p class="legend-line"><sup class="pt">*</sup> Point reading at the named station, not a provincial or state average. Outlook is an ensemble lean, not a forecast.</p>`);
   } else {
-    root.insertAdjacentHTML('beforeend', `<div style="padding:14px 16px;color:var(--text3)">${weatherState==='loading' ? 'Loading station readings…' : (weatherState==='failed' ? 'Weather readings: not available' : 'Station readings load when this page is opened.')}</div>`);
+    root.insertAdjacentHTML('beforeend', `<div style="padding:14px 16px">${weatherState==='loading' ? 'Loading station readings…' : (weatherState==='failed' ? na() : 'Station readings load when this page is opened.')}</div>`);
   }
   root.insertAdjacentHTML('beforeend', `</div>`);
-  root.insertAdjacentHTML('beforeend', `<div class="panel" style="margin-top:22px"><div class="panel-hdr"><span class="panel-title">Crop calendar</span>${provMark(['Static reference windows published by USDA-FAS, IGC and trade references.','Release: not available','Last fetch: not available','Not a live feed.'], null)}</div><p class="legend-line"><span style="background:rgba(46,143,82,.30);padding:0 5px">P</span> planting <span style="background:rgba(230,180,20,.40);padding:0 5px">H</span> harvest. Dates shift with weather and within each country.</p><div class="tbl-wrap">${buildCropCalendarTable()}</div></div>`);
+  root.insertAdjacentHTML('beforeend', `<div class="panel" style="margin-top:22px"><div class="panel-hdr"><span class="panel-title">Crop calendar</span>${provMark(['Static reference windows published by USDA-FAS, IGC and trade references.','Release: —','Last fetch: —','Not a live feed.'], null)}</div><p class="legend-line"><span style="background:rgba(46,143,82,.30);padding:0 5px">P</span> planting <span style="background:rgba(230,180,20,.40);padding:0 5px">H</span> harvest. Dates shift with weather and within each country.</p><div class="tbl-wrap">${buildCropCalendarTable()}</div></div>`);
 }
 renderWeatherPage();   // the crop calendar is static, so draw the page right away; the weather table fills in when its data arrives
 </script>
@@ -2187,7 +2208,7 @@ function buildSeasonalsTable(startMonth){
       html += `<tr><td class="seas-label">${p}</td>`;
       cols.forEach(o=>{
         const v = vals[o.i];
-        const text = (v===null||v===undefined) ? 'not available' : (v>0?'+':'')+v;
+        const text = (v===null||v===undefined) ? na() : (v>0?'+':'')+v;
         html += `<td style="background:${seasonalColor(v)}">${text}</td>`;
       });
       html += `</tr>`;
@@ -2248,9 +2269,9 @@ let exportsCommodity = null;
 let exportsView = 'wow';     // 'country' | 'wow' - opens on Week over Week
 let EXPORTS_HISTORY = null;      // weekly snapshots kept by fetch_exports.py (needed for week-over-week)
 
-function expFmt(v){ return (v===null||v===undefined||isNaN(v)) ? '—' : Math.round(v).toLocaleString(); }
+function expFmt(v){ return (v===null||v===undefined||isNaN(v)) ? na() : Math.round(v).toLocaleString(); }
 function expSignedPct(v){
-  if(v===null||v===undefined||isNaN(v)) return '—';
+  if(v===null||v===undefined||isNaN(v)) return na();
   const s = v>=0?'+':'';
   return s+v.toFixed(1)+'%';
 }
@@ -2457,7 +2478,7 @@ const VEGOIL_PANELS = [
   {oil:"Sunflower Oil",  country:"Ukraine"},
   {oil:"Sunflower Oil",  country:"Russia"},
 ];
-const VEGOIL_HIST_YEARS = 7;
+const VEGOIL_HIST_YEARS = 10;
 
 function commodityGroupAllYears(commList){
   const years = new Set();
@@ -2515,9 +2536,9 @@ function buildOilBalanceTable(yearDataFn, years, includeYoy, allYearsFull, world
     {type:'row', key:'im', label:'Imports'},
     {type:'total', keys:['bs','pr','im'], label:'Total supply'},
     {type:'section', label:'Use'},
-    {type:'row', key:'dc', label:'Dom. consumption'},
+    {type:'row', key:'dc', label:'Domestic use'},
     {type:'row', key:'ex', label:'Exports'},
-    {type:'total', keys:['dc','ex'], label:'Total demand'},
+    {type:'total', keys:['dc','ex'], label:'Total use'},
     {type:'section', label:'Balance'},
     {type:'row', key:'es', label:'Ending stocks', cls:'row-ending'},
     {type:'stu', label: worldStu ? 'Stocks / use % — ending / domestic use' : 'Stocks / use % — ending / (domestic use + exports)', cls:'row-stu'},
@@ -2525,7 +2546,13 @@ function buildOilBalanceTable(yearDataFn, years, includeYoy, allYearsFull, world
   ];
 
   function valFromYd(row, yd){
-    if(row.type==='total') return getTotalRaw(yd, row.keys);
+    if(row.type==='total'){
+      if(row.keys.join()==='bs,pr,im'){
+        const published = getRaw(yd, 'ts');
+        if(published!==null) return published;
+      }
+      return getTotalRaw(yd, row.keys);
+    }
     if(row.type==='stu') return getStu(yd, worldStu);
     return getRaw(yd, row.key);
   }
@@ -2536,7 +2563,7 @@ function buildOilBalanceTable(yearDataFn, years, includeYoy, allYearsFull, world
   const latestYd = yearDataFn(latestYear);
   const priorYd = latestYd && latestYd._p ? latestYd._p : null;
   function priorCells(row){
-    const blank = '<td class="grp-l prior">—</td><td class="prior">—</td>';
+    const blank = `<td class="grp-l prior">${na()}</td><td class="prior">${na()}</td>`;
     if(row.type==='stu_pctile' || !priorYd) return blank;
     if(row.type==='total' && !row.keys.every(k=>getRaw(priorYd,k)!==null && getRaw(latestYd,k)!==null)) return blank;
     const pv = valFromYd(row, priorYd), cv = valFromYd(row, latestYd);
@@ -2544,7 +2571,7 @@ function buildOilBalanceTable(yearDataFn, years, includeYoy, allYearsFull, world
     const d = row.type==='stu' ? 1 : 0;
     const chg = cv!==null ? cv - pv : null;
     const pText = row.type==='stu' ? fmtStu(pv) : fmt(pv);
-    const cText = chg===null ? '—' : fmtChg(chg, d) + (row.type==='stu' && Number(chg.toFixed(1))!==0 ? 'pp' : '');
+    const cText = chg===null ? na() : fmtChg(chg, d) + (row.type==='stu' && Number(chg.toFixed(1))!==0 ? 'pp' : '');
     return `<td class="grp-l prior">${pText}</td><td class="${chgClass(chg, d)}">${cText}</td>`;
   }
 
@@ -2575,19 +2602,19 @@ function buildOilBalanceTable(yearDataFn, years, includeYoy, allYearsFull, world
       if(row.type==='stu_pctile' && v!==null){
         tdCls += v<=25 ? ' pctile-tight' : (v>=75 ? ' pctile-loose' : ' pctile-mid');
       }
-      const text = row.type==='stu' ? fmtStu(v) : (row.type==='stu_pctile' ? (v===null?'—':ordinal(v)) : fmt(v));
+      const text = row.type==='stu' ? fmtStu(v) : (row.type==='stu_pctile' ? (v===null?na():ordinal(v)) : fmt(v));
       html += `<td class="${tdCls.trim()}">${text}</td>`;
     }
     if(includeYoy){
       const cur = displayVal(row, latestYear);
       const prev = prevYear ? displayVal(row, prevYear) : null;
       if(row.type==='stu_pctile'){
-        html += `<td class="latest">—</td>`;
+        html += `<td class="latest">${na()}</td>`;
       } else {
         const yoy = row.type==='stu' ? (cur!==null&&prev!==null?cur-prev:null) : yoyPct(cur,prev);
         let cls = 'latest';
         if(yoy!==null){ cls += yoy>0?' up':(yoy<0?' dn':''); }
-        const text = row.type==='stu' ? (yoy===null?'—':(yoy>=0?'+':'')+yoy.toFixed(1)+'pp') : fmtYoy(yoy);
+        const text = row.type==='stu' ? (yoy===null?na():(yoy>=0?'+':'')+yoy.toFixed(1)+'pp') : fmtYoy(yoy);
         html += `<td class="${cls}">${text}</td>`;
       }
       html += priorCells(row);
@@ -2617,11 +2644,6 @@ function renderVegoilsInto(root){
   root.insertAdjacentHTML('beforeend', vegoilPanelWrap('MAJOR EXPORTERS', VEGOIL_EXPORTERS.join(', '),
     buildOilBalanceTable(y=>sumAcrossOils((oil,yr)=>sumCountries(DATA[oil]||{}, VEGOIL_EXPORTERS, yr), y), years7, true, yearsAll, false)));
 
-  // Major Importers — combined
-  root.insertAdjacentHTML('beforeend', `<div class="sec-hdr">Major Importers — Aggregate (Combined)</div>`);
-  root.insertAdjacentHTML('beforeend', vegoilPanelWrap('MAJOR IMPORTERS', VEGOIL_IMPORTERS.join(', '),
-    buildOilBalanceTable(y=>sumAcrossOils((oil,yr)=>sumCountries(DATA[oil]||{}, VEGOIL_IMPORTERS, yr), y), years7, true, yearsAll, false)));
-
   // Individual oil/country panels — single oil each, not combined
   root.insertAdjacentHTML('beforeend', `<div class="sec-hdr">Individual Exporters — By Oil</div>`);
   const stack = document.createElement('div');
@@ -2647,7 +2669,7 @@ const MEAL_PANELS = [
   {oil:"Sunflower Meal",  country:"Ukraine"},
   {oil:"Sunflower Meal",  country:"Russia"},
 ];
-const MEAL_HIST_YEARS = 7;
+const MEAL_HIST_YEARS = 10;
 
 function renderMealInto(root){
   const yearsAll = commodityGroupAllYears(MEALS);
@@ -2661,10 +2683,6 @@ function renderMealInto(root){
   root.insertAdjacentHTML('beforeend', `<div class="sec-hdr">Major Exporters — Aggregate (Combined)</div>`);
   root.insertAdjacentHTML('beforeend', vegoilPanelWrap('MAJOR EXPORTERS', MEAL_EXPORTERS.join(', '),
     buildOilBalanceTable(y=>sumAcrossOils((m,yr)=>sumCountries(DATA[m]||{}, MEAL_EXPORTERS, yr), y, MEALS), years7, true, yearsAll, false)));
-
-  root.insertAdjacentHTML('beforeend', `<div class="sec-hdr">Major Importers — Aggregate (Combined)</div>`);
-  root.insertAdjacentHTML('beforeend', vegoilPanelWrap('MAJOR IMPORTERS', MEAL_IMPORTERS.join(', '),
-    buildOilBalanceTable(y=>sumAcrossOils((m,yr)=>sumCountries(DATA[m]||{}, MEAL_IMPORTERS, yr), y, MEALS), years7, true, yearsAll, false)));
 
   root.insertAdjacentHTML('beforeend', `<div class="sec-hdr">Individual Exporters — By Meal</div>`);
   const stack = document.createElement('div');
@@ -2688,7 +2706,7 @@ function renderMealInto(root){
 <script src="js/cattle.js"></script>
 <script>
 function openPage(page, comm){
-  if(comm && typeof currentComm!=='undefined' && DATA && (DATA[comm]||comm==='Rapeseed/Canola')){
+  if(comm && typeof currentComm!=='undefined' && (comm==='Vegoils' || comm==='Meal' || (DATA && (DATA[comm]||comm==='Rapeseed/Canola')))){
     currentComm = comm;
     var ct = document.getElementById('comm-toggle');
     if(ct) ct.querySelectorAll('.tbtn').forEach(function(b){ b.classList.toggle('active', b.dataset.c===comm); });

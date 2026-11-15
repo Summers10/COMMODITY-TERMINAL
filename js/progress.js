@@ -46,13 +46,13 @@ function renderProgress(){
     const age = d && d.report_date ? (Date.now()-new Date(d.report_date+'T12:00:00Z'))/86400000 : null;
     const stale = age!=null && age>10;
     const lines = [
-      (d&&d.source)||'Source: not available',
-      'Week ending: '+(d&&d.report_date||'not available'),
+      (d&&d.source)||'Source: —',
+      'Week ending: '+(d&&d.report_date||'—'),
       'Last fetch: '+fmtStamp(d&&d.fetched_at),
       'Last year and the 5-year average are the ones carried in the file for that week.'
     ];
     html += `<div class="panel"><div class="panel-hdr"><span class="panel-title">${c.name}</span>${provMark(lines, d?stale:null)}</div>`;
-    if(!d || !d.rows){ html += `<p class="legend-line">not available</p></div>`; return; }
+    if(!d || !d.rows){ html += `<p class="legend-line">${na()}</p></div>`; return; }
     const rows = d.rows.map(r=>({...r, g:cpGroup(r.crop), label:cpLabel(r.crop)})).filter(r=>r.g);
     html += `<table class="term-table bal-table">${fitColgroup([2.2,1,1,1,1])}<thead><tr><th>Stage</th><th>This week</th><th>Prior week</th><th>Last year</th><th>5-yr avg</th></tr></thead><tbody>`;
     let last = '';

@@ -313,23 +313,67 @@ def attach_official_us_units(result: dict, prior: dict, text: str) -> None:
         write("Soybeans", g[:4], g[4:])
 
 
+# WASDE prints million units to two decimals, so 0.05 of a million (50 thousand) is
+# the edge of rounding. A wider gap is a real difference.
+WASDE_ROUND = 50
+
+
 def apply_to_psd(result: dict, parsed: dict) -> dict:
-    """Write WASDE world/U.S. rows onto the PSD country file. Returns the prior block."""
+    """Cross-check World against WASDE and write the U.S. rows. Returns the prior block.
+
+    World history stays the PSD row. For the current marketing year, a WASDE figure
+    that disagrees by more than rounding replaces the PSD figure. Fields WASDE does
+    not print are left as PSD published them.
+    """
     prior = {}
+    warnings = []
 
     def put(comm, country, year, fields, vintage):
-        clean = {k: v for k, v in fields.items() if k in ("bs", "pr", "im", "ts", "dc", "ex", "es")}
+        clean = {k: v for k, v in fields.items() if k in ("bs", "pr", "im", "ts", "dc", "ex", "es") and v is not None}
         if vintage == "sep":
             prior.setdefault(comm, {}).setdefault(country, {})[year] = clean
             return
         slot = result.setdefault(comm, {}).setdefault(country, {}).setdefault(year, {})
         slot.update(clean)
 
+    def check_world(comm, year, fields, take):
+        """Compare one WASDE world column with the PSD world row."""
+        rec = result.setdefault(comm, {}).setdefault("World", {}).setdefault(year, {})
+        for key, wasde in fields.items():
+            if key not in ("bs", "pr", "im", "ts", "dc", "ex", "es") or wasde is None:
+                continue
+            psd = rec.get(key)
+            if psd is None:
+                if take:
+                    rec[key] = wasde
+                continue
+            if abs(psd - wasde) <= WASDE_ROUND:
+                continue
+            note = f"  {comm} {year} {key}: PSD {psd:,} vs WASDE {wasde:,}"
+            if take:
+                rec[key] = wasde
+                warnings.append(note + " — current year uses WASDE")
+            else:
+                warnings.append(note)
+
+    def wheat_balance(block):
+        # The wheat summary "use" column is total disappearance, not domestic use.
+        return {k: block[k] for k in ("pr", "ts", "ex", "es")}
+
     ww = parsed["wheat_world"]
     for year in ("2024", "2025"):
-        put("Wheat", "World", year, ww[year], "oct")
-    put("Wheat", "World", "2026", ww["oct"], "oct")
-    put("Wheat", "World", "2026", ww["sep"], "sep")
+        check_world("Wheat", year, wheat_balance(ww[year]), False)
+    check_world("Wheat", "2026", wheat_balance(ww["current"]), True)
+    put("Wheat", "World", "2026", wheat_balance(ww["prior"]), "sep")
+    wheat_now = result.get("Wheat", {}).get("World", {}).get("2026", {})
+    if all(wheat_now.get(k) is not None for k in ("dc", "ex", "im")):
+        approx = wheat_now["dc"] + wheat_now["ex"] - wheat_now["im"]
+        wasde_use = ww["current"]["dc"]
+        if abs(approx - wasde_use) > WASDE_ROUND:
+            warnings.append(
+                f"  Wheat 2026 total use: PSD domestic+exports-imports {approx:,} vs WASDE use {wasde_use:,}"
+                " — domestic use stays the PSD figure"
+            )
     wu = parsed["wheat_us"]
     for year in ("2024", "2025"):
         put("Wheat", "United States", year, wu[year], "oct")
@@ -338,44 +382,42 @@ def apply_to_psd(result: dict, parsed: dict) -> dict:
 
     corn = parsed["corn"]
     for year in ("2024", "2025"):
-        put("Corn", "World", year, corn[year], "oct")
-    put("Corn", "World", "2026", corn["oct"], "oct")
+        check_world("Corn", year, corn[year], False)
+    check_world("Corn", "2026", corn["oct"], True)
     put("Corn", "World", "2026", corn["sep"], "sep")
     put("Corn", "United States", "2026", corn["us_oct"], "oct")
     put("Corn", "United States", "2026", corn["us_sep"], "sep")
 
     soy = parsed["soy"]
     for year in ("2024", "2025"):
-        put("Soybeans", "World", year, soy[year], "oct")
-    put("Soybeans", "World", "2026", soy["oct"], "oct")
+        check_world("Soybeans", year, soy[year], False)
+    check_world("Soybeans", "2026", soy["oct"], True)
     put("Soybeans", "World", "2026", soy["sep"], "sep")
     put("Soybeans", "United States", "2026", soy["us_oct"], "oct")
     put("Soybeans", "United States", "2026", soy["us_sep"], "sep")
 
     oil = parsed["soyoil"]
-    put("Soybean Oil", "World", "2026", oil["oct"], "oct")
+    check_world("Soybean Oil", "2026", oil["oct"], True)
     put("Soybean Oil", "World", "2026", oil["sep"], "sep")
     put("Soybean Oil", "United States", "2026", oil["us_oct"], "oct")
     put("Soybean Oil", "United States", "2026", oil["us_sep"], "sep")
 
     if parsed.get("soymeal"):
         meal = parsed["soymeal"]
-        put("Soybean Meal", "World", "2026", meal["oct"], "oct")
+        check_world("Soybean Meal", "2026", meal["oct"], True)
         put("Soybean Meal", "World", "2026", meal["sep"], "sep")
 
     cot = parsed["cotton"]
     for year in ("2024", "2025"):
-        put("Cotton", "World", year, cot["world"][year], "oct")
+        check_world("Cotton", year, cot["world"][year], False)
         put("Cotton", "United States", year, cot["us"][year], "oct")
-    put("Cotton", "World", "2026", cot["world"]["oct"], "oct")
+    check_world("Cotton", "2026", cot["world"]["oct"], True)
     put("Cotton", "World", "2026", cot["world"]["sep"], "sep")
     put("Cotton", "United States", "2026", cot["us"]["oct"], "oct")
     put("Cotton", "United States", "2026", cot["us"]["sep"], "sep")
 
-    # Drop the feed column that _seven stored via put's skip... put skips fd. Good.
-    # World corn/soy have no published total supply in these tables. Do not invent ts.
-    for comm in ("Corn", "Soybeans", "Soybean Oil"):
-        for year, rec in result.get(comm, {}).get("World", {}).items():
-            rec.pop("ts", None)
-            rec.pop("fd", None)
+    if warnings:
+        print("WASDE / PSD world differences:")
+        for line in warnings:
+            print(line)
     return prior
