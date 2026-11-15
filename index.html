@@ -426,11 +426,11 @@ function buildBalanceTable(comm, yearDataFn, years, includeYoy, allYearsFull, wo
     {type:'row', key:'bs', label:'Beginning stocks'},
     {type:'row', key:'pr', label:'Production'},
     {type:'row', key:'im', label:'Imports'},
-    {type:'total', keys:['bs','pr','im'], label:'Total supply'},
+    {type:'total', keys: worldStu ? ['bs','pr'] : ['bs','pr','im'], label:'Total supply'},
     {type:'section', label:'Use'},
     {type:'row', key:'dc', label: isCotton ? 'Mill use' : 'Domestic use'},
     {type:'row', key:'ex', label:'Exports'},
-    {type:'total', keys:['dc','ex'], label:'Total use'},
+    {type:'total', keys: worldStu ? ['dc'] : ['dc','ex'], label:'Total use'},
     {type:'section', label:'Balance'},
     {type:'row', key:'es', label:'Ending stocks', cls:'row-ending'},
     {type:'stu', label: worldStu ? 'Stocks / use % — ending / domestic use' : 'Stocks / use % — ending / (domestic use + exports)', cls:'row-stu'},
@@ -450,13 +450,7 @@ function buildBalanceTable(comm, yearDataFn, years, includeYoy, allYearsFull, wo
       if(usesLbAcYield) return yieldLbAc(getRaw(yd,'pr'), getRaw(yd,'ah'));
       return yieldBuAc(getRaw(yd,'pr'), getRaw(yd,'ah'), comm);
     }
-    if(row.type==='total'){
-      if(row.keys.join()==='bs,pr,im'){
-        const published = getRaw(yd, 'ts');
-        if(published!==null) return convertVal(published, currentUnit, comm);
-      }
-      return convertVal(getTotalRaw(yd, row.keys), currentUnit, comm);
-    }
+    if(row.type==='total') return convertVal(getTotalRaw(yd, row.keys), currentUnit, comm);
     if(row.type==='stu') return getStu(yd, worldStu);
     return convertVal(getRaw(yd, row.key), currentUnit, comm);
   }
@@ -554,13 +548,7 @@ function rowMetric(row, yd, comm){
     return yieldBuAc(getRaw(yd,'pr'), getRaw(yd,'ah'), comm);
   }
   if(row.type==='stu') return getStu(yd, false);
-  if(row.type==='total'){
-    if(row.keys.join()==='bs,pr,im'){
-      const ts = getRaw(yd,'ts');
-      if(ts!==null) return convertVal(ts, currentUnit, comm);
-    }
-    return convertVal(getTotalRaw(yd, row.keys), currentUnit, comm);
-  }
+  if(row.type==='total') return convertVal(getTotalRaw(yd, row.keys), currentUnit, comm);
   return convertVal(getRaw(yd, row.key), currentUnit, comm);
 }
 function buildExpandableAggregate(comm, countries, names, years, yearsAll){
@@ -584,7 +572,7 @@ function buildExpandableAggregate(comm, countries, names, years, yearsAll){
     {type:'stu', label:'Stocks / use', cls:'row-stu'},
     {type:'stu_pctile', label:'S/U percentile rank ('+yearsAll.length+'yr hist)'}
   ];
-  const additive = r => r.type==='row' || r.type==='total';
+  const additive = r => (r.type==='row' || r.type==='total') && !r.yield;
   const decOf = r => (r.yield || r.type==='stu') ? 1 : 0;
   function pack(r, yd){
     if(r.type==='stu_pctile') return null;

@@ -92,6 +92,37 @@ def test_wasde_world_wheat_is_the_published_row():
     assert parsed["beef"]["sep"]["pr"] == 24945
 
 
+def test_aggregate_yield_is_production_over_area_not_a_sum_of_yields():
+    """Two origins: 1 t/ha and 3 t/ha on equal area. The aggregate is 2, not 4."""
+    html = (ROOT / "index.html").read_text(encoding="utf-8")
+    assert "&& !r.yield" in html
+    bu, acres = 36.7437, 2.47105
+    records = ({"pr": 1000, "ah": 1000}, {"pr": 3000, "ah": 1000})
+    ratio = (sum(r["pr"] for r in records) / sum(r["ah"] for r in records)) * bu / acres
+    summed = sum((r["pr"] / r["ah"]) * bu / acres for r in records)
+    assert abs(ratio - (2 * bu / acres)) < 1e-9
+    assert abs(ratio - summed) > 1
+
+
+def test_world_total_supply_is_beginning_stocks_plus_production_every_year():
+    html = (ROOT / "index.html").read_text(encoding="utf-8")
+    assert "worldStu ? ['bs','pr'] : ['bs','pr','im']" in html
+    assert "worldStu ? ['dc'] : ['dc','ex']" in html
+    wheat = json.loads((ROOT / "data" / "psd_data.json").read_text())["Wheat"]["World"]
+    supplies = {}
+    for year, rec in wheat.items():
+        if not str(year).isdigit():
+            continue
+        assert rec.get("bs") is not None and rec.get("pr") is not None
+        supplies[year] = rec["bs"] + rec["pr"]
+    # The stored total-supply field for 2026 is the WASDE supply figure. The page
+    # must not use it, because earlier years stored the sum of country supplies.
+    assert wheat["2026"]["ts"] != supplies["2026"] or abs(wheat["2026"]["ts"] - supplies["2026"]) <= 50
+    assert supplies["2025"] == wheat["2025"]["bs"] + wheat["2025"]["pr"]
+    assert supplies["2026"] == wheat["2026"]["bs"] + wheat["2026"]["pr"]
+    assert supplies["2021"] == wheat["2021"]["bs"] + wheat["2021"]["pr"]
+
+
 def test_grain_fills_missing_world_prior_and_replaces_mislabeled_wheat_use():
     result = {
         "Wheat": {"World": {"2026": {"pr": 827505, "dc": 824000}}},

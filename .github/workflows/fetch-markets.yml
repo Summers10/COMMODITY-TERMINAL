@@ -58,7 +58,7 @@ jobs:
         id: weather
         continue-on-error: true
         env:
-          WEATHER_FORCE: ${{ github.event_name == 'workflow_dispatch' && '1' || '' }}
+          WEATHER_FORCE: '1'
         run: python scripts/fetch_weather.py
 
       - name: Commit updated data

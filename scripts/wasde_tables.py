@@ -340,7 +340,9 @@ def apply_to_psd(result: dict, parsed: dict) -> dict:
         """Compare one WASDE world column with the PSD world row."""
         rec = result.setdefault(comm, {}).setdefault("World", {}).setdefault(year, {})
         for key, wasde in fields.items():
-            if key not in ("bs", "pr", "im", "ts", "dc", "ex", "es") or wasde is None:
+            # Totals are recomputed (world supply is beginning stocks + production).
+            # Do not overwrite the stored total-supply field with the WASDE total.
+            if key not in ("bs", "pr", "im", "dc", "ex", "es") or wasde is None:
                 continue
             psd = rec.get(key)
             if psd is None:
