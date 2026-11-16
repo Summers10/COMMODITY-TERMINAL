@@ -26,16 +26,19 @@ jobs:
       - name: Fetch published WPSR and WNGSR
         id: energy
         run: python scripts/fetch_energy.py
+      - name: Build signals
+        if: steps.energy.outcome == 'success'
+        run: python scripts/build_signals.py
       - name: Trust audit
         if: steps.energy.outcome == 'success'
-        run: python -m pytest -q tests/test_trust.py
+        run: python -m pytest -q tests
       - name: Commit
         if: steps.energy.outcome == 'success' && success()
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           if [ -f data/energy.json ]; then
-            git add data/energy.json
+            git add data/energy.json data/signals.json
             if ! git diff --staged --quiet; then
               git commit -m "Update EIA energy $(date -u +%Y-%m-%dT%H:%MZ)"
               for attempt in 1 2 3; do

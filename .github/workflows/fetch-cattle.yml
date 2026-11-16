@@ -31,16 +31,19 @@ jobs:
       - run: pip install -r requirements.txt
       - id: cattle
         run: python scripts/fetch_cattle.py
+      - name: Build signals
+        if: steps.cattle.outcome == 'success'
+        run: python scripts/build_signals.py
       - name: Trust audit
         if: steps.cattle.outcome == 'success'
-        run: python -m pytest -q tests/test_trust.py
+        run: python -m pytest -q tests
       - name: Commit
         if: steps.cattle.outcome == 'success' && success()
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           if [ -f data/cattle.json ]; then
-            git add data/cattle.json
+            git add data/cattle.json data/signals.json
             if ! git diff --staged --quiet; then
               git commit -m "Update cattle $(date -u +%Y-%m-%dT%H:%MZ)"
               for attempt in 1 2 3; do

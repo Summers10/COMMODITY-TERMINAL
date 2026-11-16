@@ -89,41 +89,126 @@ function cropGroupName(name){
   return null;
 }
 
+let SIGNALS = null;
 function renderSummary(){
   const root = document.getElementById('summary-root');
   if(!root) return;
-  const meta = document.getElementById('summary-meta');
-  if(meta) meta.textContent = '';
-  const stale = summarySourceStale();
-  let html = `<div class="panel"><div class="panel-hdr"><span class="panel-title">Grains and oilseeds</span><span class="panel-sub">stocks-to-use, percent</span>${summaryProv()}</div>`;
-  html += `<table class="term-table summary-table">${fitColgroup([1.6,1,0.7,0.7,1,0.7,0.7,0.9,0.9])}<thead><tr>
-    <th>Market</th><th>US S/U</th><th>yr</th><th>mo</th><th>World S/U</th><th>yr</th><th>mo</th><th>Flow yr</th><th>Season</th>
-    </tr></thead><tbody>`;
-  SUM_ROWS.forEach(row=>{
-    const us = stuPair(row.comm, 'United States', false);
-    const worldCountry = 'World';
-    const w = worldCountry ? stuPair(row.comm, 'World', true) : {cur:null,yoy:null,mom:null};
-    let flow = row.cgc ? cgcFlow() : flowYoY(row.flow);
-    const season = row.crop ? cropDelta(row.crop) : null;
-    html += `<tr class="jump" data-page="${row.page}" data-comm="${row.comm}"><td>${row.label}</td>`;
-    html += cell(pct1(us.cur));
-    html += cell(us.yoy==null?na():signed(us.yoy,1)+'pp', dir(us.yoy));
-    html += cell(us.mom==null?na():signed(us.mom,1)+'pp', dir(us.mom));
-    html += cell(pct1(w.cur));
-    html += cell(w.yoy==null?na():signed(w.yoy,1)+'pp', dir(w.yoy));
-    html += cell(w.mom==null?na():signed(w.mom,1)+'pp', dir(w.mom));
-    html += cell(flow==null?na():signed(flow,1)+'%', dir(flow));
-    html += cell(season?season.text:na(), season?dir(season.v):'');
-    html += `</tr>`;
+  const draw = ()=>{
+    if(!SIGNALS || !SIGNALS.sections){
+      root.innerHTML = `<p class="legend-line">${na()}</p>`;
+      return;
+    }
+    const meta = document.getElementById('summary-meta');
+    if(meta) meta.textContent = 'Signals ' + (SIGNALS.generated_at || '').slice(0, 10);
+    let html = '';
+    SIGNALS.sections.forEach(section=>{
+      html += `<div class="sec-hdr">${section.title}</div>`;
+      html += signalTable(section);
+      html += figureStrip(section);
+    });
+    html += rulesBlock(SIGNALS.rules || []);
+    root.innerHTML = html;
+    bindSignals(root);
+  };
+  if(SIGNALS){ draw(); return; }
+  fetch('data/signals.json').then(r=>r.ok?r.json():null).then(d=>{ SIGNALS = d; draw(); }).catch(()=>draw());
+}
+function signalTable(section){
+  const cols = section.columns || [];
+  const widths = [1.7, ...cols.map(()=>0.95), 1.8];
+  let html = `<div class="panel"><table class="term-table summary-table sig-table">${fitColgroup(widths)}<thead><tr><th>Market</th>`;
+  cols.forEach(col=>{ html += `<th>${col.label}</th>`; });
+  html += `<th>Tally</th></tr></thead><tbody>`;
+  (section.rows||[]).forEach(row=>{
+    html += `<tr><td class="jump" data-page="${row.page||''}" data-comm="${row.comm||''}">${row.label}</td>`;
+    cols.forEach(col=>{
+      const sig = (row.signals||{})[col.id] || {};
+      const cls = sig.state ? `sig sig-${sig.state}` : 'sig';
+      const text = sig.text || na();
+      html += `<td class="${cls}"><button type="button" class="sig-hit" data-detail="${escapeAttr(sig.detail||sig.reason||'')}" data-rule="${escapeAttr(ruleText(sig.rule_id))}" data-asof="${escapeAttr(sig.as_of||'')}">${text}</button></td>`;
+    });
+    html += `<td class="tally">${tallyText(row.tally)}</td></tr>`;
   });
   html += `</tbody></table></div>`;
-
-  html += energySummary();
-  html += cattleSummary();
-  root.innerHTML = html;
-  root.querySelectorAll('tr.jump').forEach(tr=>{
-    tr.addEventListener('click', ()=>openPage(tr.dataset.page, tr.dataset.comm));
+  return html;
+}
+function figureStrip(section){
+  const rows = section.rows || [];
+  const labels = [];
+  rows.forEach(row=>{ (row.figures||[]).forEach(fig=>{ if(!labels.includes(fig.label)) labels.push(fig.label); }); });
+  const sectionFigs = section.figures || [];
+  if(!labels.length && !sectionFigs.length) return '';
+  let html = `<p class="legend-line">Key figures</p><table class="term-table summary-table"><thead><tr><th>Market</th>`;
+  if(labels.length){
+    labels.forEach(label=>{ html += `<th>${label}</th>`; });
+    html += `</tr></thead><tbody>`;
+    rows.forEach(row=>{
+      html += `<tr><td>${row.label}</td>`;
+      labels.forEach(label=>{
+        const fig = (row.figures||[]).find(f=>f.label===label);
+        html += `<td>${fig?fig.value:na()}</td>`;
+      });
+      html += `</tr>`;
+    });
+  } else {
+    sectionFigs.forEach(fig=>{ html += `<th>${fig.label}</th>`; });
+    html += `</tr></thead><tbody><tr><td>${section.title}</td>`;
+    sectionFigs.forEach(fig=>{ html += `<td>${fig.value}</td>`; });
+    html += `</tr>`;
+  }
+  html += `</tbody></table>`;
+  return html;
+}
+function rulesBlock(rules){
+  let html = `<details class="rules"><summary>Rules</summary>`;
+  rules.forEach(rule=>{ html += `<p><b>${rule.id}</b> ${rule.text}</p>`; });
+  html += `</details>`;
+  return html;
+}
+function tallyText(t){
+  if(!t) return na();
+  return `${t.bullish} bull · ${t.bearish} bear · ${t.neutral} neutral`;
+}
+function ruleText(id){
+  const rule = (SIGNALS && SIGNALS.rules || []).find(r=>r.id===id);
+  return rule ? rule.text : '';
+}
+function escapeAttr(value){
+  return String(value||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
+}
+function bindSignals(root){
+  let pop = document.getElementById('sig-pop');
+  if(!pop){
+    pop = document.createElement('div');
+    pop.id = 'sig-pop';
+    pop.hidden = true;
+    document.body.appendChild(pop);
+  }
+  const close = ()=>{ pop.hidden = true; };
+  root.querySelectorAll('button.sig-hit').forEach(btn=>{
+    const show = ()=>{
+      const asof = btn.dataset.asof ? `As of ${btn.dataset.asof}. ` : '';
+      pop.innerHTML = `<div>${btn.dataset.detail||na()}</div><div class="legend-line">${asof}${btn.dataset.rule||''}</div>`;
+      pop.hidden = false;
+      const rect = btn.getBoundingClientRect();
+      const width = Math.min(280, window.innerWidth - 16);
+      pop.style.width = width + 'px';
+      let left = rect.left;
+      if(left + width > window.innerWidth - 8) left = window.innerWidth - width - 8;
+      pop.style.left = Math.max(8, left) + 'px';
+      pop.style.top = Math.min(rect.bottom + 6, window.innerHeight - 8) + 'px';
+    };
+    btn.addEventListener('mouseenter', show);
+    btn.addEventListener('focus', show);
+    btn.addEventListener('click', ev=>{ ev.stopPropagation(); show(); });
   });
+  root.querySelectorAll('td.jump').forEach(td=>{
+    td.addEventListener('click', ()=>{ if(td.dataset.page) openPage(td.dataset.page, td.dataset.comm||undefined); });
+  });
+  if(!pop.dataset.bound){
+    pop.dataset.bound = '1';
+    document.addEventListener('click', ev=>{ if(!pop.contains(ev.target)) close(); });
+  }
 }
 
 function energySummary(){

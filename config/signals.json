@@ -1,0 +1,36 @@
+{
+  "stu_bull_pct": 33,
+  "stu_bear_pct": 67,
+  "stu_history_years": 10,
+  "mm_weeks": 156,
+  "mm_ext_long_pct": 85,
+  "mm_ext_short_pct": 15,
+  "seasonal_horizon_weeks": 4,
+  "seasonal_years": 15,
+  "seasonal_hit_rate": 0.6,
+  "demand_pp": 3,
+  "demand_history_years": 5,
+  "canola_export_yoy_pct": 3,
+  "condition_pp": 3,
+  "energy_vs_avg_pct": 3,
+  "energy_change_vs_norm_pp": 3,
+  "cattle_yoy_low": 98,
+  "cattle_yoy_high": 102,
+  "cutout_flat_pct": 1,
+  "condition_months": {
+    "corn": [6, 7, 8, 9, 10],
+    "soybeans": [6, 7, 8, 9, 10],
+    "wheat_winter": [3, 4, 5, 10, 11, 12],
+    "wheat_spring": [5, 6, 7, 8]
+  },
+  "cadence_days": {
+    "wasde": 45,
+    "aafc": 45,
+    "cftc": 14,
+    "exports": 14,
+    "cgc": 14,
+    "energy": 14,
+    "crop": 21,
+    "cattle": 45
+  }
+}
