@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-11-16T17:23:17+00:00",
+ "generated_at": "2026-11-16T18:15:33+00:00",
  "config": {
   "stu_bull_pct": 33,
   "stu_bear_pct": 67,
@@ -58,8 +58,7 @@
    "cgc": 14,
    "energy": 14,
    "crop": 21,
-   "cattle": 45,
-   "seasonal": 120
+   "cattle": 45
   }
  },
  "rules": [
@@ -77,7 +76,7 @@
   },
   {
    "id": "seasonal",
-   "text": "Average of the Peak Trading Research weekly scores for the current week and the next four weeks. Scores run from \u22125 to +5. An average of 1 or higher is bullish. An average of -1 or lower is bearish. Otherwise neutral. The scores are typed on the Seasonals page. They are not fetched. A market with no typed score is a dash. The as-of date is the day those scores were last reviewed."
+   "text": "Average of the Peak Trading Research weekly scores for the current week and the next four weeks. Scores run from \u22125 to +5. An average of 1 or higher is bullish. An average of -1 or lower is bearish. Otherwise neutral. The same scores are reused every year, keyed by calendar week, and a late-December window continues into January. They are typed on the Seasonals page, not fetched, and they do not expire. A market with no typed score is a dash. Peak Trading Research seasonal, last reviewed 2026-10-24."
   },
   {
    "id": "score",
@@ -109,7 +108,7 @@
   },
   {
    "id": "staleness",
-   "text": "A cell whose as-of date is older than its cadence is a dash. Cadences, in days: wasde 45, aafc 45, cftc 14, exports 14, cgc 14, energy 14, crop 21, cattle 45, seasonal 120."
+   "text": "A cell whose as-of date is older than its cadence is a dash. Cadences, in days: wasde 45, aafc 45, cftc 14, exports 14, cgc 14, energy 14, crop 21, cattle 45."
   }
  ],
  "sections": [
@@ -227,7 +226,7 @@
          }
         ]
        },
-       "detail": "Nov 16 -2, Nov 23 -1, Nov 30 0, Dec 07 +1, Dec 14 +4. Average +0.4. Source: Peak Trading Research seasonal.",
+       "detail": "Nov 16 -2, Nov 23 -1, Nov 30 0, Dec 07 +1, Dec 14 +4. Average +0.4. Peak Trading Research seasonal, last reviewed 2026-10-24.",
        "reason": null,
        "text": "\u25ac +0.4 next 4w"
       },
@@ -356,7 +355,7 @@
          }
         ]
        },
-       "detail": "Nov 16 -2, Nov 23 +2, Nov 30 -1, Dec 07 0, Dec 14 0. Average -0.2. Source: Peak Trading Research seasonal.",
+       "detail": "Nov 16 -2, Nov 23 +2, Nov 30 -1, Dec 07 0, Dec 14 0. Average -0.2. Peak Trading Research seasonal, last reviewed 2026-10-24.",
        "reason": null,
        "text": "\u25ac -0.2 next 4w"
       },
@@ -485,7 +484,7 @@
          }
         ]
        },
-       "detail": "Nov 16 -3, Nov 23 -2, Nov 30 -2, Dec 07 -2, Dec 14 0. Average -1.8. Source: Peak Trading Research seasonal.",
+       "detail": "Nov 16 -3, Nov 23 -2, Nov 30 -2, Dec 07 -2, Dec 14 0. Average -1.8. Peak Trading Research seasonal, last reviewed 2026-10-24.",
        "reason": null,
        "text": "\u25bc -1.8 next 4w"
       },
@@ -614,7 +613,7 @@
          }
         ]
        },
-       "detail": "Nov 16 -3, Nov 23 -3, Nov 30 -2, Dec 07 -2, Dec 14 +3. Average -1.4. Source: Peak Trading Research seasonal.",
+       "detail": "Nov 16 -3, Nov 23 -3, Nov 30 -2, Dec 07 -2, Dec 14 +3. Average -1.4. Peak Trading Research seasonal, last reviewed 2026-10-24.",
        "reason": null,
        "text": "\u25bc -1.4 next 4w"
       },
@@ -743,7 +742,7 @@
          }
         ]
        },
-       "detail": "Nov 16 -3, Nov 23 -3, Nov 30 -1, Dec 07 -2, Dec 14 0. Average -1.8. Source: Peak Trading Research seasonal.",
+       "detail": "Nov 16 -3, Nov 23 -3, Nov 30 -1, Dec 07 -2, Dec 14 0. Average -1.8. Peak Trading Research seasonal, last reviewed 2026-10-24.",
        "reason": null,
        "text": "\u25bc -1.8 next 4w"
       },
@@ -872,7 +871,7 @@
          }
         ]
        },
-       "detail": "Nov 16 -4, Nov 23 -3, Nov 30 -3, Dec 07 -1, Dec 14 -1. Average -2.4. Source: Peak Trading Research seasonal.",
+       "detail": "Nov 16 -4, Nov 23 -3, Nov 30 -3, Dec 07 -1, Dec 14 -1. Average -2.4. Peak Trading Research seasonal, last reviewed 2026-10-24.",
        "reason": null,
        "text": "\u25bc -2.4 next 4w"
       },
@@ -1005,7 +1004,7 @@
          }
         ]
        },
-       "detail": "Nov 16 -3, Nov 23 0, Nov 30 -1, Dec 07 +2, Dec 14 +2. Average +0.0. Source: Peak Trading Research seasonal.",
+       "detail": "Nov 16 -3, Nov 23 0, Nov 30 -1, Dec 07 +2, Dec 14 +2. Average +0.0. Peak Trading Research seasonal, last reviewed 2026-10-24.",
        "reason": null,
        "text": "\u25ac +0.0 next 4w"
       },
@@ -1134,7 +1133,7 @@
          }
         ]
        },
-       "detail": "Nov 16 -2, Nov 23 -2, Nov 30 -4, Dec 07 -4, Dec 14 -1. Average -2.6. Source: Peak Trading Research seasonal.",
+       "detail": "Nov 16 -2, Nov 23 -2, Nov 30 -4, Dec 07 -4, Dec 14 -1. Average -2.6. Peak Trading Research seasonal, last reviewed 2026-10-24.",
        "reason": null,
        "text": "\u25bc -2.6 next 4w"
       },
@@ -1675,7 +1674,7 @@
          }
         ]
        },
-       "detail": "Nov 16 -1, Nov 23 -4, Nov 30 -2, Dec 07 0, Dec 14 +5. Average -0.4. Source: Peak Trading Research seasonal.",
+       "detail": "Nov 16 -1, Nov 23 -4, Nov 30 -2, Dec 07 0, Dec 14 +5. Average -0.4. Peak Trading Research seasonal, last reviewed 2026-10-24.",
        "reason": null,
        "text": "\u25ac -0.4 next 4w"
       }
@@ -1777,7 +1776,7 @@
          }
         ]
        },
-       "detail": "Nov 16 +2, Nov 23 -4, Nov 30 +3, Dec 07 +1, Dec 14 +5. Average +1.4. Source: Peak Trading Research seasonal.",
+       "detail": "Nov 16 +2, Nov 23 -4, Nov 30 +3, Dec 07 +1, Dec 14 +5. Average +1.4. Peak Trading Research seasonal, last reviewed 2026-10-24.",
        "reason": null,
        "text": "\u25b2 +1.4 next 4w"
       }
