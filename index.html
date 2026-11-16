@@ -181,6 +181,11 @@ document.querySelectorAll('.page-tab').forEach(function(btn){
 <div id="energy-page" style="display:none">
 <div class="topbar-lite" style="padding:14px 20px;border-bottom:1px solid var(--amber);background:var(--bg)"><h1 style="font-size:18px;font-weight:900;letter-spacing:.12em;text-transform:uppercase;color:var(--amber)">Energy</h1></div>
 <div id="energy-root" style="max-width:1200px;margin:0 auto;padding:16px"></div>
+<style>
+#en-chart{position:relative;max-width:100%}
+#en-chart svg{width:100%;height:auto;display:block}
+#en-tip{position:absolute;pointer-events:none;background:var(--bg1);border:1px solid var(--border2);color:var(--text);font-size:12px;line-height:1.4;padding:6px 8px;z-index:2;white-space:nowrap}
+</style>
 </div>
 <div id="progress-page" style="display:none">
 <div class="topbar-lite" style="padding:14px 20px;border-bottom:1px solid var(--amber);background:var(--bg)"><h1 style="font-size:18px;font-weight:900;letter-spacing:.12em;text-transform:uppercase;color:var(--amber)">Crop progress</h1></div>

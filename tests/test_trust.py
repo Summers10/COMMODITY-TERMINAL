@@ -155,6 +155,11 @@ def test_energy_identities_and_computed_petroleum_average():
     ng = next(s for s in book["series"] if s["key"] == "ng_storage")
     assert ng["avg5"] == 3787
     assert ng["avg5_basis"].startswith("WNGSR")
+    hit = next(p for p in ng["published_band"] if p[0] == ng["period"])
+    assert hit[1] == ng["avg5"]
+    assert hit[2] <= hit[1] <= hit[3]
+    chart = (ROOT / "js" / "energy.js").read_text()
+    assert "million bbl" in chart and "en-tip" in chart
     crude = next(s for s in book["series"] if s["key"] == "crude_stocks")
     assert crude["avg5_basis"] == "computed from EIA weekly levels"
     assert abs((crude["value"] - crude["avg5"]) / crude["avg5"] * 100 - crude["vs_avg5_pct"]) < 0.15
@@ -180,7 +185,8 @@ def test_cattle_on_feed_uses_the_printed_percent():
     latest = book["on_feed"][-1]
     assert latest["released"] == "October 23, 2026"
     assert latest["source_url"].endswith("cofd1026.txt")
-    assert age(latest["as_of"]) <= 45
+    released = datetime.strptime(latest["released"], "%B %d, %Y").date()
+    assert (TODAY - released).days <= 45
     assert latest["on_feed"]["pct_of_year_ago"] == 100
     assert latest["on_feed"]["current"] == 11372
 

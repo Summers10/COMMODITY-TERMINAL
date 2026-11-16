@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """EIA weekly stocks. Levels and 5-year comparisons are the published ones.
 
-Petroleum 5-year averages are not in WPSR Table 1 or Table 4. They are left
-null rather than recomputed from the history. Natural gas uses the WNGSR
-published 5-year average and the published percent change (the figure EIA
-prints, including 3,747 Bcf when that is the published average).
+Petroleum 5-year averages are the same-week mean of EIA's weekly levels.
+Natural gas uses the WNGSR published 5-year average. The weekly average,
+minimum, and maximum drawn on the gas chart come from ngsstats.xls when
+that file's figure for the latest week matches the published average.
 """
 from __future__ import annotations
 
@@ -26,6 +26,7 @@ TABLE4 = "https://ir.eia.gov/wpsr/table4.csv"
 PSW04 = "https://ir.eia.gov/wpsr/psw04.xls"
 WNGSR = "https://ir.eia.gov/ngs/wngsr.json"
 NG_HIST = "https://www.eia.gov/dnav/ng/xls/NG_STOR_WKLY_S1_W.xls"
+NG_STATS = "https://ir.eia.gov/ngs/ngsstats.xls"
 
 
 def get(url):
@@ -174,6 +175,49 @@ def same_week_avg5(history, period_iso):
     return sum(by_year[y] for y in years) / 5
 
 
+def ng_published_band(blob):
+    """Weekly 5-year average, minimum, and maximum EIA publishes in ngsstats.xls.
+
+    Each point is [date, average, minimum, maximum, year-ago], Lower 48, Bcf.
+    """
+    book = xlrd.open_workbook(file_contents=blob)
+    named = []
+    for name in book.sheet_names():
+        year = None
+        for token in name.replace("(", " ").split():
+            if token.isdigit() and len(token) == 4:
+                year = int(token)
+                break
+        if year and name.lower().strip().startswith("ngsstats"):
+            named.append((year, name))
+    if not named:
+        raise ValueError("ngsstats workbook has no yearly sheet")
+    sh = book.sheet_by_name(max(named)[1])
+    headers = [str(sh.cell_value(2, c)).lower() for c in range(sh.ncols)]
+    totals = [i for i, h in enumerate(headers) if "total lower" in h]
+    if len(totals) < 4:
+        raise ValueError(f"ngsstats total columns were {totals}")
+    avg_c, max_c, min_c, ya_c = totals[:4]
+    out = []
+    for r in range(3, sh.nrows):
+        raw = sh.cell_value(r, 0)
+        if not isinstance(raw, (int, float)) or raw < 20000:
+            continue
+        day = xlrd.xldate_as_datetime(raw, book.datemode).date().isoformat()
+
+        def num(col, row=r):
+            v = sh.cell_value(row, col)
+            return None if not isinstance(v, (int, float)) else int(round(v))
+
+        avg, mn, mx, ya = num(avg_c), num(min_c), num(max_c), num(ya_c)
+        if None in (avg, mn, mx) or mn > avg or avg > mx:
+            continue
+        out.append([day, avg, mn, mx, ya])
+    if len(out) < 40:
+        raise ValueError(f"ngsstats band is too short ({len(out)})")
+    return out
+
+
 def ng_history(blob):
     """Lower 48 working gas from EIA's weekly storage workbook. No average is stored in the file."""
     book = xlrd.open_workbook(file_contents=blob)
@@ -246,6 +290,19 @@ def main():
             None if same_week_avg5(ngh, ng["period"]) is None else round(same_week_avg5(ngh, ng["period"]))
         )
         ng["avg5_basis"] = "WNGSR published 5-year average"
+        ng["published_band"] = None
+        ng["band_basis"] = None
+        try:
+            band = ng_published_band(get(NG_STATS))
+            hit = next((p for p in band if p[0] == ng["period"]), None)
+            if hit and hit[1] == ng["avg5"]:
+                ng["published_band"] = band
+                ng["band_basis"] = "WNGSR published 5-year average and range"
+            else:
+                got = None if hit is None else hit[1]
+                print(f"NG published band not used (week {ng['period']} file avg {got}, WNGSR {ng['avg5']})", file=sys.stderr)
+        except Exception as e:
+            print(f"NG published band not used ({e})", file=sys.stderr)
         series.append({
             "key": "ng_storage", "label": "Natural gas (Lower 48)", "unit": "Bcf",
             "source": "WNGSR", "source_url": "https://ir.eia.gov/ngs/wngsr.html",
