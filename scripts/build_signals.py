@@ -174,6 +174,9 @@ def cell(state, rule_id, as_of, inputs, detail, cadence_key, cfg, reason=None):
     if state is None:
         rec["text"] = None
         return rec
+    if cadence_key is None:
+        rec["text"] = figure_text(rule_id, state, inputs)
+        return rec
     limit = cfg["cadence_days"][cadence_key]
     old = age_days(day)
     if old is None or old > limit:
@@ -417,34 +420,43 @@ def current_seasonal_index(weeks, today):
     return None if best is None else best[1]
 
 
+def seasonal_week_labels(weeks, today):
+    """Five labels: the week containing today, then the next four, wrapping at year end."""
+    index = current_seasonal_index(weeks, today)
+    if index is None:
+        return None
+    return [weeks[(index + step) % len(weeks)] for step in range(5)]
+
+
 def seasonal_signal(book, product, cfg):
     if not book or not product or product not in (book.get("scores") or {}):
         return dash("seasonal", "No Peak Trading Research score is typed for this market on the Seasonals page.")
     weeks = book["weeks"]
     values = book["scores"][product]
-    index = current_seasonal_index(weeks, TODAY)
-    if index is None:
+    labels = seasonal_week_labels(weeks, TODAY)
+    if not labels:
         return dash("seasonal", "The current week is not in the Seasonals week list.", book.get("reviewed"))
     window = []
-    for step in range(5):
-        i = (index + step) % len(weeks)
+    for label in labels:
+        i = weeks.index(label)
         if i >= len(values) or values[i] is None:
-            return dash("seasonal", f"The Peak score for {weeks[i]} is missing.", book.get("reviewed"))
-        window.append({"week": weeks[i], "score": values[i]})
+            return dash("seasonal", f"The Peak score for {label} is missing.", book.get("reviewed"))
+        window.append({"week": label, "score": values[i]})
     average = sum(item["score"] for item in window) / len(window)
     state = seasonal_state(average, cfg)
+    reviewed = book.get("reviewed")
     listed = ", ".join(
         f"{item['week']} {item['score']:+d}" if item["score"] != 0 else f"{item['week']} 0"
         for item in window
     )
     detail = (
         f"{listed}. Average {average:+.1f}. "
-        "Source: Peak Trading Research seasonal."
+        f"Peak Trading Research seasonal, last reviewed {reviewed}."
     )
-    return cell(state, "seasonal", book.get("reviewed"), {
+    return cell(state, "seasonal", reviewed, {
         "average": round(average, 4),
         "weeks": window,
-    }, detail, "seasonal", cfg)
+    }, detail, None, cfg)
 
 
 def export_history_years(history, commodity):
@@ -603,7 +615,7 @@ def cutout_signal(cattle, cfg):
     )
 
 
-def rule_book(cfg):
+def rule_book(cfg, reviewed=None):
     c = cfg
     return [
         {"id": "stu", "text": (
@@ -628,8 +640,10 @@ def rule_book(cfg):
             "Average of the Peak Trading Research weekly scores for the current week and the next four weeks. "
             f"Scores run from −5 to +5. An average of {c['seasonal_score_bull']:g} or higher is bullish. "
             f"An average of {c['seasonal_score_bear']:g} or lower is bearish. Otherwise neutral. "
-            "The scores are typed on the Seasonals page. They are not fetched. "
-            "A market with no typed score is a dash. The as-of date is the day those scores were last reviewed."
+            "The same scores are reused every year, keyed by calendar week, and a late-December window continues into January. "
+            "They are typed on the Seasonals page, not fetched, and they do not expire. "
+            "A market with no typed score is a dash. "
+            f"Peak Trading Research seasonal, last reviewed {reviewed}."
         )},
         {"id": "score", "text": (
             "A bullish cell is +1, a bearish cell is −1, and a neutral cell is 0. Dashes are left out. "
@@ -902,7 +916,7 @@ def build(cfg=None):
     return {
         "generated_at": datetime.now(dt.timezone.utc).replace(microsecond=0).isoformat(),
         "config": cfg,
-        "rules": rule_book(cfg),
+        "rules": rule_book(cfg, (seasonals or {}).get("reviewed")),
         "sections": sections,
     }
 

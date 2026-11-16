@@ -57,7 +57,7 @@ def test_each_signal_replays_and_the_score_matches():
                 weeks = seasonal["inputs"]["weeks"]
                 assert len(weeks) == 5
                 assert abs(sum(w["score"] for w in weeks) / 5 - seasonal["inputs"]["average"]) < 1e-6
-                assert "Peak Trading Research seasonal" in seasonal["detail"]
+                assert "Peak Trading Research seasonal, last reviewed" in seasonal["detail"]
         assert section["score"]["score"] == total
         assert section["score"]["scored"] == scored
 
@@ -68,6 +68,22 @@ def test_a_stale_input_becomes_a_dash():
     stale = module.cell("bullish", "mm_flow", "2020-01-01", {"change_1w": 10, "change_4w": 20}, "old", "cftc", cfg)
     assert stale["state"] is None
     assert "stale" in stale["reason"]
+
+
+def test_late_december_seasonal_wraps_into_january():
+    module = load_builder()
+    weeks = module.load_seasonals()["weeks"]
+    labels = module.seasonal_week_labels(weeks, module.date(2026, 12, 28))
+    assert labels == ["Dec 28", "Dec 29", "Jan 05", "Jan 12", "Jan 19"]
+
+
+def test_seasonal_scores_do_not_expire():
+    module = load_builder()
+    cfg = module.load_config()
+    assert "seasonal" not in cfg["cadence_days"]
+    kept = module.cell("neutral", "seasonal", "2020-01-01", {"average": 0.4}, "kept", None, cfg)
+    assert kept["state"] == "neutral"
+    assert kept["text"]
 
 
 def test_thresholds_are_the_config_file():
