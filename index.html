@@ -1313,6 +1313,15 @@ fetch('data/psd_data.json')
 .summary-table th:first-child{text-align:left}
 .summary-table td{padding:3px 3px;text-align:right;border-bottom:1px solid var(--border);color:var(--text2);white-space:normal;overflow-wrap:anywhere;background:var(--bg)}
 .summary-table td:first-child{text-align:left;color:var(--text);font-weight:700}
+td.sig{text-align:center;padding:0}
+button.sig-hit{width:100%;border:0;background:transparent;color:inherit;font:inherit;font-size:13px;font-weight:700;padding:6px 2px;cursor:pointer}
+td.sig-bull{background:rgba(46,143,82,.18);color:var(--green)}
+td.sig-bear{background:rgba(184,56,56,.16);color:var(--red)}
+td.sig-neutral{background:rgba(138,122,104,.16);color:var(--text2)}
+td.tally{text-align:center;font-size:13px;white-space:normal}
+#sig-pop{position:fixed;z-index:30;background:var(--bg1);border:1px solid var(--border2);color:var(--text);font-size:13px;line-height:1.4;padding:8px 10px}
+details.rules{margin:18px 0 8px;font-size:13px;color:var(--text2)}
+details.rules summary{cursor:pointer;color:var(--amber);font-weight:800;letter-spacing:.06em}
 .cal-table th{background:var(--th-bg);padding:4px 2px;text-align:center;letter-spacing:.02em;color:var(--text);border-bottom:2px solid var(--border2);white-space:normal}
 .cal-table th:first-child{text-align:left}
 .cal-table td{padding:3px 2px;text-align:center;border-bottom:1px solid var(--border);color:var(--text2);background:var(--bg);white-space:normal}
@@ -3047,6 +3056,7 @@ setTimeout(function(){
 .bal-table td:not(:first-child),.bal-table th:not(:first-child){
   white-space:nowrap;overflow-wrap:normal;
 }
+.sig-table td,.sig-table th,td.tally{white-space:normal;overflow-wrap:break-word}
 button.row-exp{background:none;border:0;padding:0;font:inherit;font-size:13px;font-weight:700;color:inherit;cursor:pointer;text-align:left}
 button.row-exp .caret{display:inline-block;width:1.1em}
 tr.xsub td{font-weight:500;color:var(--text2)}

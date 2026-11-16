@@ -61,14 +61,17 @@ jobs:
           WEATHER_FORCE: '1'
         run: python scripts/fetch_weather.py
 
+      - name: Build signals
+        run: python scripts/build_signals.py
+
       - name: Trust audit
-        run: python -m pytest -q tests/test_trust.py
+        run: python -m pytest -q tests
 
       - name: Commit updated data
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          for f in data/psd_data.json data/cftc_data.json data/export_sales.json data/export_sales_history.json data/weather_data.json; do
+          for f in data/psd_data.json data/cftc_data.json data/export_sales.json data/export_sales_history.json data/weather_data.json data/signals.json; do
             if [ -f "$f" ]; then git add "$f"; fi
           done
           if git diff --staged --quiet; then

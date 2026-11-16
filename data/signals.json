@@ -1,0 +1,1555 @@
+{
+ "generated_at": "2026-11-16T00:21:30+00:00",
+ "config": {
+  "stu_bull_pct": 33,
+  "stu_bear_pct": 67,
+  "stu_history_years": 10,
+  "mm_weeks": 156,
+  "mm_ext_long_pct": 85,
+  "mm_ext_short_pct": 15,
+  "seasonal_horizon_weeks": 4,
+  "seasonal_years": 15,
+  "seasonal_hit_rate": 0.6,
+  "demand_pp": 3,
+  "demand_history_years": 5,
+  "canola_export_yoy_pct": 3,
+  "condition_pp": 3,
+  "energy_vs_avg_pct": 3,
+  "energy_change_vs_norm_pp": 3,
+  "cattle_yoy_low": 98,
+  "cattle_yoy_high": 102,
+  "cutout_flat_pct": 1,
+  "condition_months": {
+   "corn": [
+    6,
+    7,
+    8,
+    9,
+    10
+   ],
+   "soybeans": [
+    6,
+    7,
+    8,
+    9,
+    10
+   ],
+   "wheat_winter": [
+    3,
+    4,
+    5,
+    10,
+    11,
+    12
+   ],
+   "wheat_spring": [
+    5,
+    6,
+    7,
+    8
+   ]
+  },
+  "cadence_days": {
+   "wasde": 45,
+   "aafc": 45,
+   "cftc": 14,
+   "exports": 14,
+   "cgc": 14,
+   "energy": 14,
+   "crop": 21,
+   "cattle": 45
+  }
+ },
+ "rules": [
+  {
+   "id": "stu",
+   "text": "Stocks/use percentile versus the prior 10 marketing years. At or below the 33rd percentile is bullish. At or above the 67th is bearish. Otherwise neutral. Percentile is the share of those prior years at or below the current stocks/use. US corn, soybeans, wheat, soybean meal and soybean oil use ending stocks divided by domestic use plus exports. Canola uses the AAFC forecast stocks/use, or USDA Canada if that file is missing. If the latest ending-stocks revision moves the opposite way from the percentile, the cell becomes neutral."
+  },
+  {
+   "id": "mm_extension",
+   "text": "Managed money net (long minus short) as a percentile of the last 156 weeks, current week included. At or above the 85th percentile is extended long and the cell reads bearish. At or below the 15th is extended short and the cell reads bullish. Otherwise neutral. Disaggregated managed money only. Leveraged Funds are not used."
+  },
+  {
+   "id": "mm_flow",
+   "text": "Change in managed money net over one week and over four weeks. Both up is bullish. Both down is bearish. A mixed pair, or a zero change, is neutral."
+  },
+  {
+   "id": "seasonal",
+   "text": "Average price change from today to +4 weeks, and the hit rate, over 15 years. Average up and hit rate at least 60% is bullish. Average down and hit rate at least that is bearish. The Seasonals page has typed scores and no price series, so every seasonal cell is a dash."
+  },
+  {
+   "id": "demand_pace",
+   "text": "US export commitments as a percent of the USDA export forecast, minus the 5-year average of that percent at the same week. At least +3 percentage points ahead is bullish. At least 3 behind is bearish. The saved export history does not cover those earlier seasons, so the cell is a dash. Canola uses CGC crop-year exports versus the same week a year ago. At least +3% is bullish and at least 3% behind is bearish."
+  },
+  {
+   "id": "condition",
+   "text": "NASS good/excellent minus the printed 5-year average, or minus year ago when the average is not printed. At least 3 points below is bullish. At least 3 points above is bearish. Outside the months listed in the config the cell says out of season. Meal and oil have no condition series."
+  },
+  {
+   "id": "energy_level",
+   "text": "Stocks versus the 5-year average. At least +3% is bearish. At least 3% below is bullish. Natural gas uses the WNGSR published percent. Petroleum uses the percent computed from weekly levels."
+  },
+  {
+   "id": "energy_change",
+   "text": "This week's percent stock change minus the average percent change in the same week of the prior five years. At least +3 percentage points (a heavier build or a lighter draw) is bearish. At least 3 the other way is bullish."
+  },
+  {
+   "id": "cattle_yoy",
+   "text": "Cattle on Feed printed percent of a year ago. At or below 98 is bullish. At or above 102 is bearish. The same thresholds are used for placements. Both cattle rows use this one report."
+  },
+  {
+   "id": "cutout",
+   "text": "Choice boxed beef over four weeks. Up more than 1% is bullish, down more than that is bearish, inside the band is neutral. The cattle file has one print, so the cell is a dash. Slaughter pace is omitted because the AMS report does not print a year-ago head count."
+  },
+  {
+   "id": "staleness",
+   "text": "A cell whose as-of date is older than its cadence is a dash. Cadences, in days: wasde 45, aafc 45, cftc 14, exports 14, cgc 14, energy 14, crop 21, cattle 45."
+  }
+ ],
+ "sections": [
+  {
+   "id": "grains",
+   "title": "Grains & Oilseeds",
+   "columns": [
+    {
+     "id": "stu",
+     "label": "Stocks/use"
+    },
+    {
+     "id": "mm_extension",
+     "label": "Managed money"
+    },
+    {
+     "id": "mm_flow",
+     "label": "Money flow"
+    },
+    {
+     "id": "seasonal",
+     "label": "Seasonal"
+    },
+    {
+     "id": "demand",
+     "label": "Demand"
+    },
+    {
+     "id": "condition",
+     "label": "Condition"
+    }
+   ],
+   "rows": [
+    {
+     "label": "Corn",
+     "signals": {
+      "stu": {
+       "state": "neutral",
+       "rule_id": "stu",
+       "as_of": "2026-11-10",
+       "inputs": {
+        "percentile": 40.0,
+        "revision": -2300,
+        "stu": 10.8186,
+        "ending_stocks": 44670,
+        "ending_stocks_prior": 46970,
+        "history": [
+         15.6553,
+         14.4633,
+         15.6952,
+         14.4793,
+         8.296,
+         9.2412,
+         9.9243,
+         11.7828,
+         10.256,
+         12.735
+        ]
+       },
+       "detail": "US corn stocks/use. Stocks/use 10.8% is the 40th percentile of the prior 10 years. Ending stocks 44,670 versus prior 46,970 (-2,300).",
+       "reason": null,
+       "text": "NEUTRAL"
+      },
+      "mm_extension": {
+       "state": "neutral",
+       "rule_id": "mm_extension",
+       "as_of": "2026-11-03",
+       "inputs": {
+        "percentile": 57.0513,
+        "net": -22900,
+        "weeks": 156
+       },
+       "detail": "Managed money net -22,900 contracts. 57th percentile of the last 156 weeks. Inside the 15th to 85th percentiles.",
+       "reason": null,
+       "text": "NEUTRAL"
+      },
+      "mm_flow": {
+       "state": "bearish",
+       "rule_id": "mm_flow",
+       "as_of": "2026-11-03",
+       "inputs": {
+        "change_1w": -78843,
+        "change_4w": -340259
+       },
+       "detail": "Managed money net changed -78,843 contracts in one week and -340,259 over four weeks.",
+       "reason": null,
+       "text": "BEARISH"
+      },
+      "seasonal": {
+       "state": null,
+       "text": null,
+       "rule_id": "seasonal",
+       "as_of": null,
+       "inputs": {},
+       "detail": "The Seasonals page stores typed weekly scores, not a 15-year price series, so the average and the hit rate cannot be computed.",
+       "reason": "The Seasonals page stores typed weekly scores, not a 15-year price series, so the average and the hit rate cannot be computed."
+      },
+      "demand": {
+       "state": null,
+       "text": null,
+       "rule_id": "demand_pace",
+       "as_of": "11/05/2026",
+       "inputs": {},
+       "detail": "Export history covers 1 season, not the 5 seasons needed for the same-week pace.",
+       "reason": "Export history covers 1 season, not the 5 seasons needed for the same-week pace."
+      },
+      "condition": {
+       "state": null,
+       "text": null,
+       "rule_id": "condition",
+       "as_of": null,
+       "inputs": {},
+       "detail": "out of season",
+       "reason": "out of season"
+      }
+     },
+     "tally": {
+      "bullish": 0,
+      "bearish": 1,
+      "neutral": 2
+     },
+     "figures": [
+      {
+       "label": "S/U",
+       "value": "10.8%"
+      },
+      {
+       "label": "Ending stocks",
+       "value": "44,670"
+      },
+      {
+       "label": "Stocks revision",
+       "value": "-2,300"
+      }
+     ],
+     "page": "usda",
+     "comm": "Corn"
+    },
+    {
+     "label": "Soybeans",
+     "signals": {
+      "stu": {
+       "state": "bullish",
+       "rule_id": "stu",
+       "as_of": "2026-11-10",
+       "inputs": {
+        "percentile": 30.0,
+        "revision": -400,
+        "stu": 6.5063,
+        "ending_stocks": 8170,
+        "ending_stocks_prior": 8570,
+        "history": [
+         7.1571,
+         10.1955,
+         23.388,
+         13.624,
+         5.6884,
+         6.1484,
+         6.1366,
+         8.3421,
+         7.3463,
+         7.3411
+        ]
+       },
+       "detail": "US soybean stocks/use. Stocks/use 6.5% is the 30th percentile of the prior 10 years. Ending stocks 8,170 versus prior 8,570 (-400).",
+       "reason": null,
+       "text": "BULLISH"
+      },
+      "mm_extension": {
+       "state": "neutral",
+       "rule_id": "mm_extension",
+       "as_of": "2026-11-03",
+       "inputs": {
+        "percentile": 77.5641,
+        "net": 132799,
+        "weeks": 156
+       },
+       "detail": "Managed money net +132,799 contracts. 78th percentile of the last 156 weeks. Inside the 15th to 85th percentiles.",
+       "reason": null,
+       "text": "NEUTRAL"
+      },
+      "mm_flow": {
+       "state": "bearish",
+       "rule_id": "mm_flow",
+       "as_of": "2026-11-03",
+       "inputs": {
+        "change_1w": -52601,
+        "change_4w": -118861
+       },
+       "detail": "Managed money net changed -52,601 contracts in one week and -118,861 over four weeks.",
+       "reason": null,
+       "text": "BEARISH"
+      },
+      "seasonal": {
+       "state": null,
+       "text": null,
+       "rule_id": "seasonal",
+       "as_of": null,
+       "inputs": {},
+       "detail": "The Seasonals page stores typed weekly scores, not a 15-year price series, so the average and the hit rate cannot be computed.",
+       "reason": "The Seasonals page stores typed weekly scores, not a 15-year price series, so the average and the hit rate cannot be computed."
+      },
+      "demand": {
+       "state": null,
+       "text": null,
+       "rule_id": "demand_pace",
+       "as_of": "11/05/2026",
+       "inputs": {},
+       "detail": "Export history covers 1 season, not the 5 seasons needed for the same-week pace.",
+       "reason": "Export history covers 1 season, not the 5 seasons needed for the same-week pace."
+      },
+      "condition": {
+       "state": null,
+       "text": null,
+       "rule_id": "condition",
+       "as_of": null,
+       "inputs": {},
+       "detail": "out of season",
+       "reason": "out of season"
+      }
+     },
+     "tally": {
+      "bullish": 1,
+      "bearish": 1,
+      "neutral": 1
+     },
+     "figures": [
+      {
+       "label": "S/U",
+       "value": "6.5%"
+      },
+      {
+       "label": "Ending stocks",
+       "value": "8,170"
+      },
+      {
+       "label": "Stocks revision",
+       "value": "-400"
+      }
+     ],
+     "page": "usda",
+     "comm": "Soybeans"
+    },
+    {
+     "label": "Wheat (Chicago SRW)",
+     "signals": {
+      "stu": {
+       "state": "neutral",
+       "rule_id": "stu",
+       "as_of": "2026-11-10",
+       "inputs": {
+        "percentile": 30.0,
+        "revision": 80,
+        "stu": 40.0317,
+        "ending_stocks": 20220,
+        "ending_stocks_prior": 20140,
+        "history": [
+         53.1398,
+         55.483,
+         52.9535,
+         49.2607,
+         40.1884,
+         35.2527,
+         30.3578,
+         38.3746,
+         43.3793,
+         44.9067
+        ]
+       },
+       "detail": "US all-wheat stocks/use. Stocks/use 40.0% is the 30th percentile of the prior 10 years. Ending stocks 20,220 versus prior 20,140 (+80). The stocks revision disagrees with the percentile, so the cell is neutral.",
+       "reason": null,
+       "text": "NEUTRAL"
+      },
+      "mm_extension": {
+       "state": "neutral",
+       "rule_id": "mm_extension",
+       "as_of": "2026-11-03",
+       "inputs": {
+        "percentile": 25.0,
+        "net": -88726,
+        "weeks": 156
+       },
+       "detail": "Managed money net -88,726 contracts. 25th percentile of the last 156 weeks. Inside the 15th to 85th percentiles.",
+       "reason": null,
+       "text": "NEUTRAL"
+      },
+      "mm_flow": {
+       "state": "bearish",
+       "rule_id": "mm_flow",
+       "as_of": "2026-11-03",
+       "inputs": {
+        "change_1w": -13867,
+        "change_4w": -59183
+       },
+       "detail": "Managed money net changed -13,867 contracts in one week and -59,183 over four weeks.",
+       "reason": null,
+       "text": "BEARISH"
+      },
+      "seasonal": {
+       "state": null,
+       "text": null,
+       "rule_id": "seasonal",
+       "as_of": null,
+       "inputs": {},
+       "detail": "The Seasonals page stores typed weekly scores, not a 15-year price series, so the average and the hit rate cannot be computed.",
+       "reason": "The Seasonals page stores typed weekly scores, not a 15-year price series, so the average and the hit rate cannot be computed."
+      },
+      "demand": {
+       "state": null,
+       "text": null,
+       "rule_id": "demand_pace",
+       "as_of": "11/05/2026",
+       "inputs": {},
+       "detail": "Export history covers 1 season, not the 5 seasons needed for the same-week pace.",
+       "reason": "Export history covers 1 season, not the 5 seasons needed for the same-week pace."
+      },
+      "condition": {
+       "state": null,
+       "text": null,
+       "rule_id": "condition",
+       "as_of": "2026-11-08",
+       "inputs": {},
+       "detail": "Good/excellent has no 5-year average and no year-ago print.",
+       "reason": "Good/excellent has no 5-year average and no year-ago print."
+      }
+     },
+     "tally": {
+      "bullish": 0,
+      "bearish": 1,
+      "neutral": 2
+     },
+     "figures": [
+      {
+       "label": "S/U",
+       "value": "40.0%"
+      },
+      {
+       "label": "Ending stocks",
+       "value": "20,220"
+      },
+      {
+       "label": "Stocks revision",
+       "value": "+80"
+      }
+     ],
+     "page": "usda",
+     "comm": "Wheat"
+    },
+    {
+     "label": "Wheat (KC HRW)",
+     "signals": {
+      "stu": {
+       "state": "neutral",
+       "rule_id": "stu",
+       "as_of": "2026-11-10",
+       "inputs": {
+        "percentile": 30.0,
+        "revision": 80,
+        "stu": 40.0317,
+        "ending_stocks": 20220,
+        "ending_stocks_prior": 20140,
+        "history": [
+         53.1398,
+         55.483,
+         52.9535,
+         49.2607,
+         40.1884,
+         35.2527,
+         30.3578,
+         38.3746,
+         43.3793,
+         44.9067
+        ]
+       },
+       "detail": "US all-wheat stocks/use. There is no separate HRW balance in this file. Stocks/use 40.0% is the 30th percentile of the prior 10 years. Ending stocks 20,220 versus prior 20,140 (+80). The stocks revision disagrees with the percentile, so the cell is neutral.",
+       "reason": null,
+       "text": "NEUTRAL"
+      },
+      "mm_extension": {
+       "state": "neutral",
+       "rule_id": "mm_extension",
+       "as_of": "2026-11-03",
+       "inputs": {
+        "percentile": 75.0,
+        "net": -6722,
+        "weeks": 156
+       },
+       "detail": "Managed money net -6,722 contracts. 75th percentile of the last 156 weeks. Inside the 15th to 85th percentiles.",
+       "reason": null,
+       "text": "NEUTRAL"
+      },
+      "mm_flow": {
+       "state": "bearish",
+       "rule_id": "mm_flow",
+       "as_of": "2026-11-03",
+       "inputs": {
+        "change_1w": -4857,
+        "change_4w": -30762
+       },
+       "detail": "Managed money net changed -4,857 contracts in one week and -30,762 over four weeks.",
+       "reason": null,
+       "text": "BEARISH"
+      },
+      "seasonal": {
+       "state": null,
+       "text": null,
+       "rule_id": "seasonal",
+       "as_of": null,
+       "inputs": {},
+       "detail": "The Seasonals page stores typed weekly scores, not a 15-year price series, so the average and the hit rate cannot be computed.",
+       "reason": "The Seasonals page stores typed weekly scores, not a 15-year price series, so the average and the hit rate cannot be computed."
+      },
+      "demand": {
+       "state": null,
+       "text": null,
+       "rule_id": "demand_pace",
+       "as_of": "11/05/2026",
+       "inputs": {},
+       "detail": "Export history covers 1 season, not the 5 seasons needed for the same-week pace.",
+       "reason": "Export history covers 1 season, not the 5 seasons needed for the same-week pace."
+      },
+      "condition": {
+       "state": null,
+       "text": null,
+       "rule_id": "condition",
+       "as_of": "2026-11-08",
+       "inputs": {},
+       "detail": "Good/excellent has no 5-year average and no year-ago print.",
+       "reason": "Good/excellent has no 5-year average and no year-ago print."
+      }
+     },
+     "tally": {
+      "bullish": 0,
+      "bearish": 1,
+      "neutral": 2
+     },
+     "figures": [
+      {
+       "label": "S/U",
+       "value": "40.0%"
+      },
+      {
+       "label": "Ending stocks",
+       "value": "20,220"
+      },
+      {
+       "label": "Stocks revision",
+       "value": "+80"
+      }
+     ],
+     "page": "usda",
+     "comm": "Wheat"
+    },
+    {
+     "label": "Wheat (MGEX)",
+     "signals": {
+      "stu": {
+       "state": "neutral",
+       "rule_id": "stu",
+       "as_of": "2026-11-10",
+       "inputs": {
+        "percentile": 30.0,
+        "revision": 80,
+        "stu": 40.0317,
+        "ending_stocks": 20220,
+        "ending_stocks_prior": 20140,
+        "history": [
+         53.1398,
+         55.483,
+         52.9535,
+         49.2607,
+         40.1884,
+         35.2527,
+         30.3578,
+         38.3746,
+         43.3793,
+         44.9067
+        ]
+       },
+       "detail": "US all-wheat stocks/use. There is no separate spring-wheat balance in this file. Stocks/use 40.0% is the 30th percentile of the prior 10 years. Ending stocks 20,220 versus prior 20,140 (+80). The stocks revision disagrees with the percentile, so the cell is neutral.",
+       "reason": null,
+       "text": "NEUTRAL"
+      },
+      "mm_extension": {
+       "state": "neutral",
+       "rule_id": "mm_extension",
+       "as_of": "2026-11-03",
+       "inputs": {
+        "percentile": 66.6667,
+        "net": -9735,
+        "weeks": 156
+       },
+       "detail": "Managed money net -9,735 contracts. 67th percentile of the last 156 weeks. Inside the 15th to 85th percentiles.",
+       "reason": null,
+       "text": "NEUTRAL"
+      },
+      "mm_flow": {
+       "state": "bearish",
+       "rule_id": "mm_flow",
+       "as_of": "2026-11-03",
+       "inputs": {
+        "change_1w": -6022,
+        "change_4w": -21404
+       },
+       "detail": "Managed money net changed -6,022 contracts in one week and -21,404 over four weeks.",
+       "reason": null,
+       "text": "BEARISH"
+      },
+      "seasonal": {
+       "state": null,
+       "text": null,
+       "rule_id": "seasonal",
+       "as_of": null,
+       "inputs": {},
+       "detail": "The Seasonals page stores typed weekly scores, not a 15-year price series, so the average and the hit rate cannot be computed.",
+       "reason": "The Seasonals page stores typed weekly scores, not a 15-year price series, so the average and the hit rate cannot be computed."
+      },
+      "demand": {
+       "state": null,
+       "text": null,
+       "rule_id": "demand_pace",
+       "as_of": "11/05/2026",
+       "inputs": {},
+       "detail": "Export history covers 1 season, not the 5 seasons needed for the same-week pace.",
+       "reason": "Export history covers 1 season, not the 5 seasons needed for the same-week pace."
+      },
+      "condition": {
+       "state": null,
+       "text": null,
+       "rule_id": "condition",
+       "as_of": null,
+       "inputs": {},
+       "detail": "out of season",
+       "reason": "out of season"
+      }
+     },
+     "tally": {
+      "bullish": 0,
+      "bearish": 1,
+      "neutral": 2
+     },
+     "figures": [
+      {
+       "label": "S/U",
+       "value": "40.0%"
+      },
+      {
+       "label": "Ending stocks",
+       "value": "20,220"
+      },
+      {
+       "label": "Stocks revision",
+       "value": "+80"
+      }
+     ],
+     "page": "usda",
+     "comm": "Wheat"
+    },
+    {
+     "label": "Canola",
+     "signals": {
+      "stu": {
+       "state": "neutral",
+       "rule_id": "stu",
+       "as_of": "2026-10-20",
+       "inputs": {
+        "percentile": 40.0,
+        "revision": -11.0,
+        "stu": 8.9046,
+        "ending_stocks": 1968.0,
+        "ending_stocks_prior": 1979.0,
+        "history": [
+         6.5632,
+         13.0015,
+         23.2543,
+         16.3203,
+         8.3505,
+         10.1339,
+         10.0012,
+         17.5476,
+         7.607,
+         8.5674
+        ]
+       },
+       "detail": "AAFC canola stocks/use 8.9% is the 40th percentile of the prior 10 StatsCan years. Ending stocks 1,968 versus the prior report 1,979 (-11).",
+       "reason": null,
+       "text": "NEUTRAL"
+      },
+      "mm_extension": {
+       "state": "neutral",
+       "rule_id": "mm_extension",
+       "as_of": "2026-11-03",
+       "inputs": {
+        "percentile": 64.7436,
+        "net": 28282,
+        "weeks": 156
+       },
+       "detail": "Managed money net +28,282 contracts. 65th percentile of the last 156 weeks. Inside the 15th to 85th percentiles.",
+       "reason": null,
+       "text": "NEUTRAL"
+      },
+      "mm_flow": {
+       "state": "bearish",
+       "rule_id": "mm_flow",
+       "as_of": "2026-11-03",
+       "inputs": {
+        "change_1w": -18138,
+        "change_4w": -82945
+       },
+       "detail": "Managed money net changed -18,138 contracts in one week and -82,945 over four weeks.",
+       "reason": null,
+       "text": "BEARISH"
+      },
+      "seasonal": {
+       "state": null,
+       "text": null,
+       "rule_id": "seasonal",
+       "as_of": null,
+       "inputs": {},
+       "detail": "The Seasonals page stores typed weekly scores, not a 15-year price series, so the average and the hit rate cannot be computed.",
+       "reason": "The Seasonals page stores typed weekly scores, not a 15-year price series, so the average and the hit rate cannot be computed."
+      },
+      "demand": {
+       "state": "bullish",
+       "rule_id": "canola_exports",
+       "as_of": "2026-11-08",
+       "inputs": {
+        "yoy_pct": 62.9759,
+        "exports": 2517.0,
+        "year_ago": 1544.4
+       },
+       "detail": "CGC canola exports 2,517.0 kt versus 1,544.4 kt at the same week a year ago (+63.0%). Threshold 3%.",
+       "reason": null,
+       "text": "BULLISH"
+      },
+      "condition": {
+       "state": null,
+       "text": null,
+       "rule_id": "condition",
+       "as_of": null,
+       "inputs": {},
+       "detail": "No canola condition series is in the crop progress file.",
+       "reason": "No canola condition series is in the crop progress file."
+      }
+     },
+     "tally": {
+      "bullish": 1,
+      "bearish": 1,
+      "neutral": 2
+     },
+     "figures": [
+      {
+       "label": "S/U",
+       "value": "8.9%"
+      },
+      {
+       "label": "Ending stocks",
+       "value": "1,968"
+      },
+      {
+       "label": "Stocks revision",
+       "value": "-11"
+      }
+     ],
+     "page": "usda",
+     "comm": "Rapeseed/Canola"
+    },
+    {
+     "label": "Soybean meal",
+     "signals": {
+      "stu": {
+       "state": "bullish",
+       "rule_id": "stu",
+       "as_of": "2026-11-10",
+       "inputs": {
+        "percentile": 20.0,
+        "revision": -45,
+        "stu": 0.5996,
+        "ending_stocks": 363,
+        "ending_stocks_prior": 408,
+        "history": [
+         0.8893,
+         1.1211,
+         0.8104,
+         0.6597,
+         0.6633,
+         0.5921,
+         0.6979,
+         0.8281,
+         0.671,
+         0.5228
+        ]
+       },
+       "detail": "US soybean meal stocks/use. Stocks/use 0.6% is the 20th percentile of the prior 10 years. Ending stocks 363 versus prior 408 (-45).",
+       "reason": null,
+       "text": "BULLISH"
+      },
+      "mm_extension": {
+       "state": "bearish",
+       "rule_id": "mm_extension",
+       "as_of": "2026-11-03",
+       "inputs": {
+        "percentile": 86.5385,
+        "net": 111668,
+        "weeks": 156
+       },
+       "detail": "Managed money net +111,668 contracts. 87th percentile of the last 156 weeks. Extended long, read as bearish.",
+       "reason": null,
+       "text": "Ext long"
+      },
+      "mm_flow": {
+       "state": "bearish",
+       "rule_id": "mm_flow",
+       "as_of": "2026-11-03",
+       "inputs": {
+        "change_1w": -58191,
+        "change_4w": -95136
+       },
+       "detail": "Managed money net changed -58,191 contracts in one week and -95,136 over four weeks.",
+       "reason": null,
+       "text": "BEARISH"
+      },
+      "seasonal": {
+       "state": null,
+       "text": null,
+       "rule_id": "seasonal",
+       "as_of": null,
+       "inputs": {},
+       "detail": "The Seasonals page stores typed weekly scores, not a 15-year price series, so the average and the hit rate cannot be computed.",
+       "reason": "The Seasonals page stores typed weekly scores, not a 15-year price series, so the average and the hit rate cannot be computed."
+      },
+      "demand": {
+       "state": null,
+       "text": null,
+       "rule_id": "demand_pace",
+       "as_of": "11/05/2026",
+       "inputs": {},
+       "detail": "Export history covers 2 seasons, not the 5 seasons needed for the same-week pace.",
+       "reason": "Export history covers 2 seasons, not the 5 seasons needed for the same-week pace."
+      },
+      "condition": {
+       "state": null,
+       "text": null,
+       "rule_id": "condition",
+       "as_of": null,
+       "inputs": {},
+       "detail": "not a crop-condition series",
+       "reason": "not a crop-condition series"
+      }
+     },
+     "tally": {
+      "bullish": 1,
+      "bearish": 2,
+      "neutral": 0
+     },
+     "figures": [
+      {
+       "label": "S/U",
+       "value": "0.6%"
+      },
+      {
+       "label": "Ending stocks",
+       "value": "363"
+      },
+      {
+       "label": "Stocks revision",
+       "value": "-45"
+      }
+     ],
+     "page": "usda",
+     "comm": "Soybean Meal"
+    },
+    {
+     "label": "Soybean oil",
+     "signals": {
+      "stu": {
+       "state": "bullish",
+       "rule_id": "stu",
+       "as_of": "2026-11-10",
+       "inputs": {
+        "percentile": 10.0,
+        "revision": -50,
+        "stu": 5.0825,
+        "ending_stocks": 770,
+        "ending_stocks_prior": 820,
+        "history": [
+         7.631,
+         8.375,
+         7.1517,
+         7.3626,
+         8.5123,
+         7.4845,
+         5.9554,
+         5.5807,
+         5.9424,
+         4.6422
+        ]
+       },
+       "detail": "US soybean oil stocks/use. Stocks/use 5.1% is the 10th percentile of the prior 10 years. Ending stocks 770 versus prior 820 (-50).",
+       "reason": null,
+       "text": "BULLISH"
+      },
+      "mm_extension": {
+       "state": "neutral",
+       "rule_id": "mm_extension",
+       "as_of": "2026-11-03",
+       "inputs": {
+        "percentile": 62.1795,
+        "net": 40377,
+        "weeks": 156
+       },
+       "detail": "Managed money net +40,377 contracts. 62nd percentile of the last 156 weeks. Inside the 15th to 85th percentiles.",
+       "reason": null,
+       "text": "NEUTRAL"
+      },
+      "mm_flow": {
+       "state": "bearish",
+       "rule_id": "mm_flow",
+       "as_of": "2026-11-03",
+       "inputs": {
+        "change_1w": -15894,
+        "change_4w": -59070
+       },
+       "detail": "Managed money net changed -15,894 contracts in one week and -59,070 over four weeks.",
+       "reason": null,
+       "text": "BEARISH"
+      },
+      "seasonal": {
+       "state": null,
+       "text": null,
+       "rule_id": "seasonal",
+       "as_of": null,
+       "inputs": {},
+       "detail": "The Seasonals page stores typed weekly scores, not a 15-year price series, so the average and the hit rate cannot be computed.",
+       "reason": "The Seasonals page stores typed weekly scores, not a 15-year price series, so the average and the hit rate cannot be computed."
+      },
+      "demand": {
+       "state": null,
+       "text": null,
+       "rule_id": "demand_pace",
+       "as_of": "11/05/2026",
+       "inputs": {},
+       "detail": "Export history covers 2 seasons, not the 5 seasons needed for the same-week pace.",
+       "reason": "Export history covers 2 seasons, not the 5 seasons needed for the same-week pace."
+      },
+      "condition": {
+       "state": null,
+       "text": null,
+       "rule_id": "condition",
+       "as_of": null,
+       "inputs": {},
+       "detail": "not a crop-condition series",
+       "reason": "not a crop-condition series"
+      }
+     },
+     "tally": {
+      "bullish": 1,
+      "bearish": 1,
+      "neutral": 1
+     },
+     "figures": [
+      {
+       "label": "S/U",
+       "value": "5.1%"
+      },
+      {
+       "label": "Ending stocks",
+       "value": "770"
+      },
+      {
+       "label": "Stocks revision",
+       "value": "-50"
+      }
+     ],
+     "page": "usda",
+     "comm": "Soybean Oil"
+    }
+   ],
+   "figures": []
+  },
+  {
+   "id": "energy",
+   "title": "Energy",
+   "columns": [
+    {
+     "id": "energy_level",
+     "label": "Stocks vs 5-yr"
+    },
+    {
+     "id": "energy_change",
+     "label": "Week vs norm"
+    },
+    {
+     "id": "mm_extension",
+     "label": "Managed money"
+    },
+    {
+     "id": "mm_flow",
+     "label": "Money flow"
+    },
+    {
+     "id": "seasonal",
+     "label": "Seasonal"
+    }
+   ],
+   "rows": [
+    {
+     "label": "Crude (WTI)",
+     "signals": {
+      "energy_level": {
+       "state": "bullish",
+       "rule_id": "energy_level",
+       "as_of": "2026-11-06",
+       "inputs": {
+        "vs_avg_pct": -4.3
+       },
+       "detail": "Stocks 414.417 versus the 5-year average 433.008 (-4.3%). computed from EIA weekly levels.",
+       "reason": null,
+       "text": "BULLISH"
+      },
+      "energy_change": {
+       "state": "neutral",
+       "rule_id": "energy_change",
+       "as_of": "2026-11-06",
+       "inputs": {
+        "delta_pp": 0.911,
+        "change_pct": 1.1365,
+        "norm_pct": 0.2255
+       },
+       "detail": "This week's stock change is +1.14% of the prior week. The same week of the prior five years averaged +0.23%. Difference +0.91 pp.",
+       "reason": null,
+       "text": "NEUTRAL"
+      },
+      "mm_extension": {
+       "state": "neutral",
+       "rule_id": "mm_extension",
+       "as_of": "2026-11-03",
+       "inputs": {
+        "percentile": 21.1538,
+        "net": 85303,
+        "weeks": 156
+       },
+       "detail": "Managed money net +85,303 contracts. 21st percentile of the last 156 weeks. Inside the 15th to 85th percentiles.",
+       "reason": null,
+       "text": "NEUTRAL"
+      },
+      "mm_flow": {
+       "state": "bearish",
+       "rule_id": "mm_flow",
+       "as_of": "2026-11-03",
+       "inputs": {
+        "change_1w": -14468,
+        "change_4w": -19188
+       },
+       "detail": "Managed money net changed -14,468 contracts in one week and -19,188 over four weeks.",
+       "reason": null,
+       "text": "BEARISH"
+      },
+      "seasonal": {
+       "state": null,
+       "text": null,
+       "rule_id": "seasonal",
+       "as_of": null,
+       "inputs": {},
+       "detail": "The Seasonals page stores typed weekly scores, not a 15-year price series, so the average and the hit rate cannot be computed.",
+       "reason": "The Seasonals page stores typed weekly scores, not a 15-year price series, so the average and the hit rate cannot be computed."
+      }
+     },
+     "tally": {
+      "bullish": 1,
+      "bearish": 1,
+      "neutral": 2
+     },
+     "figures": [
+      {
+       "label": "Stocks",
+       "value": "414.417"
+      },
+      {
+       "label": "Week change",
+       "value": "+4.657"
+      },
+      {
+       "label": "Vs 5-yr",
+       "value": "-4.3%"
+      }
+     ],
+     "page": "energy",
+     "comm": "crude_stocks"
+    },
+    {
+     "label": "Gasoline (RBOB)",
+     "signals": {
+      "energy_level": {
+       "state": "neutral",
+       "rule_id": "energy_level",
+       "as_of": "2026-11-06",
+       "inputs": {
+        "vs_avg_pct": 0.6
+       },
+       "detail": "Stocks 210.757 versus the 5-year average 209.509 (+0.6%). computed from EIA weekly levels.",
+       "reason": null,
+       "text": "NEUTRAL"
+      },
+      "energy_change": {
+       "state": "neutral",
+       "rule_id": "energy_change",
+       "as_of": "2026-11-06",
+       "inputs": {
+        "delta_pp": 1.3636,
+        "change_pct": 0.8609,
+        "norm_pct": -0.5026
+       },
+       "detail": "This week's stock change is +0.86% of the prior week. The same week of the prior five years averaged -0.50%. Difference +1.36 pp.",
+       "reason": null,
+       "text": "NEUTRAL"
+      },
+      "mm_extension": {
+       "state": "bearish",
+       "rule_id": "mm_extension",
+       "as_of": "2026-11-03",
+       "inputs": {
+        "percentile": 92.3077,
+        "net": 86963,
+        "weeks": 156
+       },
+       "detail": "Managed money net +86,963 contracts. 92nd percentile of the last 156 weeks. Extended long, read as bearish.",
+       "reason": null,
+       "text": "Ext long"
+      },
+      "mm_flow": {
+       "state": "bearish",
+       "rule_id": "mm_flow",
+       "as_of": "2026-11-03",
+       "inputs": {
+        "change_1w": -4431,
+        "change_4w": -9849
+       },
+       "detail": "Managed money net changed -4,431 contracts in one week and -9,849 over four weeks.",
+       "reason": null,
+       "text": "BEARISH"
+      },
+      "seasonal": {
+       "state": null,
+       "text": null,
+       "rule_id": "seasonal",
+       "as_of": null,
+       "inputs": {},
+       "detail": "The Seasonals page stores typed weekly scores, not a 15-year price series, so the average and the hit rate cannot be computed.",
+       "reason": "The Seasonals page stores typed weekly scores, not a 15-year price series, so the average and the hit rate cannot be computed."
+      }
+     },
+     "tally": {
+      "bullish": 0,
+      "bearish": 2,
+      "neutral": 2
+     },
+     "figures": [
+      {
+       "label": "Stocks",
+       "value": "210.757"
+      },
+      {
+       "label": "Week change",
+       "value": "+1.799"
+      },
+      {
+       "label": "Vs 5-yr",
+       "value": "+0.6%"
+      }
+     ],
+     "page": "energy",
+     "comm": "gas_stocks"
+    },
+    {
+     "label": "Distillate (Heating oil)",
+     "signals": {
+      "energy_level": {
+       "state": "bullish",
+       "rule_id": "energy_level",
+       "as_of": "2026-11-06",
+       "inputs": {
+        "vs_avg_pct": -8.2
+       },
+       "detail": "Stocks 103.33 versus the 5-year average 112.594 (-8.2%). computed from EIA weekly levels.",
+       "reason": null,
+       "text": "BULLISH"
+      },
+      "energy_change": {
+       "state": "bearish",
+       "rule_id": "energy_change",
+       "as_of": "2026-11-06",
+       "inputs": {
+        "delta_pp": 4.6412,
+        "change_pct": 4.1014,
+        "norm_pct": -0.5398
+       },
+       "detail": "This week's stock change is +4.10% of the prior week. The same week of the prior five years averaged -0.54%. Difference +4.64 pp.",
+       "reason": null,
+       "text": "BEARISH"
+      },
+      "mm_extension": {
+       "state": "neutral",
+       "rule_id": "mm_extension",
+       "as_of": "2026-11-03",
+       "inputs": {
+        "percentile": 40.3846,
+        "net": 7120,
+        "weeks": 156
+       },
+       "detail": "Managed money net +7,120 contracts. 40th percentile of the last 156 weeks. Inside the 15th to 85th percentiles.",
+       "reason": null,
+       "text": "NEUTRAL"
+      },
+      "mm_flow": {
+       "state": "bearish",
+       "rule_id": "mm_flow",
+       "as_of": "2026-11-03",
+       "inputs": {
+        "change_1w": -1465,
+        "change_4w": -3833
+       },
+       "detail": "Managed money net changed -1,465 contracts in one week and -3,833 over four weeks.",
+       "reason": null,
+       "text": "BEARISH"
+      },
+      "seasonal": {
+       "state": null,
+       "text": null,
+       "rule_id": "seasonal",
+       "as_of": null,
+       "inputs": {},
+       "detail": "The Seasonals page stores typed weekly scores, not a 15-year price series, so the average and the hit rate cannot be computed.",
+       "reason": "The Seasonals page stores typed weekly scores, not a 15-year price series, so the average and the hit rate cannot be computed."
+      }
+     },
+     "tally": {
+      "bullish": 1,
+      "bearish": 2,
+      "neutral": 1
+     },
+     "figures": [
+      {
+       "label": "Stocks",
+       "value": "103.33"
+      },
+      {
+       "label": "Week change",
+       "value": "+4.071"
+      },
+      {
+       "label": "Vs 5-yr",
+       "value": "-8.2%"
+      }
+     ],
+     "page": "energy",
+     "comm": "dist_stocks"
+    },
+    {
+     "label": "Natural gas",
+     "signals": {
+      "energy_level": {
+       "state": "neutral",
+       "rule_id": "energy_level",
+       "as_of": "2026-11-06",
+       "inputs": {
+        "vs_avg_pct": 2.0
+       },
+       "detail": "Stocks 3862 versus the 5-year average 3787 (+2.0%). WNGSR published 5-year average.",
+       "reason": null,
+       "text": "NEUTRAL"
+      },
+      "energy_change": {
+       "state": "neutral",
+       "rule_id": "energy_change",
+       "as_of": "2026-11-06",
+       "inputs": {
+        "delta_pp": 0.3465,
+        "change_pct": 1.6048,
+        "norm_pct": 1.2584
+       },
+       "detail": "This week's stock change is +1.60% of the prior week. The same week of the prior five years averaged +1.26%. Difference +0.35 pp.",
+       "reason": null,
+       "text": "NEUTRAL"
+      },
+      "mm_extension": {
+       "state": "bullish",
+       "rule_id": "mm_extension",
+       "as_of": "2026-11-03",
+       "inputs": {
+        "percentile": 0.641,
+        "net": -224495,
+        "weeks": 156
+       },
+       "detail": "Managed money net -224,495 contracts. 1st percentile of the last 156 weeks. Extended short, read as bullish.",
+       "reason": null,
+       "text": "Ext short"
+      },
+      "mm_flow": {
+       "state": "bearish",
+       "rule_id": "mm_flow",
+       "as_of": "2026-11-03",
+       "inputs": {
+        "change_1w": -19031,
+        "change_4w": -79814
+       },
+       "detail": "Managed money net changed -19,031 contracts in one week and -79,814 over four weeks.",
+       "reason": null,
+       "text": "BEARISH"
+      },
+      "seasonal": {
+       "state": null,
+       "text": null,
+       "rule_id": "seasonal",
+       "as_of": null,
+       "inputs": {},
+       "detail": "The Seasonals page stores typed weekly scores, not a 15-year price series, so the average and the hit rate cannot be computed.",
+       "reason": "The Seasonals page stores typed weekly scores, not a 15-year price series, so the average and the hit rate cannot be computed."
+      }
+     },
+     "tally": {
+      "bullish": 1,
+      "bearish": 1,
+      "neutral": 2
+     },
+     "figures": [
+      {
+       "label": "Stocks",
+       "value": "3,862"
+      },
+      {
+       "label": "Week change",
+       "value": "+61"
+      },
+      {
+       "label": "Vs 5-yr",
+       "value": "+2.0%"
+      }
+     ],
+     "page": "energy",
+     "comm": "ng_storage"
+    }
+   ],
+   "figures": []
+  },
+  {
+   "id": "cattle",
+   "title": "Cattle",
+   "columns": [
+    {
+     "id": "on_feed",
+     "label": "On feed"
+    },
+    {
+     "id": "placements",
+     "label": "Placements"
+    },
+    {
+     "id": "cutout",
+     "label": "Cutout"
+    },
+    {
+     "id": "mm_extension",
+     "label": "Managed money"
+    },
+    {
+     "id": "mm_flow",
+     "label": "Money flow"
+    },
+    {
+     "id": "seasonal",
+     "label": "Seasonal"
+    }
+   ],
+   "rows": [
+    {
+     "label": "Live cattle",
+     "signals": {
+      "on_feed": {
+       "state": "neutral",
+       "rule_id": "cattle_yoy",
+       "as_of": "2026-10-23",
+       "inputs": {
+        "pct": 100
+       },
+       "detail": "On feed 11,372 versus 11,418 a year ago, 100% as printed. Thresholds 98 and 102.",
+       "reason": null,
+       "text": "NEUTRAL"
+      },
+      "placements": {
+       "state": "bullish",
+       "rule_id": "cattle_yoy",
+       "as_of": "2026-10-23",
+       "inputs": {
+        "pct": 88
+       },
+       "detail": "Placements 1,777 versus 2,021 a year ago, 88% as printed. Thresholds 98 and 102.",
+       "reason": null,
+       "text": "BULLISH"
+      },
+      "cutout": {
+       "state": null,
+       "text": null,
+       "rule_id": "cutout",
+       "as_of": "November 13, 2026",
+       "inputs": {},
+       "detail": "Boxed beef history is a single print, so the four-week trend cannot be computed.",
+       "reason": "Boxed beef history is a single print, so the four-week trend cannot be computed."
+      },
+      "mm_extension": {
+       "state": "neutral",
+       "rule_id": "mm_extension",
+       "as_of": "2026-11-03",
+       "inputs": {
+        "percentile": 24.359,
+        "net": 51692,
+        "weeks": 156
+       },
+       "detail": "Managed money net +51,692 contracts. 24th percentile of the last 156 weeks. Inside the 15th to 85th percentiles.",
+       "reason": null,
+       "text": "NEUTRAL"
+      },
+      "mm_flow": {
+       "state": "neutral",
+       "rule_id": "mm_flow",
+       "as_of": "2026-11-03",
+       "inputs": {
+        "change_1w": -4325,
+        "change_4w": 772
+       },
+       "detail": "Managed money net changed -4,325 contracts in one week and +772 over four weeks.",
+       "reason": null,
+       "text": "NEUTRAL"
+      },
+      "seasonal": {
+       "state": null,
+       "text": null,
+       "rule_id": "seasonal",
+       "as_of": null,
+       "inputs": {},
+       "detail": "The Seasonals page stores typed weekly scores, not a 15-year price series, so the average and the hit rate cannot be computed.",
+       "reason": "The Seasonals page stores typed weekly scores, not a 15-year price series, so the average and the hit rate cannot be computed."
+      }
+     },
+     "tally": {
+      "bullish": 1,
+      "bearish": 0,
+      "neutral": 3
+     },
+     "figures": [],
+     "page": "cattle",
+     "comm": null
+    },
+    {
+     "label": "Feeder cattle",
+     "signals": {
+      "on_feed": {
+       "state": "neutral",
+       "rule_id": "cattle_yoy",
+       "as_of": "2026-10-23",
+       "inputs": {
+        "pct": 100
+       },
+       "detail": "On feed 11,372 versus 11,418 a year ago, 100% as printed. Thresholds 98 and 102.",
+       "reason": null,
+       "text": "NEUTRAL"
+      },
+      "placements": {
+       "state": "bullish",
+       "rule_id": "cattle_yoy",
+       "as_of": "2026-10-23",
+       "inputs": {
+        "pct": 88
+       },
+       "detail": "Placements 1,777 versus 2,021 a year ago, 88% as printed. Thresholds 98 and 102.",
+       "reason": null,
+       "text": "BULLISH"
+      },
+      "cutout": {
+       "state": null,
+       "text": null,
+       "rule_id": "cutout",
+       "as_of": "November 13, 2026",
+       "inputs": {},
+       "detail": "Boxed beef history is a single print, so the four-week trend cannot be computed.",
+       "reason": "Boxed beef history is a single print, so the four-week trend cannot be computed."
+      },
+      "mm_extension": {
+       "state": "neutral",
+       "rule_id": "mm_extension",
+       "as_of": "2026-11-03",
+       "inputs": {
+        "percentile": 43.5897,
+        "net": 11302,
+        "weeks": 156
+       },
+       "detail": "Managed money net +11,302 contracts. 44th percentile of the last 156 weeks. Inside the 15th to 85th percentiles.",
+       "reason": null,
+       "text": "NEUTRAL"
+      },
+      "mm_flow": {
+       "state": "neutral",
+       "rule_id": "mm_flow",
+       "as_of": "2026-11-03",
+       "inputs": {
+        "change_1w": -2051,
+        "change_4w": 2515
+       },
+       "detail": "Managed money net changed -2,051 contracts in one week and +2,515 over four weeks.",
+       "reason": null,
+       "text": "NEUTRAL"
+      },
+      "seasonal": {
+       "state": null,
+       "text": null,
+       "rule_id": "seasonal",
+       "as_of": null,
+       "inputs": {},
+       "detail": "The Seasonals page stores typed weekly scores, not a 15-year price series, so the average and the hit rate cannot be computed.",
+       "reason": "The Seasonals page stores typed weekly scores, not a 15-year price series, so the average and the hit rate cannot be computed."
+      }
+     },
+     "tally": {
+      "bullish": 1,
+      "bearish": 0,
+      "neutral": 3
+     },
+     "figures": [],
+     "page": "cattle",
+     "comm": null
+    }
+   ],
+   "figures": [
+    {
+     "label": "On feed",
+     "value": "100% of yr ago"
+    },
+    {
+     "label": "Placements",
+     "value": "88% of yr ago"
+    },
+    {
+     "label": "Choice cutout",
+     "value": "355.64"
+    }
+   ]
+  }
+ ]
+}
