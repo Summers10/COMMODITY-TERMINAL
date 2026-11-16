@@ -103,6 +103,7 @@ function renderSummary(){
     let html = '';
     SIGNALS.sections.forEach(section=>{
       html += `<div class="sec-hdr">${section.title}</div>`;
+      if(section.score) html += `<p class="legend-line">Section ${scoreLine(section.score)}</p>`;
       html += signalTable(section);
       html += figureStrip(section);
     });
@@ -118,7 +119,7 @@ function signalTable(section){
   const widths = [1.7, ...cols.map(()=>0.95), 1.8];
   let html = `<div class="panel"><table class="term-table summary-table sig-table">${fitColgroup(widths)}<thead><tr><th>Market</th>`;
   cols.forEach(col=>{ html += `<th>${col.label}</th>`; });
-  html += `<th>Tally</th></tr></thead><tbody>`;
+  html += `<th>Score</th></tr></thead><tbody>`;
   (section.rows||[]).forEach(row=>{
     html += `<tr><td class="jump" data-page="${row.page||''}" data-comm="${row.comm||''}">${row.label}</td>`;
     cols.forEach(col=>{
@@ -127,7 +128,8 @@ function signalTable(section){
       const text = sig.text || na();
       html += `<td class="${cls}"><button type="button" class="sig-hit" data-detail="${escapeAttr(sig.detail||sig.reason||'')}" data-rule="${escapeAttr(ruleText(sig.rule_id))}" data-asof="${escapeAttr(sig.as_of||'')}">${text}</button></td>`;
     });
-    html += `<td class="tally">${tallyText(row.tally)}</td></tr>`;
+    const tone = !row.score || !row.score.scored ? '' : (row.score.label==='Supportive' ? 'sig-bull' : row.score.label==='Bearish' ? 'sig-bear' : 'sig-neutral');
+    html += `<td class="tally ${tone}">${scoreText(row.score)}</td></tr>`;
   });
   html += `</tbody></table></div>`;
   return html;
@@ -165,9 +167,16 @@ function rulesBlock(rules){
   html += `</details>`;
   return html;
 }
-function tallyText(t){
-  if(!t) return na();
-  return `${t.bullish} bull · ${t.bearish} bear · ${t.neutral} neutral`;
+function scoreLine(s){
+  if(!s || !s.scored) return na();
+  const glyph = s.label==='Supportive' ? '▲' : s.label==='Bearish' ? '▼' : '▬';
+  const sign = s.score>0 ? '+' : '';
+  return `${glyph} ${sign}${s.score} ${s.label} · of ${s.scored}`;
+}
+function scoreText(s){
+  if(!s || !s.scored) return na();
+  const sign = s.score>0 ? '+' : '';
+  return `${sign}${s.score} ${s.label}<br><span class="score-of">of ${s.scored}</span>`;
 }
 function ruleText(id){
   const rule = (SIGNALS && SIGNALS.rules || []).find(r=>r.id===id);

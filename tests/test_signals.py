@@ -24,18 +24,42 @@ def test_saved_signals_match_a_fresh_build():
     assert fresh["config"] == saved["config"]
 
 
-def test_each_signal_replays_from_its_inputs_and_the_tally_matches():
+def test_each_signal_replays_and_the_score_matches():
     module = load_builder()
     cfg = module.load_config()
     doc = json.loads((ROOT / "data" / "signals.json").read_text())
     for section in doc["sections"]:
+        total = 0
+        scored = 0
         for item in section["rows"]:
-            counts = {"bullish": 0, "bearish": 0, "neutral": 0}
+            points = 0
+            n = 0
             for sig in item["signals"].values():
-                if sig["state"] in counts:
-                    counts[sig["state"]] += 1
+                if sig["state"] == "bullish":
+                    points += 1
+                    n += 1
+                elif sig["state"] == "bearish":
+                    points -= 1
+                    n += 1
+                elif sig["state"] == "neutral":
+                    n += 1
+                if sig["state"]:
                     assert module.rescore(sig["rule_id"], sig["inputs"], cfg) == sig["state"]
-            assert counts == item["tally"]
+            assert item["score"]["score"] == points
+            assert item["score"]["scored"] == n
+            total += points
+            scored += n
+            seasonal = item["signals"].get("seasonal")
+            if item["label"].startswith("Crude"):
+                assert seasonal["state"] is None
+                assert "No Peak" in seasonal["reason"]
+            if seasonal and seasonal["state"]:
+                weeks = seasonal["inputs"]["weeks"]
+                assert len(weeks) == 5
+                assert abs(sum(w["score"] for w in weeks) / 5 - seasonal["inputs"]["average"]) < 1e-6
+                assert "Peak Trading Research seasonal" in seasonal["detail"]
+        assert section["score"]["score"] == total
+        assert section["score"]["scored"] == scored
 
 
 def test_a_stale_input_becomes_a_dash():
@@ -55,3 +79,7 @@ def test_thresholds_are_the_config_file():
     assert cfg["energy_vs_avg_pct"] == 3
     assert cfg["cattle_yoy_low"] == 98
     assert cfg["cattle_yoy_high"] == 102
+    assert cfg["seasonal_score_bull"] == 1
+    assert cfg["seasonal_score_bear"] == -1
+    assert cfg["score_supportive"] == 2
+    assert cfg["score_bearish"] == -2
