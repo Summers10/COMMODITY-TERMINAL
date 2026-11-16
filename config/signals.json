@@ -5,9 +5,10 @@
   "mm_weeks": 156,
   "mm_ext_long_pct": 85,
   "mm_ext_short_pct": 15,
-  "seasonal_horizon_weeks": 4,
-  "seasonal_years": 15,
-  "seasonal_hit_rate": 0.6,
+  "seasonal_score_bull": 1,
+  "seasonal_score_bear": -1,
+  "score_supportive": 2,
+  "score_bearish": -2,
   "demand_pp": 3,
   "demand_history_years": 5,
   "canola_export_yoy_pct": 3,
@@ -31,6 +32,7 @@
     "cgc": 14,
     "energy": 14,
     "crop": 21,
-    "cattle": 45
+    "cattle": 45,
+    "seasonal": 120
   }
 }

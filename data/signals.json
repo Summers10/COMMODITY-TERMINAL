@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-11-16T02:05:05+00:00",
+ "generated_at": "2026-11-16T17:23:17+00:00",
  "config": {
   "stu_bull_pct": 33,
   "stu_bear_pct": 67,
@@ -7,9 +7,10 @@
   "mm_weeks": 156,
   "mm_ext_long_pct": 85,
   "mm_ext_short_pct": 15,
-  "seasonal_horizon_weeks": 4,
-  "seasonal_years": 15,
-  "seasonal_hit_rate": 0.6,
+  "seasonal_score_bull": 1,
+  "seasonal_score_bear": -1,
+  "score_supportive": 2,
+  "score_bearish": -2,
   "demand_pp": 3,
   "demand_history_years": 5,
   "canola_export_yoy_pct": 3,
@@ -57,7 +58,8 @@
    "cgc": 14,
    "energy": 14,
    "crop": 21,
-   "cattle": 45
+   "cattle": 45,
+   "seasonal": 120
   }
  },
  "rules": [
@@ -75,7 +77,11 @@
   },
   {
    "id": "seasonal",
-   "text": "Average price change from today to +4 weeks, and the hit rate, over 15 years. Average up and hit rate at least 60% is bullish. Average down and hit rate at least that is bearish. The Seasonals page has typed scores and no price series, so every seasonal cell is a dash."
+   "text": "Average of the Peak Trading Research weekly scores for the current week and the next four weeks. Scores run from \u22125 to +5. An average of 1 or higher is bullish. An average of -1 or lower is bearish. Otherwise neutral. The scores are typed on the Seasonals page. They are not fetched. A market with no typed score is a dash. The as-of date is the day those scores were last reviewed."
+  },
+  {
+   "id": "score",
+   "text": "A bullish cell is +1, a bearish cell is \u22121, and a neutral cell is 0. Dashes are left out. A row or section total of +2 or higher is Supportive. -2 or lower is Bearish. Anything between is Neutral."
   },
   {
    "id": "demand_pace",
@@ -99,11 +105,11 @@
   },
   {
    "id": "cutout",
-   "text": "Choice boxed beef over four weeks. Up more than 1% is bullish, down more than that is bearish, inside the band is neutral. The cattle file has one print, so the cell is a dash. Slaughter pace is omitted because the AMS report does not print a year-ago head count."
+   "text": "Choice boxed beef from the USDA AMS boxed-beef report, over four weeks. Up more than 1% is bullish, down more than that is bearish, inside the band is neutral. This is the printed AMS cutout, not a futures price. The cattle file has one print, so the cell is a dash. Slaughter pace is omitted because the AMS report does not print a year-ago head count."
   },
   {
    "id": "staleness",
-   "text": "A cell whose as-of date is older than its cadence is a dash. Cadences, in days: wasde 45, aafc 45, cftc 14, exports 14, cgc 14, energy 14, crop 21, cattle 45."
+   "text": "A cell whose as-of date is older than its cadence is a dash. Cadences, in days: wasde 45, aafc 45, cftc 14, exports 14, cgc 14, energy 14, crop 21, cattle 45, seasonal 120."
   }
  ],
  "sections": [
@@ -165,7 +171,7 @@
        },
        "detail": "US corn stocks/use. Stocks/use 10.8% is the 40th percentile of the prior 10 years. Ending stocks 44,670 versus prior 46,970 (-2,300).",
        "reason": null,
-       "text": "NEUTRAL"
+       "text": "\u25ac 40th pct"
       },
       "mm_extension": {
        "state": "neutral",
@@ -178,7 +184,7 @@
        },
        "detail": "Managed money net -22,900 contracts. 57th percentile of the last 156 weeks. Inside the 15th to 85th percentiles.",
        "reason": null,
-       "text": "NEUTRAL"
+       "text": "\u25ac 57th pct"
       },
       "mm_flow": {
        "state": "bearish",
@@ -190,16 +196,40 @@
        },
        "detail": "Managed money net changed -78,843 contracts in one week and -340,259 over four weeks.",
        "reason": null,
-       "text": "BEARISH"
+       "text": "\u25bc -78.8k / -340k"
       },
       "seasonal": {
-       "state": null,
-       "text": null,
+       "state": "neutral",
        "rule_id": "seasonal",
-       "as_of": null,
-       "inputs": {},
-       "detail": "The Seasonals page stores typed weekly scores, not a 15-year price series, so the average and the hit rate cannot be computed.",
-       "reason": "The Seasonals page stores typed weekly scores, not a 15-year price series, so the average and the hit rate cannot be computed."
+       "as_of": "2026-10-24",
+       "inputs": {
+        "average": 0.4,
+        "weeks": [
+         {
+          "week": "Nov 16",
+          "score": -2
+         },
+         {
+          "week": "Nov 23",
+          "score": -1
+         },
+         {
+          "week": "Nov 30",
+          "score": 0
+         },
+         {
+          "week": "Dec 07",
+          "score": 1
+         },
+         {
+          "week": "Dec 14",
+          "score": 4
+         }
+        ]
+       },
+       "detail": "Nov 16 -2, Nov 23 -1, Nov 30 0, Dec 07 +1, Dec 14 +4. Average +0.4. Source: Peak Trading Research seasonal.",
+       "reason": null,
+       "text": "\u25ac +0.4 next 4w"
       },
       "demand": {
        "state": null,
@@ -220,10 +250,10 @@
        "reason": "out of season"
       }
      },
-     "tally": {
-      "bullish": 0,
-      "bearish": 1,
-      "neutral": 2
+     "score": {
+      "score": -1,
+      "scored": 4,
+      "label": "Neutral"
      },
      "figures": [
       {
@@ -270,7 +300,7 @@
        },
        "detail": "US soybean stocks/use. Stocks/use 6.5% is the 30th percentile of the prior 10 years. Ending stocks 8,170 versus prior 8,570 (-400).",
        "reason": null,
-       "text": "BULLISH"
+       "text": "\u25b2 30th pct"
       },
       "mm_extension": {
        "state": "neutral",
@@ -283,7 +313,7 @@
        },
        "detail": "Managed money net +132,799 contracts. 78th percentile of the last 156 weeks. Inside the 15th to 85th percentiles.",
        "reason": null,
-       "text": "NEUTRAL"
+       "text": "\u25ac 78th pct"
       },
       "mm_flow": {
        "state": "bearish",
@@ -295,16 +325,40 @@
        },
        "detail": "Managed money net changed -52,601 contracts in one week and -118,861 over four weeks.",
        "reason": null,
-       "text": "BEARISH"
+       "text": "\u25bc -52.6k / -119k"
       },
       "seasonal": {
-       "state": null,
-       "text": null,
+       "state": "neutral",
        "rule_id": "seasonal",
-       "as_of": null,
-       "inputs": {},
-       "detail": "The Seasonals page stores typed weekly scores, not a 15-year price series, so the average and the hit rate cannot be computed.",
-       "reason": "The Seasonals page stores typed weekly scores, not a 15-year price series, so the average and the hit rate cannot be computed."
+       "as_of": "2026-10-24",
+       "inputs": {
+        "average": -0.2,
+        "weeks": [
+         {
+          "week": "Nov 16",
+          "score": -2
+         },
+         {
+          "week": "Nov 23",
+          "score": 2
+         },
+         {
+          "week": "Nov 30",
+          "score": -1
+         },
+         {
+          "week": "Dec 07",
+          "score": 0
+         },
+         {
+          "week": "Dec 14",
+          "score": 0
+         }
+        ]
+       },
+       "detail": "Nov 16 -2, Nov 23 +2, Nov 30 -1, Dec 07 0, Dec 14 0. Average -0.2. Source: Peak Trading Research seasonal.",
+       "reason": null,
+       "text": "\u25ac -0.2 next 4w"
       },
       "demand": {
        "state": null,
@@ -325,10 +379,10 @@
        "reason": "out of season"
       }
      },
-     "tally": {
-      "bullish": 1,
-      "bearish": 1,
-      "neutral": 1
+     "score": {
+      "score": 0,
+      "scored": 4,
+      "label": "Neutral"
      },
      "figures": [
       {
@@ -375,7 +429,7 @@
        },
        "detail": "US all-wheat stocks/use. Stocks/use 40.0% is the 30th percentile of the prior 10 years. Ending stocks 20,220 versus prior 20,140 (+80). The stocks revision disagrees with the percentile, so the cell is neutral.",
        "reason": null,
-       "text": "NEUTRAL"
+       "text": "\u25ac 30th pct"
       },
       "mm_extension": {
        "state": "neutral",
@@ -388,7 +442,7 @@
        },
        "detail": "Managed money net -88,726 contracts. 25th percentile of the last 156 weeks. Inside the 15th to 85th percentiles.",
        "reason": null,
-       "text": "NEUTRAL"
+       "text": "\u25ac 25th pct"
       },
       "mm_flow": {
        "state": "bearish",
@@ -400,16 +454,40 @@
        },
        "detail": "Managed money net changed -13,867 contracts in one week and -59,183 over four weeks.",
        "reason": null,
-       "text": "BEARISH"
+       "text": "\u25bc -13.9k / -59.2k"
       },
       "seasonal": {
-       "state": null,
-       "text": null,
+       "state": "bearish",
        "rule_id": "seasonal",
-       "as_of": null,
-       "inputs": {},
-       "detail": "The Seasonals page stores typed weekly scores, not a 15-year price series, so the average and the hit rate cannot be computed.",
-       "reason": "The Seasonals page stores typed weekly scores, not a 15-year price series, so the average and the hit rate cannot be computed."
+       "as_of": "2026-10-24",
+       "inputs": {
+        "average": -1.8,
+        "weeks": [
+         {
+          "week": "Nov 16",
+          "score": -3
+         },
+         {
+          "week": "Nov 23",
+          "score": -2
+         },
+         {
+          "week": "Nov 30",
+          "score": -2
+         },
+         {
+          "week": "Dec 07",
+          "score": -2
+         },
+         {
+          "week": "Dec 14",
+          "score": 0
+         }
+        ]
+       },
+       "detail": "Nov 16 -3, Nov 23 -2, Nov 30 -2, Dec 07 -2, Dec 14 0. Average -1.8. Source: Peak Trading Research seasonal.",
+       "reason": null,
+       "text": "\u25bc -1.8 next 4w"
       },
       "demand": {
        "state": null,
@@ -430,10 +508,10 @@
        "reason": "Good/excellent has no 5-year average and no year-ago print."
       }
      },
-     "tally": {
-      "bullish": 0,
-      "bearish": 1,
-      "neutral": 2
+     "score": {
+      "score": -2,
+      "scored": 4,
+      "label": "Bearish"
      },
      "figures": [
       {
@@ -480,7 +558,7 @@
        },
        "detail": "US all-wheat stocks/use. There is no separate HRW balance in this file. Stocks/use 40.0% is the 30th percentile of the prior 10 years. Ending stocks 20,220 versus prior 20,140 (+80). The stocks revision disagrees with the percentile, so the cell is neutral.",
        "reason": null,
-       "text": "NEUTRAL"
+       "text": "\u25ac 30th pct"
       },
       "mm_extension": {
        "state": "neutral",
@@ -493,7 +571,7 @@
        },
        "detail": "Managed money net -6,722 contracts. 75th percentile of the last 156 weeks. Inside the 15th to 85th percentiles.",
        "reason": null,
-       "text": "NEUTRAL"
+       "text": "\u25ac 75th pct"
       },
       "mm_flow": {
        "state": "bearish",
@@ -505,16 +583,40 @@
        },
        "detail": "Managed money net changed -4,857 contracts in one week and -30,762 over four weeks.",
        "reason": null,
-       "text": "BEARISH"
+       "text": "\u25bc -4.9k / -30.8k"
       },
       "seasonal": {
-       "state": null,
-       "text": null,
+       "state": "bearish",
        "rule_id": "seasonal",
-       "as_of": null,
-       "inputs": {},
-       "detail": "The Seasonals page stores typed weekly scores, not a 15-year price series, so the average and the hit rate cannot be computed.",
-       "reason": "The Seasonals page stores typed weekly scores, not a 15-year price series, so the average and the hit rate cannot be computed."
+       "as_of": "2026-10-24",
+       "inputs": {
+        "average": -1.4,
+        "weeks": [
+         {
+          "week": "Nov 16",
+          "score": -3
+         },
+         {
+          "week": "Nov 23",
+          "score": -3
+         },
+         {
+          "week": "Nov 30",
+          "score": -2
+         },
+         {
+          "week": "Dec 07",
+          "score": -2
+         },
+         {
+          "week": "Dec 14",
+          "score": 3
+         }
+        ]
+       },
+       "detail": "Nov 16 -3, Nov 23 -3, Nov 30 -2, Dec 07 -2, Dec 14 +3. Average -1.4. Source: Peak Trading Research seasonal.",
+       "reason": null,
+       "text": "\u25bc -1.4 next 4w"
       },
       "demand": {
        "state": null,
@@ -535,10 +637,10 @@
        "reason": "Good/excellent has no 5-year average and no year-ago print."
       }
      },
-     "tally": {
-      "bullish": 0,
-      "bearish": 1,
-      "neutral": 2
+     "score": {
+      "score": -2,
+      "scored": 4,
+      "label": "Bearish"
      },
      "figures": [
       {
@@ -585,7 +687,7 @@
        },
        "detail": "US all-wheat stocks/use. There is no separate spring-wheat balance in this file. Stocks/use 40.0% is the 30th percentile of the prior 10 years. Ending stocks 20,220 versus prior 20,140 (+80). The stocks revision disagrees with the percentile, so the cell is neutral.",
        "reason": null,
-       "text": "NEUTRAL"
+       "text": "\u25ac 30th pct"
       },
       "mm_extension": {
        "state": "neutral",
@@ -598,7 +700,7 @@
        },
        "detail": "Managed money net -9,735 contracts. 67th percentile of the last 156 weeks. Inside the 15th to 85th percentiles.",
        "reason": null,
-       "text": "NEUTRAL"
+       "text": "\u25ac 67th pct"
       },
       "mm_flow": {
        "state": "bearish",
@@ -610,16 +712,40 @@
        },
        "detail": "Managed money net changed -6,022 contracts in one week and -21,404 over four weeks.",
        "reason": null,
-       "text": "BEARISH"
+       "text": "\u25bc -6.0k / -21.4k"
       },
       "seasonal": {
-       "state": null,
-       "text": null,
+       "state": "bearish",
        "rule_id": "seasonal",
-       "as_of": null,
-       "inputs": {},
-       "detail": "The Seasonals page stores typed weekly scores, not a 15-year price series, so the average and the hit rate cannot be computed.",
-       "reason": "The Seasonals page stores typed weekly scores, not a 15-year price series, so the average and the hit rate cannot be computed."
+       "as_of": "2026-10-24",
+       "inputs": {
+        "average": -1.8,
+        "weeks": [
+         {
+          "week": "Nov 16",
+          "score": -3
+         },
+         {
+          "week": "Nov 23",
+          "score": -3
+         },
+         {
+          "week": "Nov 30",
+          "score": -1
+         },
+         {
+          "week": "Dec 07",
+          "score": -2
+         },
+         {
+          "week": "Dec 14",
+          "score": 0
+         }
+        ]
+       },
+       "detail": "Nov 16 -3, Nov 23 -3, Nov 30 -1, Dec 07 -2, Dec 14 0. Average -1.8. Source: Peak Trading Research seasonal.",
+       "reason": null,
+       "text": "\u25bc -1.8 next 4w"
       },
       "demand": {
        "state": null,
@@ -640,10 +766,10 @@
        "reason": "out of season"
       }
      },
-     "tally": {
-      "bullish": 0,
-      "bearish": 1,
-      "neutral": 2
+     "score": {
+      "score": -2,
+      "scored": 4,
+      "label": "Bearish"
      },
      "figures": [
       {
@@ -690,7 +816,7 @@
        },
        "detail": "AAFC canola stocks/use 8.9% is the 40th percentile of the prior 10 StatsCan years. Ending stocks 1,968 versus the prior report 1,979 (-11).",
        "reason": null,
-       "text": "NEUTRAL"
+       "text": "\u25ac 40th pct"
       },
       "mm_extension": {
        "state": "neutral",
@@ -703,7 +829,7 @@
        },
        "detail": "Managed money net +28,282 contracts. 65th percentile of the last 156 weeks. Inside the 15th to 85th percentiles.",
        "reason": null,
-       "text": "NEUTRAL"
+       "text": "\u25ac 65th pct"
       },
       "mm_flow": {
        "state": "bearish",
@@ -715,16 +841,40 @@
        },
        "detail": "Managed money net changed -18,138 contracts in one week and -82,945 over four weeks.",
        "reason": null,
-       "text": "BEARISH"
+       "text": "\u25bc -18.1k / -82.9k"
       },
       "seasonal": {
-       "state": null,
-       "text": null,
+       "state": "bearish",
        "rule_id": "seasonal",
-       "as_of": null,
-       "inputs": {},
-       "detail": "The Seasonals page stores typed weekly scores, not a 15-year price series, so the average and the hit rate cannot be computed.",
-       "reason": "The Seasonals page stores typed weekly scores, not a 15-year price series, so the average and the hit rate cannot be computed."
+       "as_of": "2026-10-24",
+       "inputs": {
+        "average": -2.4,
+        "weeks": [
+         {
+          "week": "Nov 16",
+          "score": -4
+         },
+         {
+          "week": "Nov 23",
+          "score": -3
+         },
+         {
+          "week": "Nov 30",
+          "score": -3
+         },
+         {
+          "week": "Dec 07",
+          "score": -1
+         },
+         {
+          "week": "Dec 14",
+          "score": -1
+         }
+        ]
+       },
+       "detail": "Nov 16 -4, Nov 23 -3, Nov 30 -3, Dec 07 -1, Dec 14 -1. Average -2.4. Source: Peak Trading Research seasonal.",
+       "reason": null,
+       "text": "\u25bc -2.4 next 4w"
       },
       "demand": {
        "state": "bullish",
@@ -737,7 +887,7 @@
        },
        "detail": "CGC canola exports 2,517.0 kt versus 1,544.4 kt at the same week a year ago (+63.0%). Threshold 3%.",
        "reason": null,
-       "text": "BULLISH"
+       "text": "\u25b2 +63%"
       },
       "condition": {
        "state": null,
@@ -749,10 +899,10 @@
        "reason": "No canola condition series is in the crop progress file."
       }
      },
-     "tally": {
-      "bullish": 1,
-      "bearish": 1,
-      "neutral": 2
+     "score": {
+      "score": -1,
+      "scored": 5,
+      "label": "Neutral"
      },
      "figures": [
       {
@@ -799,7 +949,7 @@
        },
        "detail": "US soybean meal stocks/use. Stocks/use 0.6% is the 20th percentile of the prior 10 years. Ending stocks 363 versus prior 408 (-45).",
        "reason": null,
-       "text": "BULLISH"
+       "text": "\u25b2 20th pct"
       },
       "mm_extension": {
        "state": "bearish",
@@ -812,7 +962,7 @@
        },
        "detail": "Managed money net +111,668 contracts. 87th percentile of the last 156 weeks. Extended long, read as bearish.",
        "reason": null,
-       "text": "Ext long"
+       "text": "\u25bc Ext long 87th"
       },
       "mm_flow": {
        "state": "bearish",
@@ -824,16 +974,40 @@
        },
        "detail": "Managed money net changed -58,191 contracts in one week and -95,136 over four weeks.",
        "reason": null,
-       "text": "BEARISH"
+       "text": "\u25bc -58.2k / -95.1k"
       },
       "seasonal": {
-       "state": null,
-       "text": null,
+       "state": "neutral",
        "rule_id": "seasonal",
-       "as_of": null,
-       "inputs": {},
-       "detail": "The Seasonals page stores typed weekly scores, not a 15-year price series, so the average and the hit rate cannot be computed.",
-       "reason": "The Seasonals page stores typed weekly scores, not a 15-year price series, so the average and the hit rate cannot be computed."
+       "as_of": "2026-10-24",
+       "inputs": {
+        "average": 0.0,
+        "weeks": [
+         {
+          "week": "Nov 16",
+          "score": -3
+         },
+         {
+          "week": "Nov 23",
+          "score": 0
+         },
+         {
+          "week": "Nov 30",
+          "score": -1
+         },
+         {
+          "week": "Dec 07",
+          "score": 2
+         },
+         {
+          "week": "Dec 14",
+          "score": 2
+         }
+        ]
+       },
+       "detail": "Nov 16 -3, Nov 23 0, Nov 30 -1, Dec 07 +2, Dec 14 +2. Average +0.0. Source: Peak Trading Research seasonal.",
+       "reason": null,
+       "text": "\u25ac +0.0 next 4w"
       },
       "demand": {
        "state": null,
@@ -854,10 +1028,10 @@
        "reason": "not a crop-condition series"
       }
      },
-     "tally": {
-      "bullish": 1,
-      "bearish": 2,
-      "neutral": 0
+     "score": {
+      "score": -1,
+      "scored": 4,
+      "label": "Neutral"
      },
      "figures": [
       {
@@ -904,7 +1078,7 @@
        },
        "detail": "US soybean oil stocks/use. Stocks/use 5.1% is the 10th percentile of the prior 10 years. Ending stocks 770 versus prior 820 (-50).",
        "reason": null,
-       "text": "BULLISH"
+       "text": "\u25b2 10th pct"
       },
       "mm_extension": {
        "state": "neutral",
@@ -917,7 +1091,7 @@
        },
        "detail": "Managed money net +40,377 contracts. 62nd percentile of the last 156 weeks. Inside the 15th to 85th percentiles.",
        "reason": null,
-       "text": "NEUTRAL"
+       "text": "\u25ac 62nd pct"
       },
       "mm_flow": {
        "state": "bearish",
@@ -929,16 +1103,40 @@
        },
        "detail": "Managed money net changed -15,894 contracts in one week and -59,070 over four weeks.",
        "reason": null,
-       "text": "BEARISH"
+       "text": "\u25bc -15.9k / -59.1k"
       },
       "seasonal": {
-       "state": null,
-       "text": null,
+       "state": "bearish",
        "rule_id": "seasonal",
-       "as_of": null,
-       "inputs": {},
-       "detail": "The Seasonals page stores typed weekly scores, not a 15-year price series, so the average and the hit rate cannot be computed.",
-       "reason": "The Seasonals page stores typed weekly scores, not a 15-year price series, so the average and the hit rate cannot be computed."
+       "as_of": "2026-10-24",
+       "inputs": {
+        "average": -2.6,
+        "weeks": [
+         {
+          "week": "Nov 16",
+          "score": -2
+         },
+         {
+          "week": "Nov 23",
+          "score": -2
+         },
+         {
+          "week": "Nov 30",
+          "score": -4
+         },
+         {
+          "week": "Dec 07",
+          "score": -4
+         },
+         {
+          "week": "Dec 14",
+          "score": -1
+         }
+        ]
+       },
+       "detail": "Nov 16 -2, Nov 23 -2, Nov 30 -4, Dec 07 -4, Dec 14 -1. Average -2.6. Source: Peak Trading Research seasonal.",
+       "reason": null,
+       "text": "\u25bc -2.6 next 4w"
       },
       "demand": {
        "state": null,
@@ -959,10 +1157,10 @@
        "reason": "not a crop-condition series"
       }
      },
-     "tally": {
-      "bullish": 1,
-      "bearish": 1,
-      "neutral": 1
+     "score": {
+      "score": -1,
+      "scored": 4,
+      "label": "Neutral"
      },
      "figures": [
       {
@@ -982,7 +1180,12 @@
      "comm": "Soybean Oil"
     }
    ],
-   "figures": []
+   "figures": [],
+   "score": {
+    "score": -10,
+    "scored": 33,
+    "label": "Bearish"
+   }
   },
   {
    "id": "energy",
@@ -1022,7 +1225,7 @@
        },
        "detail": "Stocks 414.417 versus the 5-year average 433.008 (-4.3%). computed from EIA weekly levels.",
        "reason": null,
-       "text": "BULLISH"
+       "text": "\u25b2 -4.3%"
       },
       "energy_change": {
        "state": "neutral",
@@ -1035,7 +1238,7 @@
        },
        "detail": "This week's stock change is +1.14% of the prior week. The same week of the prior five years averaged +0.23%. Difference +0.91 pp.",
        "reason": null,
-       "text": "NEUTRAL"
+       "text": "\u25ac +0.9 pp"
       },
       "mm_extension": {
        "state": "neutral",
@@ -1048,7 +1251,7 @@
        },
        "detail": "Managed money net +85,303 contracts. 21st percentile of the last 156 weeks. Inside the 15th to 85th percentiles.",
        "reason": null,
-       "text": "NEUTRAL"
+       "text": "\u25ac 21st pct"
       },
       "mm_flow": {
        "state": "bearish",
@@ -1060,7 +1263,7 @@
        },
        "detail": "Managed money net changed -14,468 contracts in one week and -19,188 over four weeks.",
        "reason": null,
-       "text": "BEARISH"
+       "text": "\u25bc -14.5k / -19.2k"
       },
       "seasonal": {
        "state": null,
@@ -1068,14 +1271,14 @@
        "rule_id": "seasonal",
        "as_of": null,
        "inputs": {},
-       "detail": "The Seasonals page stores typed weekly scores, not a 15-year price series, so the average and the hit rate cannot be computed.",
-       "reason": "The Seasonals page stores typed weekly scores, not a 15-year price series, so the average and the hit rate cannot be computed."
+       "detail": "No Peak Trading Research score is typed for this market on the Seasonals page.",
+       "reason": "No Peak Trading Research score is typed for this market on the Seasonals page."
       }
      },
-     "tally": {
-      "bullish": 1,
-      "bearish": 1,
-      "neutral": 2
+     "score": {
+      "score": 0,
+      "scored": 4,
+      "label": "Neutral"
      },
      "figures": [
       {
@@ -1106,7 +1309,7 @@
        },
        "detail": "Stocks 210.757 versus the 5-year average 209.509 (+0.6%). computed from EIA weekly levels.",
        "reason": null,
-       "text": "NEUTRAL"
+       "text": "\u25ac +0.6%"
       },
       "energy_change": {
        "state": "neutral",
@@ -1119,7 +1322,7 @@
        },
        "detail": "This week's stock change is +0.86% of the prior week. The same week of the prior five years averaged -0.50%. Difference +1.36 pp.",
        "reason": null,
-       "text": "NEUTRAL"
+       "text": "\u25ac +1.4 pp"
       },
       "mm_extension": {
        "state": "bearish",
@@ -1132,7 +1335,7 @@
        },
        "detail": "Managed money net +86,963 contracts. 92nd percentile of the last 156 weeks. Extended long, read as bearish.",
        "reason": null,
-       "text": "Ext long"
+       "text": "\u25bc Ext long 92nd"
       },
       "mm_flow": {
        "state": "bearish",
@@ -1144,7 +1347,7 @@
        },
        "detail": "Managed money net changed -4,431 contracts in one week and -9,849 over four weeks.",
        "reason": null,
-       "text": "BEARISH"
+       "text": "\u25bc -4.4k / -9.8k"
       },
       "seasonal": {
        "state": null,
@@ -1152,14 +1355,14 @@
        "rule_id": "seasonal",
        "as_of": null,
        "inputs": {},
-       "detail": "The Seasonals page stores typed weekly scores, not a 15-year price series, so the average and the hit rate cannot be computed.",
-       "reason": "The Seasonals page stores typed weekly scores, not a 15-year price series, so the average and the hit rate cannot be computed."
+       "detail": "No Peak Trading Research score is typed for this market on the Seasonals page.",
+       "reason": "No Peak Trading Research score is typed for this market on the Seasonals page."
       }
      },
-     "tally": {
-      "bullish": 0,
-      "bearish": 2,
-      "neutral": 2
+     "score": {
+      "score": -2,
+      "scored": 4,
+      "label": "Bearish"
      },
      "figures": [
       {
@@ -1190,7 +1393,7 @@
        },
        "detail": "Stocks 103.33 versus the 5-year average 112.594 (-8.2%). computed from EIA weekly levels.",
        "reason": null,
-       "text": "BULLISH"
+       "text": "\u25b2 -8.2%"
       },
       "energy_change": {
        "state": "bearish",
@@ -1203,7 +1406,7 @@
        },
        "detail": "This week's stock change is +4.10% of the prior week. The same week of the prior five years averaged -0.54%. Difference +4.64 pp.",
        "reason": null,
-       "text": "BEARISH"
+       "text": "\u25bc +4.6 pp"
       },
       "mm_extension": {
        "state": "neutral",
@@ -1216,7 +1419,7 @@
        },
        "detail": "Managed money net +7,120 contracts. 40th percentile of the last 156 weeks. Inside the 15th to 85th percentiles.",
        "reason": null,
-       "text": "NEUTRAL"
+       "text": "\u25ac 40th pct"
       },
       "mm_flow": {
        "state": "bearish",
@@ -1228,7 +1431,7 @@
        },
        "detail": "Managed money net changed -1,465 contracts in one week and -3,833 over four weeks.",
        "reason": null,
-       "text": "BEARISH"
+       "text": "\u25bc -1.5k / -3.8k"
       },
       "seasonal": {
        "state": null,
@@ -1236,14 +1439,14 @@
        "rule_id": "seasonal",
        "as_of": null,
        "inputs": {},
-       "detail": "The Seasonals page stores typed weekly scores, not a 15-year price series, so the average and the hit rate cannot be computed.",
-       "reason": "The Seasonals page stores typed weekly scores, not a 15-year price series, so the average and the hit rate cannot be computed."
+       "detail": "No Peak Trading Research score is typed for this market on the Seasonals page.",
+       "reason": "No Peak Trading Research score is typed for this market on the Seasonals page."
       }
      },
-     "tally": {
-      "bullish": 1,
-      "bearish": 2,
-      "neutral": 1
+     "score": {
+      "score": -1,
+      "scored": 4,
+      "label": "Neutral"
      },
      "figures": [
       {
@@ -1274,7 +1477,7 @@
        },
        "detail": "Stocks 3862 versus the 5-year average 3787 (+2.0%). WNGSR published 5-year average.",
        "reason": null,
-       "text": "NEUTRAL"
+       "text": "\u25ac +2.0%"
       },
       "energy_change": {
        "state": "neutral",
@@ -1287,7 +1490,7 @@
        },
        "detail": "This week's stock change is +1.60% of the prior week. The same week of the prior five years averaged +1.26%. Difference +0.35 pp.",
        "reason": null,
-       "text": "NEUTRAL"
+       "text": "\u25ac +0.3 pp"
       },
       "mm_extension": {
        "state": "bullish",
@@ -1300,7 +1503,7 @@
        },
        "detail": "Managed money net -224,495 contracts. 1st percentile of the last 156 weeks. Extended short, read as bullish.",
        "reason": null,
-       "text": "Ext short"
+       "text": "\u25b2 Ext short 1st"
       },
       "mm_flow": {
        "state": "bearish",
@@ -1312,7 +1515,7 @@
        },
        "detail": "Managed money net changed -19,031 contracts in one week and -79,814 over four weeks.",
        "reason": null,
-       "text": "BEARISH"
+       "text": "\u25bc -19.0k / -79.8k"
       },
       "seasonal": {
        "state": null,
@@ -1320,14 +1523,14 @@
        "rule_id": "seasonal",
        "as_of": null,
        "inputs": {},
-       "detail": "The Seasonals page stores typed weekly scores, not a 15-year price series, so the average and the hit rate cannot be computed.",
-       "reason": "The Seasonals page stores typed weekly scores, not a 15-year price series, so the average and the hit rate cannot be computed."
+       "detail": "No Peak Trading Research score is typed for this market on the Seasonals page.",
+       "reason": "No Peak Trading Research score is typed for this market on the Seasonals page."
       }
      },
-     "tally": {
-      "bullish": 1,
-      "bearish": 1,
-      "neutral": 2
+     "score": {
+      "score": 0,
+      "scored": 4,
+      "label": "Neutral"
      },
      "figures": [
       {
@@ -1347,7 +1550,12 @@
      "comm": "ng_storage"
     }
    ],
-   "figures": []
+   "figures": [],
+   "score": {
+    "score": -3,
+    "scored": 16,
+    "label": "Bearish"
+   }
   },
   {
    "id": "cattle",
@@ -1391,7 +1599,7 @@
        },
        "detail": "On feed 11,372 versus 11,418 a year ago, 100% as printed. Thresholds 98 and 102.",
        "reason": null,
-       "text": "NEUTRAL"
+       "text": "\u25ac 100%"
       },
       "placements": {
        "state": "bullish",
@@ -1402,7 +1610,7 @@
        },
        "detail": "Placements 1,777 versus 2,021 a year ago, 88% as printed. Thresholds 98 and 102.",
        "reason": null,
-       "text": "BULLISH"
+       "text": "\u25b2 88%"
       },
       "cutout": {
        "state": null,
@@ -1424,7 +1632,7 @@
        },
        "detail": "Managed money net +51,692 contracts. 24th percentile of the last 156 weeks. Inside the 15th to 85th percentiles.",
        "reason": null,
-       "text": "NEUTRAL"
+       "text": "\u25ac 24th pct"
       },
       "mm_flow": {
        "state": "neutral",
@@ -1436,22 +1644,46 @@
        },
        "detail": "Managed money net changed -4,325 contracts in one week and +772 over four weeks.",
        "reason": null,
-       "text": "NEUTRAL"
+       "text": "\u25ac -4.3k / +0.8k"
       },
       "seasonal": {
-       "state": null,
-       "text": null,
+       "state": "neutral",
        "rule_id": "seasonal",
-       "as_of": null,
-       "inputs": {},
-       "detail": "The Seasonals page stores typed weekly scores, not a 15-year price series, so the average and the hit rate cannot be computed.",
-       "reason": "The Seasonals page stores typed weekly scores, not a 15-year price series, so the average and the hit rate cannot be computed."
+       "as_of": "2026-10-24",
+       "inputs": {
+        "average": -0.4,
+        "weeks": [
+         {
+          "week": "Nov 16",
+          "score": -1
+         },
+         {
+          "week": "Nov 23",
+          "score": -4
+         },
+         {
+          "week": "Nov 30",
+          "score": -2
+         },
+         {
+          "week": "Dec 07",
+          "score": 0
+         },
+         {
+          "week": "Dec 14",
+          "score": 5
+         }
+        ]
+       },
+       "detail": "Nov 16 -1, Nov 23 -4, Nov 30 -2, Dec 07 0, Dec 14 +5. Average -0.4. Source: Peak Trading Research seasonal.",
+       "reason": null,
+       "text": "\u25ac -0.4 next 4w"
       }
      },
-     "tally": {
-      "bullish": 1,
-      "bearish": 0,
-      "neutral": 3
+     "score": {
+      "score": 1,
+      "scored": 5,
+      "label": "Neutral"
      },
      "figures": [],
      "page": "cattle",
@@ -1469,7 +1701,7 @@
        },
        "detail": "On feed 11,372 versus 11,418 a year ago, 100% as printed. Thresholds 98 and 102.",
        "reason": null,
-       "text": "NEUTRAL"
+       "text": "\u25ac 100%"
       },
       "placements": {
        "state": "bullish",
@@ -1480,7 +1712,7 @@
        },
        "detail": "Placements 1,777 versus 2,021 a year ago, 88% as printed. Thresholds 98 and 102.",
        "reason": null,
-       "text": "BULLISH"
+       "text": "\u25b2 88%"
       },
       "cutout": {
        "state": null,
@@ -1502,7 +1734,7 @@
        },
        "detail": "Managed money net +11,302 contracts. 44th percentile of the last 156 weeks. Inside the 15th to 85th percentiles.",
        "reason": null,
-       "text": "NEUTRAL"
+       "text": "\u25ac 44th pct"
       },
       "mm_flow": {
        "state": "neutral",
@@ -1514,22 +1746,46 @@
        },
        "detail": "Managed money net changed -2,051 contracts in one week and +2,515 over four weeks.",
        "reason": null,
-       "text": "NEUTRAL"
+       "text": "\u25ac -2.1k / +2.5k"
       },
       "seasonal": {
-       "state": null,
-       "text": null,
+       "state": "bullish",
        "rule_id": "seasonal",
-       "as_of": null,
-       "inputs": {},
-       "detail": "The Seasonals page stores typed weekly scores, not a 15-year price series, so the average and the hit rate cannot be computed.",
-       "reason": "The Seasonals page stores typed weekly scores, not a 15-year price series, so the average and the hit rate cannot be computed."
+       "as_of": "2026-10-24",
+       "inputs": {
+        "average": 1.4,
+        "weeks": [
+         {
+          "week": "Nov 16",
+          "score": 2
+         },
+         {
+          "week": "Nov 23",
+          "score": -4
+         },
+         {
+          "week": "Nov 30",
+          "score": 3
+         },
+         {
+          "week": "Dec 07",
+          "score": 1
+         },
+         {
+          "week": "Dec 14",
+          "score": 5
+         }
+        ]
+       },
+       "detail": "Nov 16 +2, Nov 23 -4, Nov 30 +3, Dec 07 +1, Dec 14 +5. Average +1.4. Source: Peak Trading Research seasonal.",
+       "reason": null,
+       "text": "\u25b2 +1.4 next 4w"
       }
      },
-     "tally": {
-      "bullish": 1,
-      "bearish": 0,
-      "neutral": 3
+     "score": {
+      "score": 2,
+      "scored": 5,
+      "label": "Supportive"
      },
      "figures": [],
      "page": "cattle",
@@ -1549,7 +1805,12 @@
      "label": "Choice cutout",
      "value": "355.64"
     }
-   ]
+   ],
+   "score": {
+    "score": 3,
+    "scored": 10,
+    "label": "Supportive"
+   }
   }
  ]
 }

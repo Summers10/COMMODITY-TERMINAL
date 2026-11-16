@@ -11,7 +11,8 @@ The summary page is a rule-based board. Each cell is bullish, bearish, neutral, 
 | Stocks/use percentile of the prior 10 years | at or below the 33rd percentile bullish; at or above the 67th bearish. A stocks revision the other way makes the cell neutral. |
 | Managed money, last 156 weeks | at or above the 85th percentile is extended long (bearish); at or below the 15th is extended short (bullish). |
 | Money flow | both the 1-week and 4-week changes in managed-money net up, or both down. Mixed or zero is neutral. |
-| Seasonal | average move and a 60% hit rate over 15 years, four weeks forward. The Seasonals page has no price series, so the cell is a dash. |
+| Seasonal | average of the typed Peak Trading Research scores for this week and the next four. +1 or higher is bullish, −1 or lower is bearish. No typed score is a dash. |
+| Score | bullish +1, bearish −1, neutral 0. Dashes are excluded. +2 or higher is Supportive, −2 or lower is Bearish, otherwise Neutral. |
 | US export pace | 3 percentage points versus the 5-year same-week share of the USDA export forecast. History covers one season, so the cell is a dash. |
 | Canola exports | CGC crop-year exports versus the same week a year ago, 3% either way. |
 | Crop condition | 3 points versus the printed 5-year average, or versus year ago. Outside the months in the config the cell says out of season. |

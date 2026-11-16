@@ -9,6 +9,7 @@ from __future__ import annotations
 import datetime as dt
 import json
 import os
+import re
 from datetime import date, datetime
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -98,7 +99,7 @@ def yoy_pct_state(pct, low, high):
 
 
 def condition_state(delta_pp, cfg):
-    # A crop worse than the comparison is bullish for price.
+    # A crop worse than the comparison is bullish.
     return band(delta_pp, "bullish", "bearish", -cfg["condition_pp"], cfg["condition_pp"])
 
 
@@ -132,6 +133,8 @@ def rescore(rule_id, inputs, cfg):
         return demand_pace_state(inputs.get("delta_pp"), cfg)
     if rule_id == "canola_exports":
         return canola_export_state(inputs.get("yoy_pct"), cfg)
+    if rule_id == "seasonal":
+        return seasonal_state(inputs.get("average"), cfg)
     return None
 
 
@@ -178,16 +181,52 @@ def cell(state, rule_id, as_of, inputs, detail, cadence_key, cfg, reason=None):
         rec["text"] = None
         rec["reason"] = f"stale: {as_text or 'undated'} is older than {limit} days"
         return rec
-    rec["text"] = label_for(rule_id, state)
+    rec["text"] = figure_text(rule_id, state, inputs)
     return rec
 
 
-def label_for(rule_id, state):
-    if rule_id == "mm_extension" and state == "bearish":
-        return "Ext long"
-    if rule_id == "mm_extension" and state == "bullish":
-        return "Ext short"
-    return {"bullish": "BULLISH", "bearish": "BEARISH", "neutral": "NEUTRAL"}[state]
+GLYPH = {"bullish": "▲", "bearish": "▼", "neutral": "▬"}
+
+
+def k_contracts(n):
+    value = abs(n) / 1000.0
+    body = f"{value:.0f}k" if value >= 100 else f"{value:.1f}k"
+    sign = "-" if n < 0 else "+" if n > 0 else ""
+    return sign + body
+
+
+def figure_text(rule_id, state, inputs):
+    """The number that drove the cell, with a glyph for the direction."""
+    inputs = inputs or {}
+    if rule_id == "stu":
+        body = f"{ordinal(inputs['percentile'])} pct"
+    elif rule_id == "mm_extension":
+        rank = ordinal(inputs["percentile"])
+        if state == "bearish":
+            body = f"Ext long {rank}"
+        elif state == "bullish":
+            body = f"Ext short {rank}"
+        else:
+            body = f"{rank} pct"
+    elif rule_id == "mm_flow":
+        body = f"{k_contracts(inputs['change_1w'])} / {k_contracts(inputs['change_4w'])}"
+    elif rule_id == "seasonal":
+        body = f"{inputs['average']:+.1f} next 4w"
+    elif rule_id == "energy_level":
+        body = f"{inputs['vs_avg_pct']:+.1f}%"
+    elif rule_id == "energy_change":
+        body = f"{inputs['delta_pp']:+.1f} pp"
+    elif rule_id == "cattle_yoy":
+        body = f"{inputs['pct']:g}%"
+    elif rule_id == "canola_exports":
+        body = f"{inputs['yoy_pct']:+.0f}%"
+    elif rule_id == "condition":
+        body = f"{inputs['delta_pp']:+.1f} pp"
+    elif rule_id == "demand_pace":
+        body = f"{inputs['delta_pp']:+.1f} pp"
+    else:
+        body = state
+    return f"{GLYPH[state]} {body}"
 
 
 def dash(rule_id, reason, as_of=None):
@@ -202,12 +241,28 @@ def dash(rule_id, reason, as_of=None):
     }
 
 
-def tally(signals):
-    counts = {"bullish": 0, "bearish": 0, "neutral": 0}
+def score_label(score, cfg):
+    if score >= cfg["score_supportive"]:
+        return "Supportive"
+    if score <= cfg["score_bearish"]:
+        return "Bearish"
+    return "Neutral"
+
+
+def score_of(signals, cfg):
+    total = 0
+    scored = 0
     for sig in signals.values():
-        if sig.get("state") in counts:
-            counts[sig["state"]] += 1
-    return counts
+        state = sig.get("state")
+        if state == "bullish":
+            total += 1
+            scored += 1
+        elif state == "bearish":
+            total -= 1
+            scored += 1
+        elif state == "neutral":
+            scored += 1
+    return {"score": total, "scored": scored, "label": score_label(total, cfg)}
 
 
 def stu_of(row, world=False):
@@ -316,11 +371,80 @@ def mm_flow(cftc, code, cfg):
     }, detail, "cftc", cfg)
 
 
-def seasonal_dash():
-    return dash(
-        "seasonal",
-        "The Seasonals page stores typed weekly scores, not a 15-year price series, so the average and the hit rate cannot be computed.",
+def seasonal_state(average, cfg):
+    if average is None:
+        return None
+    if average >= cfg["seasonal_score_bull"]:
+        return "bullish"
+    if average <= cfg["seasonal_score_bear"]:
+        return "bearish"
+    return "neutral"
+
+
+MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+
+
+def load_seasonals():
+    """The Seasonals page keeps Peak Trading Research scores as typed JavaScript."""
+    path = os.path.join(ROOT, "index.html")
+    if not os.path.exists(path):
+        return None
+    text = open(path, encoding="utf-8").read()
+    weeks_m = re.search(r"const SEASONALS_WEEKS = (\[.*?\]);", text)
+    data_m = re.search(r"const SEASONALS_DATA = (\{.*?\});", text, re.S)
+    reviewed_m = re.search(r"const SEASONALS_REVIEWED = '([^']+)'", text)
+    if not weeks_m or not data_m or not reviewed_m:
+        return None
+    weeks = json.loads(weeks_m.group(1))
+    raw = re.sub(r",(\s*})", r"\1", data_m.group(1).replace("'", '"'))
+    scores = json.loads(raw)
+    return {"weeks": weeks, "scores": scores, "reviewed": reviewed_m.group(1)}
+
+
+def current_seasonal_index(weeks, today):
+    """Index of the labeled week that contains today. Labels are the Monday of that week."""
+    best = None
+    for i, label in enumerate(weeks):
+        mon, day = label.split()
+        month = MONTHS.index(mon) + 1
+        for year in (today.year - 1, today.year, today.year + 1):
+            try:
+                start = date(year, month, int(day))
+            except ValueError:
+                continue
+            if start <= today and (today - start).days <= 6 and (best is None or start > best[0]):
+                best = (start, i)
+    return None if best is None else best[1]
+
+
+def seasonal_signal(book, product, cfg):
+    if not book or not product or product not in (book.get("scores") or {}):
+        return dash("seasonal", "No Peak Trading Research score is typed for this market on the Seasonals page.")
+    weeks = book["weeks"]
+    values = book["scores"][product]
+    index = current_seasonal_index(weeks, TODAY)
+    if index is None:
+        return dash("seasonal", "The current week is not in the Seasonals week list.", book.get("reviewed"))
+    window = []
+    for step in range(5):
+        i = (index + step) % len(weeks)
+        if i >= len(values) or values[i] is None:
+            return dash("seasonal", f"The Peak score for {weeks[i]} is missing.", book.get("reviewed"))
+        window.append({"week": weeks[i], "score": values[i]})
+    average = sum(item["score"] for item in window) / len(window)
+    state = seasonal_state(average, cfg)
+    listed = ", ".join(
+        f"{item['week']} {item['score']:+d}" if item["score"] != 0 else f"{item['week']} 0"
+        for item in window
     )
+    detail = (
+        f"{listed}. Average {average:+.1f}. "
+        "Source: Peak Trading Research seasonal."
+    )
+    return cell(state, "seasonal", book.get("reviewed"), {
+        "average": round(average, 4),
+        "weeks": window,
+    }, detail, "seasonal", cfg)
 
 
 def export_history_years(history, commodity):
@@ -501,9 +625,16 @@ def rule_book(cfg):
             "A mixed pair, or a zero change, is neutral."
         )},
         {"id": "seasonal", "text": (
-            f"Average price change from today to +{c['seasonal_horizon_weeks']} weeks, and the hit rate, over {c['seasonal_years']} years. "
-            f"Average up and hit rate at least {c['seasonal_hit_rate']:.0%} is bullish. Average down and hit rate at least that is bearish. "
-            "The Seasonals page has typed scores and no price series, so every seasonal cell is a dash."
+            "Average of the Peak Trading Research weekly scores for the current week and the next four weeks. "
+            f"Scores run from −5 to +5. An average of {c['seasonal_score_bull']:g} or higher is bullish. "
+            f"An average of {c['seasonal_score_bear']:g} or lower is bearish. Otherwise neutral. "
+            "The scores are typed on the Seasonals page. They are not fetched. "
+            "A market with no typed score is a dash. The as-of date is the day those scores were last reviewed."
+        )},
+        {"id": "score", "text": (
+            "A bullish cell is +1, a bearish cell is −1, and a neutral cell is 0. Dashes are left out. "
+            f"A row or section total of {c['score_supportive']:+d} or higher is Supportive. "
+            f"{c['score_bearish']:+d} or lower is Bearish. Anything between is Neutral."
         )},
         {"id": "demand_pace", "text": (
             f"US export commitments as a percent of the USDA export forecast, minus the {c['demand_history_years']}-year average of that percent at the same week. "
@@ -533,8 +664,8 @@ def rule_book(cfg):
             "Both cattle rows use this one report."
         )},
         {"id": "cutout", "text": (
-            f"Choice boxed beef over four weeks. Up more than {c['cutout_flat_pct']}% is bullish, down more than that is bearish, "
-            "inside the band is neutral. The cattle file has one print, so the cell is a dash. "
+            f"Choice boxed beef from the USDA AMS boxed-beef report, over four weeks. Up more than {c['cutout_flat_pct']}% is bullish, down more than that is bearish, "
+            "inside the band is neutral. This is the printed AMS cutout, not a futures price. The cattle file has one print, so the cell is a dash. "
             "Slaughter pace is omitted because the AMS report does not print a year-ago head count."
         )},
         {"id": "staleness", "text": (
@@ -553,8 +684,15 @@ def ordinal(n):
     return f"{n}{suffix}"
 
 
-def row(label, signals, figures, page=None, comm=None):
-    return {"label": label, "signals": signals, "tally": tally(signals), "figures": figures, "page": page, "comm": comm}
+def row(label, signals, figures, page=None, comm=None, cfg=None):
+    return {
+        "label": label,
+        "signals": signals,
+        "score": score_of(signals, cfg) if cfg else None,
+        "figures": figures,
+        "page": page,
+        "comm": comm,
+    }
 
 
 def canola_fundamentals(sd, psd, prior, cfg):
@@ -608,10 +746,11 @@ def build(cfg=None):
     sd = load_json("sd.json")
     series = {s["key"]: s for s in energy.get("series") or []}
     feed = (cattle.get("on_feed") or [None])[-1]
+    seasonals = load_seasonals()
 
-    def grain(label, comm, country, cftc_code, fas, condition_kind, crop_name, fund_note):
+    def grain(label, comm, country, cftc_code, fas, condition_kind, crop_name, fund_note, peak):
         fund = fundamentals(psd, prior, comm, country, cfg, fund_note)
-        demand = demand_grains(exports, history, fas, cfg) if fas else seasonal_dash()
+        demand = demand_grains(exports, history, fas, cfg) if fas else dash("demand_pace", "No export series is wired for this row.")
         if fas is None and label == "Canola":
             demand = canola_demand(cgc, cfg)
         cond = condition_signal(progress, crop_name, condition_kind, cfg) if condition_kind else dash("condition", "not a crop-condition series")
@@ -619,7 +758,7 @@ def build(cfg=None):
             "stu": fund,
             "mm_extension": mm_extension(cftc, cftc_code, cfg),
             "mm_flow": mm_flow(cftc, cftc_code, cfg),
-            "seasonal": seasonal_dash(),
+            "seasonal": seasonal_signal(seasonals, peak, cfg),
             "demand": demand,
             "condition": cond,
         }
@@ -630,21 +769,21 @@ def build(cfg=None):
             figs.append({"label": "Ending stocks", "value": f"{fund['inputs']['ending_stocks']:,.0f}"})
         if fund["inputs"].get("revision") is not None:
             figs.append({"label": "Stocks revision", "value": f"{fund['inputs']['revision']:+,.0f}"})
-        return row(label, sigs, figs, "usda", comm)
+        return row(label, sigs, figs, "usda", comm, cfg)
 
     grains = [
-        grain("Corn", "Corn", "United States", "002602", "CORN - UNMILLED", "corn", "Corn", "US corn stocks/use."),
-        grain("Soybeans", "Soybeans", "United States", "005602", "SOYBEANS", "soybeans", "Soybeans", "US soybean stocks/use."),
-        grain("Wheat (Chicago SRW)", "Wheat", "United States", "001602", "ALL WHEAT", "wheat_winter", "Wheat, Winter", "US all-wheat stocks/use."),
-        grain("Wheat (KC HRW)", "Wheat", "United States", "001612", "ALL WHEAT", "wheat_winter", "Wheat, Winter", "US all-wheat stocks/use. There is no separate HRW balance in this file."),
-        grain("Wheat (MGEX)", "Wheat", "United States", "001626", "ALL WHEAT", "wheat_spring", "Wheat, Spring", "US all-wheat stocks/use. There is no separate spring-wheat balance in this file."),
+        grain("Corn", "Corn", "United States", "002602", "CORN - UNMILLED", "corn", "Corn", "US corn stocks/use.", "Corn"),
+        grain("Soybeans", "Soybeans", "United States", "005602", "SOYBEANS", "soybeans", "Soybeans", "US soybean stocks/use.", "Soybeans"),
+        grain("Wheat (Chicago SRW)", "Wheat", "United States", "001602", "ALL WHEAT", "wheat_winter", "Wheat, Winter", "US all-wheat stocks/use.", "Chicago Wheat"),
+        grain("Wheat (KC HRW)", "Wheat", "United States", "001612", "ALL WHEAT", "wheat_winter", "Wheat, Winter", "US all-wheat stocks/use. There is no separate HRW balance in this file.", "Kansas Wheat"),
+        grain("Wheat (MGEX)", "Wheat", "United States", "001626", "ALL WHEAT", "wheat_spring", "Wheat, Spring", "US all-wheat stocks/use. There is no separate spring-wheat balance in this file.", "Spring Wheat"),
     ]
     canola_fund = canola_fundamentals(sd, psd, prior, cfg)
     canola_sigs = {
         "stu": canola_fund,
         "mm_extension": mm_extension(cftc, "135731", cfg),
         "mm_flow": mm_flow(cftc, "135731", cfg),
-        "seasonal": seasonal_dash(),
+        "seasonal": seasonal_signal(seasonals, "Canola Seed", cfg),
         "demand": canola_demand(cgc, cfg),
         "condition": dash("condition", "No canola condition series is in the crop progress file."),
     }
@@ -655,9 +794,9 @@ def build(cfg=None):
         canola_figs.append({"label": "Ending stocks", "value": f"{canola_fund['inputs']['ending_stocks']:,.0f}"})
     if canola_fund["inputs"].get("revision") is not None:
         canola_figs.append({"label": "Stocks revision", "value": f"{canola_fund['inputs']['revision']:+,.0f}"})
-    grains.append(row("Canola", canola_sigs, canola_figs, "usda", "Rapeseed/Canola"))
-    grains.append(grain("Soybean meal", "Soybean Meal", "United States", "026603", "SOYBEAN CAKE AND MEAL", None, None, "US soybean meal stocks/use."))
-    grains.append(grain("Soybean oil", "Soybean Oil", "United States", "007601", "SOYBEAN OIL", None, None, "US soybean oil stocks/use."))
+    grains.append(row("Canola", canola_sigs, canola_figs, "usda", "Rapeseed/Canola", cfg))
+    grains.append(grain("Soybean meal", "Soybean Meal", "United States", "026603", "SOYBEAN CAKE AND MEAL", None, None, "US soybean meal stocks/use.", "Soybean Meal"))
+    grains.append(grain("Soybean oil", "Soybean Oil", "United States", "007601", "SOYBEAN OIL", None, None, "US soybean oil stocks/use.", "Soybean Oil"))
 
     def energy_row(label, key, code):
         ser = series.get(key) or {}
@@ -668,7 +807,7 @@ def build(cfg=None):
             "energy_change": change,
             "mm_extension": mm_extension(cftc, code, cfg),
             "mm_flow": mm_flow(cftc, code, cfg),
-            "seasonal": seasonal_dash(),
+            "seasonal": seasonal_signal(seasonals, None, cfg),
         }
         figs = []
         if ser.get("value") is not None:
@@ -677,7 +816,7 @@ def build(cfg=None):
             figs.append({"label": "Week change", "value": f"{ser['change']:+,}"})
         if ser.get("vs_avg5_pct") is not None:
             figs.append({"label": "Vs 5-yr", "value": f"{ser['vs_avg5_pct']:+.1f}%"})
-        return row(label, sigs, figs, "energy", key)
+        return row(label, sigs, figs, "energy", key, cfg)
 
     energy_rows = [
         energy_row("Crude (WTI)", "crude_stocks", "067651"),
@@ -689,20 +828,20 @@ def build(cfg=None):
     placements = cattle_pct(feed, "placements", cfg)
     cut = cutout_signal(cattle, cfg)
 
-    def cattle_row(label, code):
+    def cattle_row(label, code, peak):
         sigs = {
             "on_feed": on_feed,
             "placements": placements,
             "cutout": cut,
             "mm_extension": mm_extension(cftc, code, cfg),
             "mm_flow": mm_flow(cftc, code, cfg),
-            "seasonal": seasonal_dash(),
+            "seasonal": seasonal_signal(seasonals, peak, cfg),
         }
-        return row(label, sigs, [], "cattle", None)
+        return row(label, sigs, [], "cattle", None, cfg)
 
     cattle_rows = [
-        cattle_row("Live cattle", "057642"),
-        cattle_row("Feeder cattle", "061641"),
+        cattle_row("Live cattle", "057642", "Cattle"),
+        cattle_row("Feeder cattle", "061641", "Feeder Cattle"),
     ]
     cattle_figs = []
     if feed and feed.get("on_feed"):
@@ -756,6 +895,10 @@ def build(cfg=None):
             "figures": cattle_figs,
         },
     ]
+    for section in sections:
+        total = sum(item["score"]["score"] for item in section["rows"])
+        scored = sum(item["score"]["scored"] for item in section["rows"])
+        section["score"] = {"score": total, "scored": scored, "label": score_label(total, cfg)}
     return {
         "generated_at": datetime.now(dt.timezone.utc).replace(microsecond=0).isoformat(),
         "config": cfg,
@@ -776,7 +919,7 @@ def main():
             bits = []
             for key, sig in item["signals"].items():
                 bits.append(f"{key}={sig['text'] or '—'}")
-            print(" ", item["label"], item["tally"], " ".join(bits))
+            print(" ", item["label"], item["score"], " ".join(bits))
 
 
 if __name__ == "__main__":

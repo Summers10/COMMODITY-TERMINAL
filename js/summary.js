@@ -103,6 +103,7 @@ function renderSummary(){
     let html = '';
     SIGNALS.sections.forEach(section=>{
       html += `<div class="sec-hdr">${section.title}</div>`;
+      if(section.score) html += `<p class="legend-line">Section ${scoreLine(section.score)}</p>`;
       html += signalTable(section);
       html += figureStrip(section);
     });
@@ -118,7 +119,7 @@ function signalTable(section){
   const widths = [1.7, ...cols.map(()=>0.95), 1.8];
   let html = `<div class="panel"><table class="term-table summary-table sig-table">${fitColgroup(widths)}<thead><tr><th>Market</th>`;
   cols.forEach(col=>{ html += `<th>${col.label}</th>`; });
-  html += `<th>Tally</th></tr></thead><tbody>`;
+  html += `<th>Score</th></tr></thead><tbody>`;
   (section.rows||[]).forEach(row=>{
     html += `<tr><td class="jump" data-page="${row.page||''}" data-comm="${row.comm||''}">${row.label}</td>`;
     cols.forEach(col=>{
@@ -127,7 +128,8 @@ function signalTable(section){
       const text = sig.text || na();
       html += `<td class="${cls}"><button type="button" class="sig-hit" data-detail="${escapeAttr(sig.detail||sig.reason||'')}" data-rule="${escapeAttr(ruleText(sig.rule_id))}" data-asof="${escapeAttr(sig.as_of||'')}">${text}</button></td>`;
     });
-    html += `<td class="tally">${tallyText(row.tally)}</td></tr>`;
+    const tone = !row.score || !row.score.scored ? '' : (row.score.label==='Supportive' ? 'sig-bull' : row.score.label==='Bearish' ? 'sig-bear' : 'sig-neutral');
+    html += `<td class="tally ${tone}">${scoreText(row.score)}</td></tr>`;
   });
   html += `</tbody></table></div>`;
   return html;
@@ -165,9 +167,16 @@ function rulesBlock(rules){
   html += `</details>`;
   return html;
 }
-function tallyText(t){
-  if(!t) return na();
-  return `${t.bullish} bull · ${t.bearish} bear · ${t.neutral} neutral`;
+function scoreLine(s){
+  if(!s || !s.scored) return na();
+  const glyph = s.label==='Supportive' ? '▲' : s.label==='Bearish' ? '▼' : '▬';
+  const sign = s.score>0 ? '+' : '';
+  return `${glyph} ${sign}${s.score} ${s.label} · of ${s.scored}`;
+}
+function scoreText(s){
+  if(!s || !s.scored) return na();
+  const sign = s.score>0 ? '+' : '';
+  return `${sign}${s.score} ${s.label}<br><span class="score-of">of ${s.scored}</span>`;
 }
 function ruleText(id){
   const rule = (SIGNALS && SIGNALS.rules || []).find(r=>r.id===id);
@@ -211,55 +220,6 @@ function bindSignals(root){
   }
 }
 
-function energySummary(){
-  const st = energyStatus();
-  let html = `<div class="panel"><div class="panel-hdr"><span class="panel-title">Energy stocks</span>${provMark(['EIA WPSR Table 1 and Table 4, and the Weekly Natural Gas Storage Report.', ...st.parts, 'The natural gas 5-year average is the figure WNGSR prints. Petroleum 5-year averages are computed from EIA weekly levels.'], st.stale)}</div>`;
-  html += `<table class="term-table summary-table">${fitColgroup([1.8,1.1,0.9,1.1,1,1])}<thead><tr>
-    <th>Market</th><th>Stocks</th><th>w/w</th><th>Year ago</th><th>5-yr avg</th><th>vs 5-yr</th></tr></thead><tbody>`;
-  const order = ['crude_stocks','gas_stocks','dist_stocks','ng_storage'];
-  order.forEach(key=>{
-    const s = (ENERGY && ENERGY.series || []).find(x=>x.key===key) || {};
-    const d = s.decimals==null?0:s.decimals;
-    const vs = s.vs_avg5_pct;
-    html += `<tr class="jump" data-page="energy" data-comm="${key}"><td>${s.label||key}</td>`;
-    html += cell(s.value==null?na():Number(s.value).toLocaleString(undefined,{minimumFractionDigits:d,maximumFractionDigits:d}));
-    html += cell(s.change==null?na():signed(s.change,d), dir(s.change));
-    html += cell(s.year_ago==null?na():Number(s.year_ago).toLocaleString(undefined,{maximumFractionDigits:d}));
-    html += cell(s.avg5==null?na():Number(s.avg5).toLocaleString());
-    html += cell(vs==null?na():signed(vs,1)+'%', dir(vs));
-    html += `</tr>`;
-  });
-  html += `</tbody></table></div>`;
-  return html;
-}
-
-function cattleSummary(){
-  const of = CATTLE && CATTLE.on_feed && CATTLE.on_feed[CATTLE.on_feed.length-1];
-  const steer = CATTLE && CATTLE.steer;
-  const cut = CATTLE && CATTLE.cutout;
-  const sl = CATTLE && CATTLE.slaughter;
-  const lines = [
-    'Cattle on Feed: USDA NASS. Year-ago percent is the percent printed in the report.',
-    '5-area live FOB steer and boxed beef: USDA AMS. Slaughter is AMS Actual Slaughter Under Federal Inspection; that report does not print a year-ago or a 5-year average.',
-    'Positioning for live cattle and feeder cattle is on the CFTC page.'
-  ];
-  let html = `<div class="panel"><div class="panel-hdr"><span class="panel-title">Cattle</span>${provMark(lines, cattleStale())}</div>`;
-  html += `<table class="term-table summary-table">${fitColgroup([1.6,1.3,1.2,1.2])}<thead><tr><th>Reading</th><th>Latest</th><th>Comparison</th><th></th></tr></thead><tbody>`;
-  const feed = of && of.on_feed;
-  html += cattleRow('On feed', feed?feed.current.toLocaleString()+' (000)':na(), feed?feed.pct_of_year_ago+'% of yr ago':na(), feed?feed.pct_of_year_ago-100:null);
-  const pl = of && of.placements;
-  html += cattleRow('Placements', pl?pl.current.toLocaleString()+' (000)':na(), pl?pl.pct_of_year_ago+'% of yr ago':na(), pl?pl.pct_of_year_ago-100:null);
-  html += cattleRow('FI slaughter', sl?sl.cattle_head.toLocaleString()+' hd':na(), na(), null);
-  const px = steer && steer.live_fob_steer;
-  const pxYa = steer && steer.live_fob_steer_year_ago;
-  html += cattleRow('Live FOB steer', px?px.price.toFixed(2):na(), (px&&pxYa)?signed(px.price-pxYa.price,2)+' vs yr ago':na(), (px&&pxYa)?px.price-pxYa.price:null);
-  html += cattleRow('Choice cutout', cut?cut.choice.toFixed(2):na(), cut?signed(cut.choice_change,2)+' d/d':na(), cut?cut.choice_change:null);
-  html += `</tbody></table></div>`;
-  return html;
-}
-function cattleRow(name, latest, cmp, dirV){
-  return `<tr class="jump" data-page="cattle" data-comm=""><td>${name}</td><td>${latest}</td><td class="${dir(dirV)}">${cmp}</td><td></td></tr>`;
-}
 function cattleStale(){
   const of = CATTLE && CATTLE.on_feed && CATTLE.on_feed[CATTLE.on_feed.length-1];
   if(!of) return null;
