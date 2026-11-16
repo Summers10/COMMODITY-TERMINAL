@@ -99,7 +99,7 @@ def yoy_pct_state(pct, low, high):
 
 
 def condition_state(delta_pp, cfg):
-    # A crop worse than the comparison is bullish for price.
+    # A crop worse than the comparison is bullish.
     return band(delta_pp, "bullish", "bearish", -cfg["condition_pp"], cfg["condition_pp"])
 
 
@@ -664,8 +664,8 @@ def rule_book(cfg):
             "Both cattle rows use this one report."
         )},
         {"id": "cutout", "text": (
-            f"Choice boxed beef over four weeks. Up more than {c['cutout_flat_pct']}% is bullish, down more than that is bearish, "
-            "inside the band is neutral. The cattle file has one print, so the cell is a dash. "
+            f"Choice boxed beef from the USDA AMS boxed-beef report, over four weeks. Up more than {c['cutout_flat_pct']}% is bullish, down more than that is bearish, "
+            "inside the band is neutral. This is the printed AMS cutout, not a futures price. The cattle file has one print, so the cell is a dash. "
             "Slaughter pace is omitted because the AMS report does not print a year-ago head count."
         )},
         {"id": "staleness", "text": (

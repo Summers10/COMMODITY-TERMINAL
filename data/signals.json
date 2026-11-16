@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-11-16T17:20:52+00:00",
+ "generated_at": "2026-11-16T17:23:17+00:00",
  "config": {
   "stu_bull_pct": 33,
   "stu_bear_pct": 67,
@@ -105,7 +105,7 @@
   },
   {
    "id": "cutout",
-   "text": "Choice boxed beef over four weeks. Up more than 1% is bullish, down more than that is bearish, inside the band is neutral. The cattle file has one print, so the cell is a dash. Slaughter pace is omitted because the AMS report does not print a year-ago head count."
+   "text": "Choice boxed beef from the USDA AMS boxed-beef report, over four weeks. Up more than 1% is bullish, down more than that is bearish, inside the band is neutral. This is the printed AMS cutout, not a futures price. The cattle file has one print, so the cell is a dash. Slaughter pace is omitted because the AMS report does not print a year-ago head count."
   },
   {
    "id": "staleness",
