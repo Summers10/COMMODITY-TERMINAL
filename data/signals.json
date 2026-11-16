@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-11-16T18:15:33+00:00",
+ "generated_at": "2026-11-16T21:03:09+00:00",
  "config": {
   "stu_bull_pct": 33,
   "stu_bear_pct": 67,
@@ -175,27 +175,27 @@
       "mm_extension": {
        "state": "neutral",
        "rule_id": "mm_extension",
-       "as_of": "2026-11-03",
+       "as_of": "2026-11-10",
        "inputs": {
-        "percentile": 57.0513,
-        "net": -22900,
+        "percentile": 51.2821,
+        "net": -62311,
         "weeks": 156
        },
-       "detail": "Managed money net -22,900 contracts. 57th percentile of the last 156 weeks. Inside the 15th to 85th percentiles.",
+       "detail": "Managed money net -62,311 contracts. 51st percentile of the last 156 weeks. Inside the 15th to 85th percentiles.",
        "reason": null,
-       "text": "\u25ac 57th pct"
+       "text": "\u25ac 51st pct"
       },
       "mm_flow": {
        "state": "bearish",
        "rule_id": "mm_flow",
-       "as_of": "2026-11-03",
+       "as_of": "2026-11-10",
        "inputs": {
-        "change_1w": -78843,
-        "change_4w": -340259
+        "change_1w": -39411,
+        "change_4w": -293188
        },
-       "detail": "Managed money net changed -78,843 contracts in one week and -340,259 over four weeks.",
+       "detail": "Managed money net changed -39,411 contracts in one week and -293,188 over four weeks.",
        "reason": null,
-       "text": "\u25bc -78.8k / -340k"
+       "text": "\u25bc -39.4k / -293k"
       },
       "seasonal": {
        "state": "neutral",
@@ -304,27 +304,27 @@
       "mm_extension": {
        "state": "neutral",
        "rule_id": "mm_extension",
-       "as_of": "2026-11-03",
+       "as_of": "2026-11-10",
        "inputs": {
-        "percentile": 77.5641,
-        "net": 132799,
+        "percentile": 73.7179,
+        "net": 104063,
         "weeks": 156
        },
-       "detail": "Managed money net +132,799 contracts. 78th percentile of the last 156 weeks. Inside the 15th to 85th percentiles.",
+       "detail": "Managed money net +104,063 contracts. 74th percentile of the last 156 weeks. Inside the 15th to 85th percentiles.",
        "reason": null,
-       "text": "\u25ac 78th pct"
+       "text": "\u25ac 74th pct"
       },
       "mm_flow": {
        "state": "bearish",
        "rule_id": "mm_flow",
-       "as_of": "2026-11-03",
+       "as_of": "2026-11-10",
        "inputs": {
-        "change_1w": -52601,
-        "change_4w": -118861
+        "change_1w": -28736,
+        "change_4w": -133428
        },
-       "detail": "Managed money net changed -52,601 contracts in one week and -118,861 over four weeks.",
+       "detail": "Managed money net changed -28,736 contracts in one week and -133,428 over four weeks.",
        "reason": null,
-       "text": "\u25bc -52.6k / -119k"
+       "text": "\u25bc -28.7k / -133k"
       },
       "seasonal": {
        "state": "neutral",
@@ -433,27 +433,27 @@
       "mm_extension": {
        "state": "neutral",
        "rule_id": "mm_extension",
-       "as_of": "2026-11-03",
+       "as_of": "2026-11-10",
        "inputs": {
-        "percentile": 25.0,
-        "net": -88726,
+        "percentile": 32.0513,
+        "net": -81367,
         "weeks": 156
        },
-       "detail": "Managed money net -88,726 contracts. 25th percentile of the last 156 weeks. Inside the 15th to 85th percentiles.",
+       "detail": "Managed money net -81,367 contracts. 32nd percentile of the last 156 weeks. Inside the 15th to 85th percentiles.",
        "reason": null,
-       "text": "\u25ac 25th pct"
+       "text": "\u25ac 32nd pct"
       },
       "mm_flow": {
-       "state": "bearish",
+       "state": "neutral",
        "rule_id": "mm_flow",
-       "as_of": "2026-11-03",
+       "as_of": "2026-11-10",
        "inputs": {
-        "change_1w": -13867,
-        "change_4w": -59183
+        "change_1w": 7359,
+        "change_4w": -48329
        },
-       "detail": "Managed money net changed -13,867 contracts in one week and -59,183 over four weeks.",
+       "detail": "Managed money net changed +7,359 contracts in one week and -48,329 over four weeks.",
        "reason": null,
-       "text": "\u25bc -13.9k / -59.2k"
+       "text": "\u25ac +7.4k / -48.3k"
       },
       "seasonal": {
        "state": "bearish",
@@ -508,9 +508,9 @@
       }
      },
      "score": {
-      "score": -2,
+      "score": -1,
       "scored": 4,
-      "label": "Bearish"
+      "label": "Neutral"
      },
      "figures": [
       {
@@ -562,27 +562,27 @@
       "mm_extension": {
        "state": "neutral",
        "rule_id": "mm_extension",
-       "as_of": "2026-11-03",
+       "as_of": "2026-11-10",
        "inputs": {
-        "percentile": 75.0,
-        "net": -6722,
+        "percentile": 68.5897,
+        "net": -14935,
         "weeks": 156
        },
-       "detail": "Managed money net -6,722 contracts. 75th percentile of the last 156 weeks. Inside the 15th to 85th percentiles.",
+       "detail": "Managed money net -14,935 contracts. 69th percentile of the last 156 weeks. Inside the 15th to 85th percentiles.",
        "reason": null,
-       "text": "\u25ac 75th pct"
+       "text": "\u25ac 69th pct"
       },
       "mm_flow": {
        "state": "bearish",
        "rule_id": "mm_flow",
-       "as_of": "2026-11-03",
+       "as_of": "2026-11-10",
        "inputs": {
-        "change_1w": -4857,
-        "change_4w": -30762
+        "change_1w": -8213,
+        "change_4w": -32326
        },
-       "detail": "Managed money net changed -4,857 contracts in one week and -30,762 over four weeks.",
+       "detail": "Managed money net changed -8,213 contracts in one week and -32,326 over four weeks.",
        "reason": null,
-       "text": "\u25bc -4.9k / -30.8k"
+       "text": "\u25bc -8.2k / -32.3k"
       },
       "seasonal": {
        "state": "bearish",
@@ -691,27 +691,27 @@
       "mm_extension": {
        "state": "neutral",
        "rule_id": "mm_extension",
-       "as_of": "2026-11-03",
+       "as_of": "2026-11-10",
        "inputs": {
-        "percentile": 66.6667,
-        "net": -9735,
+        "percentile": 65.3846,
+        "net": -9950,
         "weeks": 156
        },
-       "detail": "Managed money net -9,735 contracts. 67th percentile of the last 156 weeks. Inside the 15th to 85th percentiles.",
+       "detail": "Managed money net -9,950 contracts. 65th percentile of the last 156 weeks. Inside the 15th to 85th percentiles.",
        "reason": null,
-       "text": "\u25ac 67th pct"
+       "text": "\u25ac 65th pct"
       },
       "mm_flow": {
        "state": "bearish",
        "rule_id": "mm_flow",
-       "as_of": "2026-11-03",
+       "as_of": "2026-11-10",
        "inputs": {
-        "change_1w": -6022,
-        "change_4w": -21404
+        "change_1w": -215,
+        "change_4w": -19487
        },
-       "detail": "Managed money net changed -6,022 contracts in one week and -21,404 over four weeks.",
+       "detail": "Managed money net changed -215 contracts in one week and -19,487 over four weeks.",
        "reason": null,
-       "text": "\u25bc -6.0k / -21.4k"
+       "text": "\u25bc -0.2k / -19.5k"
       },
       "seasonal": {
        "state": "bearish",
@@ -820,27 +820,27 @@
       "mm_extension": {
        "state": "neutral",
        "rule_id": "mm_extension",
-       "as_of": "2026-11-03",
+       "as_of": "2026-11-10",
        "inputs": {
-        "percentile": 64.7436,
-        "net": 28282,
+        "percentile": 55.7692,
+        "net": -6433,
         "weeks": 156
        },
-       "detail": "Managed money net +28,282 contracts. 65th percentile of the last 156 weeks. Inside the 15th to 85th percentiles.",
+       "detail": "Managed money net -6,433 contracts. 56th percentile of the last 156 weeks. Inside the 15th to 85th percentiles.",
        "reason": null,
-       "text": "\u25ac 65th pct"
+       "text": "\u25ac 56th pct"
       },
       "mm_flow": {
        "state": "bearish",
        "rule_id": "mm_flow",
-       "as_of": "2026-11-03",
+       "as_of": "2026-11-10",
        "inputs": {
-        "change_1w": -18138,
-        "change_4w": -82945
+        "change_1w": -34715,
+        "change_4w": -108429
        },
-       "detail": "Managed money net changed -18,138 contracts in one week and -82,945 over four weeks.",
+       "detail": "Managed money net changed -34,715 contracts in one week and -108,429 over four weeks.",
        "reason": null,
-       "text": "\u25bc -18.1k / -82.9k"
+       "text": "\u25bc -34.7k / -108k"
       },
       "seasonal": {
        "state": "bearish",
@@ -951,29 +951,29 @@
        "text": "\u25b2 20th pct"
       },
       "mm_extension": {
-       "state": "bearish",
+       "state": "neutral",
        "rule_id": "mm_extension",
-       "as_of": "2026-11-03",
+       "as_of": "2026-11-10",
        "inputs": {
-        "percentile": 86.5385,
-        "net": 111668,
+        "percentile": 71.7949,
+        "net": 72001,
         "weeks": 156
        },
-       "detail": "Managed money net +111,668 contracts. 87th percentile of the last 156 weeks. Extended long, read as bearish.",
+       "detail": "Managed money net +72,001 contracts. 72nd percentile of the last 156 weeks. Inside the 15th to 85th percentiles.",
        "reason": null,
-       "text": "\u25bc Ext long 87th"
+       "text": "\u25ac 72nd pct"
       },
       "mm_flow": {
        "state": "bearish",
        "rule_id": "mm_flow",
-       "as_of": "2026-11-03",
+       "as_of": "2026-11-10",
        "inputs": {
-        "change_1w": -58191,
-        "change_4w": -95136
+        "change_1w": -39667,
+        "change_4w": -134130
        },
-       "detail": "Managed money net changed -58,191 contracts in one week and -95,136 over four weeks.",
+       "detail": "Managed money net changed -39,667 contracts in one week and -134,130 over four weeks.",
        "reason": null,
-       "text": "\u25bc -58.2k / -95.1k"
+       "text": "\u25bc -39.7k / -134k"
       },
       "seasonal": {
        "state": "neutral",
@@ -1028,7 +1028,7 @@
       }
      },
      "score": {
-      "score": -1,
+      "score": 0,
       "scored": 4,
       "label": "Neutral"
      },
@@ -1082,27 +1082,27 @@
       "mm_extension": {
        "state": "neutral",
        "rule_id": "mm_extension",
-       "as_of": "2026-11-03",
+       "as_of": "2026-11-10",
        "inputs": {
-        "percentile": 62.1795,
-        "net": 40377,
+        "percentile": 46.7949,
+        "net": 7733,
         "weeks": 156
        },
-       "detail": "Managed money net +40,377 contracts. 62nd percentile of the last 156 weeks. Inside the 15th to 85th percentiles.",
+       "detail": "Managed money net +7,733 contracts. 47th percentile of the last 156 weeks. Inside the 15th to 85th percentiles.",
        "reason": null,
-       "text": "\u25ac 62nd pct"
+       "text": "\u25ac 47th pct"
       },
       "mm_flow": {
        "state": "bearish",
        "rule_id": "mm_flow",
-       "as_of": "2026-11-03",
+       "as_of": "2026-11-10",
        "inputs": {
-        "change_1w": -15894,
-        "change_4w": -59070
+        "change_1w": -32644,
+        "change_4w": -81595
        },
-       "detail": "Managed money net changed -15,894 contracts in one week and -59,070 over four weeks.",
+       "detail": "Managed money net changed -32,644 contracts in one week and -81,595 over four weeks.",
        "reason": null,
-       "text": "\u25bc -15.9k / -59.1k"
+       "text": "\u25bc -32.6k / -81.6k"
       },
       "seasonal": {
        "state": "bearish",
@@ -1181,7 +1181,7 @@
    ],
    "figures": [],
    "score": {
-    "score": -10,
+    "score": -8,
     "scored": 33,
     "label": "Bearish"
    }
@@ -1242,27 +1242,27 @@
       "mm_extension": {
        "state": "neutral",
        "rule_id": "mm_extension",
-       "as_of": "2026-11-03",
+       "as_of": "2026-11-10",
        "inputs": {
-        "percentile": 21.1538,
-        "net": 85303,
+        "percentile": 17.9487,
+        "net": 70584,
         "weeks": 156
        },
-       "detail": "Managed money net +85,303 contracts. 21st percentile of the last 156 weeks. Inside the 15th to 85th percentiles.",
+       "detail": "Managed money net +70,584 contracts. 18th percentile of the last 156 weeks. Inside the 15th to 85th percentiles.",
        "reason": null,
-       "text": "\u25ac 21st pct"
+       "text": "\u25ac 18th pct"
       },
       "mm_flow": {
        "state": "bearish",
        "rule_id": "mm_flow",
-       "as_of": "2026-11-03",
+       "as_of": "2026-11-10",
        "inputs": {
-        "change_1w": -14468,
-        "change_4w": -19188
+        "change_1w": -14719,
+        "change_4w": -32181
        },
-       "detail": "Managed money net changed -14,468 contracts in one week and -19,188 over four weeks.",
+       "detail": "Managed money net changed -14,719 contracts in one week and -32,181 over four weeks.",
        "reason": null,
-       "text": "\u25bc -14.5k / -19.2k"
+       "text": "\u25bc -14.7k / -32.2k"
       },
       "seasonal": {
        "state": null,
@@ -1326,27 +1326,27 @@
       "mm_extension": {
        "state": "bearish",
        "rule_id": "mm_extension",
-       "as_of": "2026-11-03",
+       "as_of": "2026-11-10",
        "inputs": {
-        "percentile": 92.3077,
-        "net": 86963,
+        "percentile": 91.6667,
+        "net": 86366,
         "weeks": 156
        },
-       "detail": "Managed money net +86,963 contracts. 92nd percentile of the last 156 weeks. Extended long, read as bearish.",
+       "detail": "Managed money net +86,366 contracts. 92nd percentile of the last 156 weeks. Extended long, read as bearish.",
        "reason": null,
        "text": "\u25bc Ext long 92nd"
       },
       "mm_flow": {
        "state": "bearish",
        "rule_id": "mm_flow",
-       "as_of": "2026-11-03",
+       "as_of": "2026-11-10",
        "inputs": {
-        "change_1w": -4431,
-        "change_4w": -9849
+        "change_1w": -597,
+        "change_4w": -11280
        },
-       "detail": "Managed money net changed -4,431 contracts in one week and -9,849 over four weeks.",
+       "detail": "Managed money net changed -597 contracts in one week and -11,280 over four weeks.",
        "reason": null,
-       "text": "\u25bc -4.4k / -9.8k"
+       "text": "\u25bc -0.6k / -11.3k"
       },
       "seasonal": {
        "state": null,
@@ -1410,27 +1410,27 @@
       "mm_extension": {
        "state": "neutral",
        "rule_id": "mm_extension",
-       "as_of": "2026-11-03",
+       "as_of": "2026-11-10",
        "inputs": {
-        "percentile": 40.3846,
-        "net": 7120,
+        "percentile": 31.4103,
+        "net": 2770,
         "weeks": 156
        },
-       "detail": "Managed money net +7,120 contracts. 40th percentile of the last 156 weeks. Inside the 15th to 85th percentiles.",
+       "detail": "Managed money net +2,770 contracts. 31st percentile of the last 156 weeks. Inside the 15th to 85th percentiles.",
        "reason": null,
-       "text": "\u25ac 40th pct"
+       "text": "\u25ac 31st pct"
       },
       "mm_flow": {
        "state": "bearish",
        "rule_id": "mm_flow",
-       "as_of": "2026-11-03",
+       "as_of": "2026-11-10",
        "inputs": {
-        "change_1w": -1465,
-        "change_4w": -3833
+        "change_1w": -4350,
+        "change_4w": -8984
        },
-       "detail": "Managed money net changed -1,465 contracts in one week and -3,833 over four weeks.",
+       "detail": "Managed money net changed -4,350 contracts in one week and -8,984 over four weeks.",
        "reason": null,
-       "text": "\u25bc -1.5k / -3.8k"
+       "text": "\u25bc -4.3k / -9.0k"
       },
       "seasonal": {
        "state": null,
@@ -1494,27 +1494,27 @@
       "mm_extension": {
        "state": "bullish",
        "rule_id": "mm_extension",
-       "as_of": "2026-11-03",
+       "as_of": "2026-11-10",
        "inputs": {
-        "percentile": 0.641,
-        "net": -224495,
+        "percentile": 1.2821,
+        "net": -224326,
         "weeks": 156
        },
-       "detail": "Managed money net -224,495 contracts. 1st percentile of the last 156 weeks. Extended short, read as bullish.",
+       "detail": "Managed money net -224,326 contracts. 1st percentile of the last 156 weeks. Extended short, read as bullish.",
        "reason": null,
        "text": "\u25b2 Ext short 1st"
       },
       "mm_flow": {
-       "state": "bearish",
+       "state": "neutral",
        "rule_id": "mm_flow",
-       "as_of": "2026-11-03",
+       "as_of": "2026-11-10",
        "inputs": {
-        "change_1w": -19031,
-        "change_4w": -79814
+        "change_1w": 169,
+        "change_4w": -98170
        },
-       "detail": "Managed money net changed -19,031 contracts in one week and -79,814 over four weeks.",
+       "detail": "Managed money net changed +169 contracts in one week and -98,170 over four weeks.",
        "reason": null,
-       "text": "\u25bc -19.0k / -79.8k"
+       "text": "\u25ac +0.2k / -98.2k"
       },
       "seasonal": {
        "state": null,
@@ -1527,7 +1527,7 @@
       }
      },
      "score": {
-      "score": 0,
+      "score": 1,
       "scored": 4,
       "label": "Neutral"
      },
@@ -1551,7 +1551,7 @@
    ],
    "figures": [],
    "score": {
-    "score": -3,
+    "score": -2,
     "scored": 16,
     "label": "Bearish"
    }
@@ -1621,29 +1621,29 @@
        "reason": "Boxed beef history is a single print, so the four-week trend cannot be computed."
       },
       "mm_extension": {
-       "state": "neutral",
+       "state": "bullish",
        "rule_id": "mm_extension",
-       "as_of": "2026-11-03",
+       "as_of": "2026-11-10",
        "inputs": {
-        "percentile": 24.359,
-        "net": 51692,
+        "percentile": 7.6923,
+        "net": 34880,
         "weeks": 156
        },
-       "detail": "Managed money net +51,692 contracts. 24th percentile of the last 156 weeks. Inside the 15th to 85th percentiles.",
+       "detail": "Managed money net +34,880 contracts. 8th percentile of the last 156 weeks. Extended short, read as bullish.",
        "reason": null,
-       "text": "\u25ac 24th pct"
+       "text": "\u25b2 Ext short 8th"
       },
       "mm_flow": {
-       "state": "neutral",
+       "state": "bearish",
        "rule_id": "mm_flow",
-       "as_of": "2026-11-03",
+       "as_of": "2026-11-10",
        "inputs": {
-        "change_1w": -4325,
-        "change_4w": 772
+        "change_1w": -16812,
+        "change_4w": -13868
        },
-       "detail": "Managed money net changed -4,325 contracts in one week and +772 over four weeks.",
+       "detail": "Managed money net changed -16,812 contracts in one week and -13,868 over four weeks.",
        "reason": null,
-       "text": "\u25ac -4.3k / +0.8k"
+       "text": "\u25bc -16.8k / -13.9k"
       },
       "seasonal": {
        "state": "neutral",
@@ -1725,27 +1725,27 @@
       "mm_extension": {
        "state": "neutral",
        "rule_id": "mm_extension",
-       "as_of": "2026-11-03",
+       "as_of": "2026-11-10",
        "inputs": {
-        "percentile": 43.5897,
-        "net": 11302,
+        "percentile": 33.3333,
+        "net": 8586,
         "weeks": 156
        },
-       "detail": "Managed money net +11,302 contracts. 44th percentile of the last 156 weeks. Inside the 15th to 85th percentiles.",
+       "detail": "Managed money net +8,586 contracts. 33rd percentile of the last 156 weeks. Inside the 15th to 85th percentiles.",
        "reason": null,
-       "text": "\u25ac 44th pct"
+       "text": "\u25ac 33rd pct"
       },
       "mm_flow": {
-       "state": "neutral",
+       "state": "bearish",
        "rule_id": "mm_flow",
-       "as_of": "2026-11-03",
+       "as_of": "2026-11-10",
        "inputs": {
-        "change_1w": -2051,
-        "change_4w": 2515
+        "change_1w": -2716,
+        "change_4w": -266
        },
-       "detail": "Managed money net changed -2,051 contracts in one week and +2,515 over four weeks.",
+       "detail": "Managed money net changed -2,716 contracts in one week and -266 over four weeks.",
        "reason": null,
-       "text": "\u25ac -2.1k / +2.5k"
+       "text": "\u25bc -2.7k / -0.3k"
       },
       "seasonal": {
        "state": "bullish",
@@ -1782,9 +1782,9 @@
       }
      },
      "score": {
-      "score": 2,
+      "score": 1,
       "scored": 5,
-      "label": "Supportive"
+      "label": "Neutral"
      },
      "figures": [],
      "page": "cattle",
@@ -1806,7 +1806,7 @@
     }
    ],
    "score": {
-    "score": 3,
+    "score": 2,
     "scored": 10,
     "label": "Supportive"
    }
