@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-11-18T02:41:42+00:00",
+ "generated_at": "2026-11-18T02:56:55+00:00",
  "config": {
   "stu_bull_pct": 33,
   "stu_bear_pct": 67,
@@ -1615,7 +1615,7 @@
        "state": null,
        "text": null,
        "rule_id": "cutout",
-       "as_of": "November 13, 2026",
+       "as_of": "November 17, 2026",
        "inputs": {},
        "detail": "Boxed beef history is a single print, so the four-week trend cannot be computed.",
        "reason": "Boxed beef history is a single print, so the four-week trend cannot be computed."
@@ -1717,7 +1717,7 @@
        "state": null,
        "text": null,
        "rule_id": "cutout",
-       "as_of": "November 13, 2026",
+       "as_of": "November 17, 2026",
        "inputs": {},
        "detail": "Boxed beef history is a single print, so the four-week trend cannot be computed.",
        "reason": "Boxed beef history is a single print, so the four-week trend cannot be computed."
@@ -1802,7 +1802,7 @@
     },
     {
      "label": "Choice cutout",
-     "value": "355.64"
+     "value": "355.87"
     }
    ],
    "score": {
