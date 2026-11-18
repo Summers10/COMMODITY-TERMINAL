@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-11-18T03:43:19+00:00",
+ "generated_at": "2026-11-18T22:41:54+00:00",
  "source": "U.S. Energy Information Administration",
  "note": "Natural gas 5-year average is the WNGSR published figure. Petroleum 5-year averages are the same-week mean of the five prior years of EIA weekly levels.",
  "series": [
@@ -7,16 +7,12 @@
    "key": "crude_stocks",
    "label": "Crude (ex-SPR)",
    "unit": "million barrels",
-   "period": "2026-11-06",
+   "period": "2026-11-13",
    "source": "WPSR Table 1",
    "source_url": "https://ir.eia.gov/wpsr/table1.csv",
    "ok": true,
    "error": null,
    "history": [
-    [
-     "2016-11-25",
-     488.145
-    ],
     [
      "2016-12-02",
      485.756
@@ -2092,36 +2088,36 @@
     [
      "2026-11-06",
      414.417
+    ],
+    [
+     "2026-11-13",
+     417.797
     ]
    ],
    "forward": [],
-   "value": 414.417,
-   "week_ago": 409.76,
-   "change": 4.657,
-   "year_ago": 427.581,
-   "year_ago_change": -13.164,
-   "year_ago_pct": -3.1,
-   "avg5": 433.008,
-   "vs_avg5": -18.591,
-   "vs_avg5_pct": -4.3,
+   "value": 417.797,
+   "week_ago": 414.417,
+   "change": 3.38,
+   "year_ago": 424.155,
+   "year_ago_change": -6.358,
+   "year_ago_pct": -1.5,
+   "avg5": 433.637,
+   "vs_avg5": -15.84,
+   "vs_avg5_pct": -3.7,
    "decimals": 3,
    "avg5_basis": "computed from EIA weekly levels",
-   "checked_at": "2026-11-18T03:43:19+00:00"
+   "checked_at": "2026-11-18T22:41:54+00:00"
   },
   {
    "key": "gas_stocks",
    "label": "Gasoline",
    "unit": "million barrels",
-   "period": "2026-11-06",
+   "period": "2026-11-13",
    "source": "WPSR Table 1",
    "source_url": "https://ir.eia.gov/wpsr/table1.csv",
    "ok": true,
    "error": null,
    "history": [
-    [
-     "2016-11-25",
-     226.123
-    ],
     [
      "2016-12-02",
      229.548
@@ -4197,36 +4193,36 @@
     [
      "2026-11-06",
      210.757
+    ],
+    [
+     "2026-11-13",
+     215.949
     ]
    ],
    "forward": [],
-   "value": 210.757,
-   "week_ago": 208.958,
-   "change": 1.799,
-   "year_ago": 205.064,
-   "year_ago_change": 5.693,
-   "year_ago_pct": 2.8,
-   "avg5": 209.509,
-   "vs_avg5": 1.248,
-   "vs_avg5_pct": 0.6,
+   "value": 215.949,
+   "week_ago": 210.757,
+   "change": 5.193,
+   "year_ago": 207.391,
+   "year_ago_change": 8.558,
+   "year_ago_pct": 4.1,
+   "avg5": 211.026,
+   "vs_avg5": 4.923,
+   "vs_avg5_pct": 2.3,
    "decimals": 3,
    "avg5_basis": "computed from EIA weekly levels",
-   "checked_at": "2026-11-18T03:43:19+00:00"
+   "checked_at": "2026-11-18T22:41:54+00:00"
   },
   {
    "key": "dist_stocks",
    "label": "Distillate",
    "unit": "million barrels",
-   "period": "2026-11-06",
+   "period": "2026-11-13",
    "source": "WPSR Table 1",
    "source_url": "https://ir.eia.gov/wpsr/table1.csv",
    "ok": true,
    "error": null,
    "history": [
-    [
-     "2016-11-25",
-     154.196
-    ],
     [
      "2016-12-02",
      156.697
@@ -6302,36 +6298,36 @@
     [
      "2026-11-06",
      103.33
+    ],
+    [
+     "2026-11-13",
+     104.901
     ]
    ],
    "forward": [],
-   "value": 103.33,
-   "week_ago": 99.259,
-   "change": 4.071,
-   "year_ago": 110.909,
-   "year_ago_change": -7.579,
-   "year_ago_pct": -6.8,
-   "avg5": 112.594,
-   "vs_avg5": -9.264,
-   "vs_avg5_pct": -8.2,
+   "value": 104.901,
+   "week_ago": 103.33,
+   "change": 1.571,
+   "year_ago": 111.08,
+   "year_ago_change": -6.179,
+   "year_ago_pct": -5.6,
+   "avg5": 112.352,
+   "vs_avg5": -7.451,
+   "vs_avg5_pct": -6.6,
    "decimals": 3,
    "avg5_basis": "computed from EIA weekly levels",
-   "checked_at": "2026-11-18T03:43:19+00:00"
+   "checked_at": "2026-11-18T22:41:54+00:00"
   },
   {
    "key": "cushing",
    "label": "Crude (Cushing)",
    "unit": "million barrels",
-   "period": "2026-11-06",
+   "period": "2026-11-13",
    "source": "WPSR Table 4",
    "source_url": "https://ir.eia.gov/wpsr/table4.csv",
    "ok": true,
    "error": null,
    "history": [
-    [
-     "2016-11-25",
-     61.502
-    ],
     [
      "2016-12-02",
      65.285
@@ -8407,21 +8403,25 @@
     [
      "2026-11-06",
      27.356
+    ],
+    [
+     "2026-11-13",
+     26.147
     ]
    ],
    "forward": [],
-   "value": 27.356,
-   "week_ago": 27.25,
-   "change": 0.106,
-   "year_ago": 22.519,
+   "value": 26.147,
+   "week_ago": 27.356,
+   "change": -1.209,
+   "year_ago": 21.821,
    "year_ago_change": null,
-   "year_ago_pct": 21.5,
-   "avg5": 24.987,
-   "vs_avg5": 2.369,
-   "vs_avg5_pct": 9.5,
+   "year_ago_pct": 19.8,
+   "avg5": 24.971,
+   "vs_avg5": 1.176,
+   "vs_avg5_pct": 4.7,
    "decimals": 3,
    "avg5_basis": "computed from EIA weekly levels",
-   "checked_at": "2026-11-18T03:43:19+00:00"
+   "checked_at": "2026-11-18T22:41:54+00:00"
   },
   {
    "key": "ng_storage",
@@ -12337,7 +12337,7 @@
     ]
    ],
    "band_basis": "WNGSR published 5-year average and range",
-   "checked_at": "2026-11-18T03:43:19+00:00"
+   "checked_at": "2026-11-18T22:41:54+00:00"
   }
  ]
 }
