@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-11-19T03:27:43+00:00",
+ "generated_at": "2026-11-19T19:29:01+00:00",
  "config": {
   "stu_bull_pct": 33,
   "stu_bear_pct": 67,
@@ -234,7 +234,7 @@
        "state": null,
        "text": null,
        "rule_id": "demand_pace",
-       "as_of": "11/05/2026",
+       "as_of": "11/12/2026",
        "inputs": {},
        "detail": "Export history covers 1 season, not the 5 seasons needed for the same-week pace.",
        "reason": "Export history covers 1 season, not the 5 seasons needed for the same-week pace."
@@ -363,7 +363,7 @@
        "state": null,
        "text": null,
        "rule_id": "demand_pace",
-       "as_of": "11/05/2026",
+       "as_of": "11/12/2026",
        "inputs": {},
        "detail": "Export history covers 1 season, not the 5 seasons needed for the same-week pace.",
        "reason": "Export history covers 1 season, not the 5 seasons needed for the same-week pace."
@@ -492,7 +492,7 @@
        "state": null,
        "text": null,
        "rule_id": "demand_pace",
-       "as_of": "11/05/2026",
+       "as_of": "11/12/2026",
        "inputs": {},
        "detail": "Export history covers 1 season, not the 5 seasons needed for the same-week pace.",
        "reason": "Export history covers 1 season, not the 5 seasons needed for the same-week pace."
@@ -621,7 +621,7 @@
        "state": null,
        "text": null,
        "rule_id": "demand_pace",
-       "as_of": "11/05/2026",
+       "as_of": "11/12/2026",
        "inputs": {},
        "detail": "Export history covers 1 season, not the 5 seasons needed for the same-week pace.",
        "reason": "Export history covers 1 season, not the 5 seasons needed for the same-week pace."
@@ -750,7 +750,7 @@
        "state": null,
        "text": null,
        "rule_id": "demand_pace",
-       "as_of": "11/05/2026",
+       "as_of": "11/12/2026",
        "inputs": {},
        "detail": "Export history covers 1 season, not the 5 seasons needed for the same-week pace.",
        "reason": "Export history covers 1 season, not the 5 seasons needed for the same-week pace."
@@ -1012,7 +1012,7 @@
        "state": null,
        "text": null,
        "rule_id": "demand_pace",
-       "as_of": "11/05/2026",
+       "as_of": "11/12/2026",
        "inputs": {},
        "detail": "Export history covers 2 seasons, not the 5 seasons needed for the same-week pace.",
        "reason": "Export history covers 2 seasons, not the 5 seasons needed for the same-week pace."
@@ -1141,7 +1141,7 @@
        "state": null,
        "text": null,
        "rule_id": "demand_pace",
-       "as_of": "11/05/2026",
+       "as_of": "11/12/2026",
        "inputs": {},
        "detail": "Export history covers 2 seasons, not the 5 seasons needed for the same-week pace.",
        "reason": "Export history covers 2 seasons, not the 5 seasons needed for the same-week pace."
