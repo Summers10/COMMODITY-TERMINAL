@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-11-22T01:52:41+00:00",
+ "generated_at": "2026-11-22T01:54:30+00:00",
  "config": {
   "stu_bull_pct": 33,
   "stu_bear_pct": 67,
@@ -134,7 +134,7 @@
   },
   {
    "feed": "Cattle on feed",
-   "as_of": "2026-10-23",
+   "as_of": "2026-11-20",
    "cadence_days": 45
   },
   {
@@ -1639,30 +1639,30 @@
       "on_feed": {
        "state": "neutral",
        "rule_id": "cattle_yoy",
-       "as_of": "2026-10-23",
+       "as_of": "2026-11-20",
        "inputs": {
-        "pct": 100
+        "pct": 99
        },
-       "detail": "On feed 11,372 versus 11,418 a year ago, 100% as printed. Thresholds 98 and 102.",
+       "detail": "On feed 11,590 versus 11,706 a year ago, 99% as printed. Thresholds 98 and 102.",
        "reason": null,
-       "text": "\u25ac 100%"
+       "text": "\u25ac 99%"
       },
       "placements": {
        "state": "bullish",
        "rule_id": "cattle_yoy",
-       "as_of": "2026-10-23",
+       "as_of": "2026-11-20",
        "inputs": {
-        "pct": 88
+        "pct": 93
        },
-       "detail": "Placements 1,777 versus 2,021 a year ago, 88% as printed. Thresholds 98 and 102.",
+       "detail": "Placements 1,891 versus 2,040 a year ago, 93% as printed. Thresholds 98 and 102.",
        "reason": null,
-       "text": "\u25b2 88%"
+       "text": "\u25b2 93%"
       },
       "cutout": {
        "state": null,
        "text": null,
        "rule_id": "cutout",
-       "as_of": "November 19, 2026",
+       "as_of": "November 20, 2026",
        "inputs": {},
        "detail": "Boxed beef history is a single print, so the four-week trend cannot be computed.",
        "reason": "Boxed beef history is a single print, so the four-week trend cannot be computed."
@@ -1741,30 +1741,30 @@
       "on_feed": {
        "state": "neutral",
        "rule_id": "cattle_yoy",
-       "as_of": "2026-10-23",
+       "as_of": "2026-11-20",
        "inputs": {
-        "pct": 100
+        "pct": 99
        },
-       "detail": "On feed 11,372 versus 11,418 a year ago, 100% as printed. Thresholds 98 and 102.",
+       "detail": "On feed 11,590 versus 11,706 a year ago, 99% as printed. Thresholds 98 and 102.",
        "reason": null,
-       "text": "\u25ac 100%"
+       "text": "\u25ac 99%"
       },
       "placements": {
        "state": "bullish",
        "rule_id": "cattle_yoy",
-       "as_of": "2026-10-23",
+       "as_of": "2026-11-20",
        "inputs": {
-        "pct": 88
+        "pct": 93
        },
-       "detail": "Placements 1,777 versus 2,021 a year ago, 88% as printed. Thresholds 98 and 102.",
+       "detail": "Placements 1,891 versus 2,040 a year ago, 93% as printed. Thresholds 98 and 102.",
        "reason": null,
-       "text": "\u25b2 88%"
+       "text": "\u25b2 93%"
       },
       "cutout": {
        "state": null,
        "text": null,
        "rule_id": "cutout",
-       "as_of": "November 19, 2026",
+       "as_of": "November 20, 2026",
        "inputs": {},
        "detail": "Boxed beef history is a single print, so the four-week trend cannot be computed.",
        "reason": "Boxed beef history is a single print, so the four-week trend cannot be computed."
@@ -1841,15 +1841,15 @@
    "figures": [
     {
      "label": "On feed",
-     "value": "100% of yr ago"
+     "value": "99% of yr ago"
     },
     {
      "label": "Placements",
-     "value": "88% of yr ago"
+     "value": "93% of yr ago"
     },
     {
      "label": "Choice cutout",
-     "value": "353.52"
+     "value": "352.84"
     }
    ],
    "score": {
