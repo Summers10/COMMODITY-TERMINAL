@@ -107,7 +107,7 @@ def test_world_softs_stocks_to_use_is_ending_over_domestic():
     """World stocks/use is ending stocks divided by domestic use, not by use plus exports.
 
     The World row is the USDA PSD world aggregate. The percentile is that ratio
-    against the prior ten marketing years, and the current year is not in the sample.
+    against every year on the world sheet, including the current year.
     """
     psd = json.loads((ROOT / "data" / "psd_data.json").read_text())
     signals = json.loads((ROOT / "data" / "signals.json").read_text())
@@ -125,12 +125,50 @@ def test_world_softs_stocks_to_use_is_ending_over_domestic():
             # Exports are recorded, and they are not part of the world denominator.
             assert row.get("ex") is not None
             series.append((year, 100.0 * ending / domestic))
-        current_year, current = series[-1]
-        history = [v for _, v in series[-(11):-1]]
-        assert len(history) == 10
-        pct = module.percentile_at_or_below(current, history)
+        values = [v for _, v in series]
+        pct = module.page_stu_percentile(values)
         cell = next(r for r in softs["rows"] if r["label"] == label)["signals"]["stu"]
-        assert cell["inputs"]["stu"] == round(current, 4)
-        assert cell["inputs"]["history"] == [round(v, 4) for v in history]
+        assert cell["inputs"]["stu"] == round(series[-1][1], 4)
+        assert cell["inputs"]["history"] == [round(v, 4) for v in values]
         assert cell["inputs"]["percentile"] == round(pct, 4)
-        assert cell["inputs"]["ending_stocks"] == world[str(current_year)]["es"]
+        assert cell["inputs"]["ending_stocks"] == world[str(series[-1][0])]["es"]
+
+
+def test_summary_percentile_matches_the_fundamentals_page():
+    """The summary rank is the page rank: every year on that sheet, current year included."""
+    module = load_builder()
+    psd = json.loads((ROOT / "data" / "psd_data.json").read_text())
+    sd = json.loads((ROOT / "data" / "sd.json").read_text())
+    doc = json.loads((ROOT / "data" / "signals.json").read_text())
+    rows = {item["label"]: item for section in doc["sections"] for item in section["rows"]}
+
+    def page_pct(comm, country, world):
+        node = psd[comm][country]
+        values = []
+        for year in sorted(y for y in node if str(y).isdigit()):
+            stu = module.stu_of(node[year], world)
+            if stu is not None:
+                values.append(stu)
+        return module.page_stu_percentile(values)
+
+    checks = [
+        ("Corn", "Corn", "United States", False),
+        ("Soybeans", "Soybeans", "United States", False),
+        ("Wheat (Chicago SRW)", "Wheat", "United States", False),
+        ("Wheat (KC HRW)", "Wheat", "United States", False),
+        ("Wheat (MGEX)", "Wheat", "United States", False),
+        ("Soybean meal", "Soybean Meal", "United States", False),
+        ("Soybean oil", "Soybean Oil", "United States", False),
+        ("Coffee", "Coffee", "World", True),
+        ("Sugar", "Sugar", "World", True),
+        ("Cotton", "Cotton", "World", True),
+    ]
+    for label, comm, country, world in checks:
+        cell = rows[label]["signals"]["stu"]
+        assert cell["inputs"]["percentile"] == round(page_pct(comm, country, world), 4)
+    crop = sd["crops"]["canola"]
+    cols = module.canola_sheet_years(crop)
+    values = [crop["years"][key]["su"] for key in cols]
+    canola = rows["Canola"]["signals"]["stu"]
+    assert canola["inputs"]["percentile"] == round(module.page_stu_percentile(values), 4)
+    assert canola["inputs"]["history"][-1] == round(values[-1], 4)

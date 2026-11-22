@@ -1,7 +1,7 @@
 {
   "stu_bull_pct": 33,
   "stu_bear_pct": 67,
-  "stu_history_years": 10,
+  "stu_rank": "all_years_including_current",
   "mm_weeks": 156,
   "mm_ext_long_pct": 85,
   "mm_ext_short_pct": 15,

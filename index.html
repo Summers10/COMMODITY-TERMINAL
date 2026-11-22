@@ -394,6 +394,7 @@ function buildBalanceTable(comm, yearDataFn, years, includeYoy, allYearsFull, wo
   // Full-history S/U values (not just the displayed years) for percentile ranking.
   const fullYears = allYearsFull || years;
   const stuHistory = fullYears.map(y => getStu(yearDataFn(y), worldStu)).filter(v => v!==null);
+  // Same rank as scripts/build_signals.py page_stu_percentile.
   function stuPctile(y){
     const v = getStu(yearDataFn(y), worldStu);
     if(v===null || stuHistory.length===0) return null;
@@ -2874,6 +2875,7 @@ function buildOilBalanceTable(yearDataFn, years, includeYoy, allYearsFull, world
   const prevYear = years.length>1 ? years[years.length-2] : null;
   const fullYears = allYearsFull || years;
   const stuHistory = fullYears.map(y => getStu(yearDataFn(y), worldStu)).filter(v => v!==null);
+  // Same rank as scripts/build_signals.py page_stu_percentile.
   function stuPctile(y){
     const v = getStu(yearDataFn(y), worldStu);
     if(v===null || stuHistory.length===0) return null;

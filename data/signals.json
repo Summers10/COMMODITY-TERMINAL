@@ -1,9 +1,9 @@
 {
- "generated_at": "2026-11-22T02:56:09+00:00",
+ "generated_at": "2026-11-22T03:07:30+00:00",
  "config": {
   "stu_bull_pct": 33,
   "stu_bear_pct": 67,
-  "stu_history_years": 10,
+  "stu_rank": "all_years_including_current",
   "mm_weeks": 156,
   "mm_ext_long_pct": 85,
   "mm_ext_short_pct": 15,
@@ -63,7 +63,7 @@
  "rules": [
   {
    "id": "stu",
-   "text": "Stocks/use percentile versus the prior 10 marketing years. At or below the 33rd percentile is bullish. At or above the 67th is bearish. Otherwise neutral. Percentile is the share of those prior years at or below the current stocks/use. US corn, soybeans, wheat, soybean meal and soybean oil use ending stocks divided by domestic use plus exports. Canola uses the AAFC forecast stocks/use, or USDA Canada if that file is missing. If the latest ending-stocks revision moves the opposite way from the percentile, the cell becomes neutral."
+   "text": "Stocks/use percentile is the same rank as the Fundamentals page: the share of every year on that sheet, including the current year, with stocks/use at or below this year. At or below the 33rd percentile is bullish. At or above the 67th is bearish. Otherwise neutral. World stocks/use is ending stocks divided by domestic use. A country uses ending stocks divided by domestic use plus exports. Canola uses the AAFC forecast stocks/use against the years on the Canada balance sheet, including the forecast year, or USDA Canada if that file is missing. If the latest ending-stocks revision moves the opposite way from the percentile, the cell becomes neutral."
   },
   {
    "id": "mm_extension",
@@ -219,12 +219,13 @@
        "rule_id": "stu",
        "as_of": "2026-11-10",
        "inputs": {
-        "percentile": 40.0,
+        "percentile": 41.6667,
         "revision": -2300,
         "stu": 10.8186,
         "ending_stocks": 44670,
         "ending_stocks_prior": 46970,
         "history": [
+         12.7129,
          15.6553,
          14.4633,
          15.6952,
@@ -234,12 +235,13 @@
          9.9243,
          11.7828,
          10.256,
-         12.735
+         12.735,
+         10.8186
         ]
        },
-       "detail": "US corn stocks/use. Stocks/use 10.8% is the 40th percentile of the prior 10 years. Ending stocks 44,670 versus prior 46,970 (-2,300).",
+       "detail": "US corn stocks/use. Stocks/use 10.8% is the 42nd percentile of all 12 years, including this one. Ending stocks 44,670 versus prior 46,970 (-2,300).",
        "reason": null,
-       "text": "40th pct"
+       "text": "42nd pct"
       },
       "mm_extension": {
        "state": "neutral",
@@ -337,12 +339,13 @@
        "rule_id": "stu",
        "as_of": "2026-11-10",
        "inputs": {
-        "percentile": 30.0,
+        "percentile": 33.3333,
         "revision": 80,
         "stu": 40.0317,
         "ending_stocks": 20220,
         "ending_stocks_prior": 20140,
         "history": [
+         49.9934,
          53.1398,
          55.483,
          52.9535,
@@ -352,12 +355,13 @@
          30.3578,
          38.3746,
          43.3793,
-         44.9067
+         44.9067,
+         40.0317
         ]
        },
-       "detail": "US all-wheat stocks/use. Stocks/use 40.0% is the 30th percentile of the prior 10 years. Ending stocks 20,220 versus prior 20,140 (+80). The stocks revision disagrees with the percentile, so the cell is neutral.",
+       "detail": "US all-wheat stocks/use. Stocks/use 40.0% is the 33rd percentile of all 12 years, including this one. Ending stocks 20,220 versus prior 20,140 (+80).",
        "reason": null,
-       "text": "30th pct"
+       "text": "33rd pct"
       },
       "mm_extension": {
        "state": "neutral",
@@ -455,12 +459,13 @@
        "rule_id": "stu",
        "as_of": "2026-11-10",
        "inputs": {
-        "percentile": 30.0,
+        "percentile": 33.3333,
         "revision": 80,
         "stu": 40.0317,
         "ending_stocks": 20220,
         "ending_stocks_prior": 20140,
         "history": [
+         49.9934,
          53.1398,
          55.483,
          52.9535,
@@ -470,12 +475,13 @@
          30.3578,
          38.3746,
          43.3793,
-         44.9067
+         44.9067,
+         40.0317
         ]
        },
-       "detail": "US all-wheat stocks/use. There is no separate HRW balance in this file. Stocks/use 40.0% is the 30th percentile of the prior 10 years. Ending stocks 20,220 versus prior 20,140 (+80). The stocks revision disagrees with the percentile, so the cell is neutral.",
+       "detail": "US all-wheat stocks/use. There is no separate HRW balance in this file. Stocks/use 40.0% is the 33rd percentile of all 12 years, including this one. Ending stocks 20,220 versus prior 20,140 (+80).",
        "reason": null,
-       "text": "30th pct"
+       "text": "33rd pct"
       },
       "mm_extension": {
        "state": "neutral",
@@ -573,12 +579,13 @@
        "rule_id": "stu",
        "as_of": "2026-11-10",
        "inputs": {
-        "percentile": 30.0,
+        "percentile": 33.3333,
         "revision": 80,
         "stu": 40.0317,
         "ending_stocks": 20220,
         "ending_stocks_prior": 20140,
         "history": [
+         49.9934,
          53.1398,
          55.483,
          52.9535,
@@ -588,12 +595,13 @@
          30.3578,
          38.3746,
          43.3793,
-         44.9067
+         44.9067,
+         40.0317
         ]
        },
-       "detail": "US all-wheat stocks/use. There is no separate spring-wheat balance in this file. Stocks/use 40.0% is the 30th percentile of the prior 10 years. Ending stocks 20,220 versus prior 20,140 (+80). The stocks revision disagrees with the percentile, so the cell is neutral.",
+       "detail": "US all-wheat stocks/use. There is no separate spring-wheat balance in this file. Stocks/use 40.0% is the 33rd percentile of all 12 years, including this one. Ending stocks 20,220 versus prior 20,140 (+80).",
        "reason": null,
-       "text": "30th pct"
+       "text": "33rd pct"
       },
       "mm_extension": {
        "state": "neutral",
@@ -734,16 +742,17 @@
      "label": "Soybeans",
      "signals": {
       "stu": {
-       "state": "bullish",
+       "state": "neutral",
        "rule_id": "stu",
        "as_of": "2026-11-10",
        "inputs": {
-        "percentile": 30.0,
+        "percentile": 41.6667,
         "revision": -400,
         "stu": 6.5063,
         "ending_stocks": 8170,
         "ending_stocks_prior": 8570,
         "history": [
+         4.9877,
          7.1571,
          10.1955,
          23.388,
@@ -753,12 +762,13 @@
          6.1366,
          8.3421,
          7.3463,
-         7.3411
+         7.3411,
+         6.5063
         ]
        },
-       "detail": "US soybean stocks/use. Stocks/use 6.5% is the 30th percentile of the prior 10 years. Ending stocks 8,170 versus prior 8,570 (-400).",
+       "detail": "US soybean stocks/use. Stocks/use 6.5% is the 42nd percentile of all 12 years, including this one. Ending stocks 8,170 versus prior 8,570 (-400).",
        "reason": null,
-       "text": "\u25b2 30th pct"
+       "text": "42nd pct"
       },
       "mm_extension": {
        "state": "neutral",
@@ -856,27 +866,23 @@
        "rule_id": "stu",
        "as_of": "2026-10-20",
        "inputs": {
-        "percentile": 40.0,
+        "percentile": 50.0,
         "revision": -11.0,
         "stu": 8.9046,
         "ending_stocks": 1968.0,
         "ending_stocks_prior": 1979.0,
         "history": [
-         6.5632,
-         13.0015,
-         23.2543,
-         16.3203,
-         8.3505,
          10.1339,
          10.0012,
          17.5476,
          7.607,
-         8.5674
+         8.5674,
+         8.9046
         ]
        },
-       "detail": "AAFC canola stocks/use 8.9% is the 40th percentile of the prior 10 StatsCan years. Ending stocks 1,968 versus the prior report 1,979 (-11).",
+       "detail": "AAFC canola stocks/use 8.9% is the 50th percentile of the 6 years on the Canada sheet, including this one. Ending stocks 1,968 versus the prior report 1,979 (-11).",
        "reason": null,
-       "text": "40th pct"
+       "text": "50th pct"
       },
       "mm_extension": {
        "state": "neutral",
@@ -972,16 +978,17 @@
      "label": "Soybean meal",
      "signals": {
       "stu": {
-       "state": "bullish",
+       "state": "neutral",
        "rule_id": "stu",
        "as_of": "2026-11-10",
        "inputs": {
-        "percentile": 20.0,
+        "percentile": 33.3333,
         "revision": -45,
         "stu": 0.5996,
         "ending_stocks": 363,
         "ending_stocks_prior": 408,
         "history": [
+         0.5846,
          0.8893,
          1.1211,
          0.8104,
@@ -991,12 +998,13 @@
          0.6979,
          0.8281,
          0.671,
-         0.5228
+         0.5228,
+         0.5996
         ]
        },
-       "detail": "US soybean meal stocks/use. Stocks/use 0.6% is the 20th percentile of the prior 10 years. Ending stocks 363 versus prior 408 (-45).",
+       "detail": "US soybean meal stocks/use. Stocks/use 0.6% is the 33rd percentile of all 12 years, including this one. Ending stocks 363 versus prior 408 (-45).",
        "reason": null,
-       "text": "\u25b2 20th pct"
+       "text": "33rd pct"
       },
       "mm_extension": {
        "state": "neutral",
@@ -1094,12 +1102,13 @@
        "rule_id": "stu",
        "as_of": "2026-11-10",
        "inputs": {
-        "percentile": 10.0,
+        "percentile": 16.6667,
         "revision": -50,
         "stu": 5.0825,
         "ending_stocks": 770,
         "ending_stocks_prior": 820,
         "history": [
+         7.528,
          7.631,
          8.375,
          7.1517,
@@ -1109,12 +1118,13 @@
          5.9554,
          5.5807,
          5.9424,
-         4.6422
+         4.6422,
+         5.0825
         ]
        },
-       "detail": "US soybean oil stocks/use. Stocks/use 5.1% is the 10th percentile of the prior 10 years. Ending stocks 770 versus prior 820 (-50).",
+       "detail": "US soybean oil stocks/use. Stocks/use 5.1% is the 17th percentile of all 12 years, including this one. Ending stocks 770 versus prior 820 (-50).",
        "reason": null,
-       "text": "\u25b2 10th pct"
+       "text": "\u25b2 17th pct"
       },
       "mm_extension": {
        "state": "neutral",
@@ -1255,16 +1265,17 @@
      "label": "Coffee",
      "signals": {
       "stu": {
-       "state": "bullish",
+       "state": "neutral",
        "rule_id": "stu",
        "as_of": "2026-11-10",
        "inputs": {
-        "percentile": 30.0,
+        "percentile": 33.3333,
         "revision": 0,
         "stu": 14.6231,
         "ending_stocks": 26283,
         "ending_stocks_prior": 26283,
         "history": [
+         22.8161,
          23.5023,
          19.8914,
          22.2562,
@@ -1274,12 +1285,13 @@
          15.9605,
          14.103,
          12.8143,
-         14.0494
+         14.0494,
+         14.6231
         ]
        },
-       "detail": "World coffee stocks/use. Stocks/use 14.6% is the 30th percentile of the prior 10 years. Ending stocks 26,283 versus prior 26,283 (+0).",
+       "detail": "World coffee stocks/use. Stocks/use 14.6% is the 33rd percentile of all 12 years, including this one. Ending stocks 26,283 versus prior 26,283 (+0).",
        "reason": null,
-       "text": "\u25b2 30th pct"
+       "text": "33rd pct"
       },
       "demand": {
        "state": null,
@@ -1362,12 +1374,13 @@
        "rule_id": "stu",
        "as_of": "2026-11-10",
        "inputs": {
-        "percentile": 0.0,
+        "percentile": 8.3333,
         "revision": -4621,
         "stu": 22.5515,
         "ending_stocks": 39789,
         "ending_stocks_prior": 44410,
         "history": [
+         25.8747,
          24.4319,
          29.394,
          30.3473,
@@ -1377,12 +1390,13 @@
          25.9107,
          24.9577,
          24.1041,
-         25.5274
+         25.5274,
+         22.5515
         ]
        },
-       "detail": "World sugar stocks/use. Stocks/use 22.6% is the 0th percentile of the prior 10 years. Ending stocks 39,789 versus prior 44,410 (-4,621).",
+       "detail": "World sugar stocks/use. Stocks/use 22.6% is the 8th percentile of all 12 years, including this one. Ending stocks 39,789 versus prior 44,410 (-4,621).",
        "reason": null,
-       "text": "\u25b2 0th pct"
+       "text": "\u25b2 8th pct"
       },
       "demand": {
        "state": null,
@@ -1465,12 +1479,13 @@
        "rule_id": "stu",
        "as_of": "2026-11-10",
        "inputs": {
-        "percentile": 0.0,
+        "percentile": 8.3333,
         "revision": -113,
         "stu": 57.4903,
         "ending_stocks": 70567,
         "ending_stocks_prior": 70680,
         "history": [
+         77.3004,
          65.2713,
          60.7629,
          59.4525,
@@ -1480,12 +1495,13 @@
          67.2672,
          64.0858,
          63.1259,
-         62.6377
+         62.6377,
+         57.4903
         ]
        },
-       "detail": "World cotton stocks/use. Stocks/use 57.5% is the 0th percentile of the prior 10 years. Ending stocks 70,567 versus prior 70,680 (-113).",
+       "detail": "World cotton stocks/use. Stocks/use 57.5% is the 8th percentile of all 12 years, including this one. Ending stocks 70,567 versus prior 70,680 (-113).",
        "reason": null,
-       "text": "\u25b2 0th pct"
+       "text": "\u25b2 8th pct"
       },
       "demand": {
        "state": "bullish",
