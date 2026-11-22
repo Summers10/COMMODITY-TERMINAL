@@ -26,7 +26,7 @@ A cell older than its cadence (WASDE and AAFC 45 days, cattle 45, the weekly fee
 - Fundamentals (grains and oilseeds, softs, energy, cattle, and the crop calendar for the selected commodity)
 - CFTC
 - Export sales
-- Weather glance (station and region, 90-day and 30-day precip, 7-day temperature, forecast days 1–7 and 8–14, 14-day high/low, SEAS5, then ENSO and US drought), with the Peak seasonal table underneath
+- Weather glance for the grain and oilseed stations (station and region, 90-day and 30-day precip, 7-day temperature, forecast days 1–7 and 8–14, 14-day high/low, SEAS5, then ENSO and US drought), with the Peak seasonal table underneath. Coffee, sugar and cocoa origins are not on this page.
 
 Live cattle and feeder cattle positioning is only on the CFTC page.
 

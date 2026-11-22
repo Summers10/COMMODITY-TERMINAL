@@ -11,13 +11,15 @@ from scripts.fetch_weather import (
 
 
 def test_thirty_research_stations_come_first():
-    assert len(REGIONS) == 33
+    assert len(REGIONS) == 30
     assert REGIONS[0][1] == "Saskatoon, SK"
     assert REGIONS[3][1] == "Red Deer, AB"
-    assert REGIONS[29][1] == "Dubbo, NSW"
-    assert [r[0] for r in REGIONS[-3:]] == ["Coffee", "Sugar", "Cocoa"]
+    assert REGIONS[-1][1] == "Dubbo, NSW"
     labels = [r[1] for r in REGIONS]
     assert len(labels) == len(set(labels))
+    for banned in ("Varginha, MG", "Ribeirão Preto, SP", "Daloa, CI"):
+        assert banned not in labels
+    assert {r[0] for r in REGIONS}.isdisjoint({"Coffee", "Sugar", "Cocoa"})
 
 
 def test_nino_week_reads_the_latest_anomaly():

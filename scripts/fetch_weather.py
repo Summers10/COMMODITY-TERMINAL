@@ -36,8 +36,8 @@ USDM_URL = (
 )
 
 # division, station label, region, lat, lon, USDM state FIPS or None.
-# The 30 Research stations are in the order MJ asked for. Three origin points
-# ride in the same batched requests, so they do not add an Open-Meteo call.
+# The 30 Research stations, in the order MJ asked for. Coffee, sugar and cocoa
+# origins are not on this page.
 REGIONS = [
     ("Canada", "Saskatoon, SK", "Central SK", 52.1, -106.7, None),
     ("Canada", "Regina, SK", "Southern SK", 50.5, -104.6, None),
@@ -69,9 +69,6 @@ REGIONS = [
     ("Australia", "Cunderdin, WA", "WA Wheatbelt", -31.5, 117.0, None),
     ("Australia", "Horsham, VIC", "Wimmera", -36.7, 142.2, None),
     ("Australia", "Dubbo, NSW", "Central West NSW", -32.5, 148.5, None),
-    ("Coffee", "Varginha, MG", "Sul de Minas", -21.6, -45.4, None),
-    ("Sugar", "Ribeirão Preto, SP", "São Paulo cane", -21.2, -47.8, None),
-    ("Cocoa", "Daloa, CI", "Ivory Coast", 6.9, -6.4, None),
 ]
 
 OUTLOOK_VARS = {
