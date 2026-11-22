@@ -631,7 +631,7 @@ def rule_book(cfg, reviewed=None):
             f"Peak Trading Research seasonal, last reviewed {reviewed}."
         )},
         {"id": "colour", "text": (
-            "Each signal cell is coloured on its own. Bullish is green, bearish is red, and neutral is pale amber. "
+            "Each signal cell is coloured on its own. Bullish is green and bearish is red. Neutral has no colour. "
             "The cell shows the figure only. A missing figure is a dash with no colour. "
             "There is no row total and no section score."
         )},
@@ -767,10 +767,12 @@ def build(cfg=None):
 
     grains = [
         grain("Corn", "Corn", "United States", "002602", "CORN - UNMILLED", "corn", "Corn", "US corn stocks/use.", "Corn"),
-        grain("Soybeans", "Soybeans", "United States", "005602", "SOYBEANS", "soybeans", "Soybeans", "US soybean stocks/use.", "Soybeans"),
         grain("Wheat (Chicago SRW)", "Wheat", "United States", "001602", "ALL WHEAT", "wheat_winter", "Wheat, Winter", "US all-wheat stocks/use.", "Chicago Wheat"),
         grain("Wheat (KC HRW)", "Wheat", "United States", "001612", "ALL WHEAT", "wheat_winter", "Wheat, Winter", "US all-wheat stocks/use. There is no separate HRW balance in this file.", "Kansas Wheat"),
         grain("Wheat (MGEX)", "Wheat", "United States", "001626", "ALL WHEAT", "wheat_spring", "Wheat, Spring", "US all-wheat stocks/use. There is no separate spring-wheat balance in this file.", "Spring Wheat"),
+    ]
+    oilseeds = [
+        grain("Soybeans", "Soybeans", "United States", "005602", "SOYBEANS", "soybeans", "Soybeans", "US soybean stocks/use.", "Soybeans"),
     ]
     canola_fund = canola_fundamentals(sd, psd, prior, cfg)
     canola_sigs = {
@@ -787,9 +789,9 @@ def build(cfg=None):
         canola_figs.append({"label": "Ending stocks", "value": f"{canola_fund['inputs']['ending_stocks']:,.0f}"})
     if canola_fund["inputs"].get("revision") is not None:
         canola_figs.append({"label": "Stocks revision", "value": f"{canola_fund['inputs']['revision']:+,.0f}"})
-    grains.append(row("Canola", canola_sigs, canola_figs, "usda", "Rapeseed/Canola", cfg))
-    grains.append(grain("Soybean meal", "Soybean Meal", "United States", "026603", "SOYBEAN CAKE AND MEAL", None, None, "US soybean meal stocks/use.", "Soybean Meal"))
-    grains.append(grain("Soybean oil", "Soybean Oil", "United States", "007601", "SOYBEAN OIL", None, None, "US soybean oil stocks/use.", "Soybean Oil"))
+    oilseeds.append(row("Canola", canola_sigs, canola_figs, "usda", "Rapeseed/Canola", cfg))
+    oilseeds.append(grain("Soybean meal", "Soybean Meal", "United States", "026603", "SOYBEAN CAKE AND MEAL", None, None, "US soybean meal stocks/use.", "Soybean Meal"))
+    oilseeds.append(grain("Soybean oil", "Soybean Oil", "United States", "007601", "SOYBEAN OIL", None, None, "US soybean oil stocks/use.", "Soybean Oil"))
 
     def energy_row(label, key, code):
         ser = series.get(key) or {}
@@ -866,7 +868,7 @@ def build(cfg=None):
     sections = [
         {
             "id": "grains",
-            "title": "Grains & Oilseeds",
+            "title": "Grains",
             "basis": "Fundamentals out of 3 (stocks/use, demand, seasonal). Managed money out of 2. A dash is left out of that row.",
             "groups": [
                 {"label": "Fundamentals", "ids": ["stu", "demand", "seasonal"]},
@@ -880,6 +882,24 @@ def build(cfg=None):
                 {"id": "mm_flow", "label": "Money flow"},
             ],
             "rows": grains,
+            "figures": [],
+        },
+        {
+            "id": "oilseeds",
+            "title": "Oilseeds",
+            "basis": "Fundamentals out of 3 (stocks/use, demand, seasonal). Managed money out of 2. A dash is left out of that row.",
+            "groups": [
+                {"label": "Fundamentals", "ids": ["stu", "demand", "seasonal"]},
+                {"label": "Managed money", "ids": ["mm_extension", "mm_flow"]},
+            ],
+            "columns": [
+                {"id": "stu", "label": "Stocks/use"},
+                {"id": "demand", "label": "Demand"},
+                {"id": "seasonal", "label": "Seasonal"},
+                {"id": "mm_extension", "label": "Extended"},
+                {"id": "mm_flow", "label": "Money flow"},
+            ],
+            "rows": oilseeds,
             "figures": [],
         },
         {

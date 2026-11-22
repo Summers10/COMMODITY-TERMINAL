@@ -29,8 +29,16 @@ def test_each_signal_replays_and_there_is_no_row_total():
     cfg = module.load_config()
     doc = json.loads((ROOT / "data" / "signals.json").read_text())
     rules = " ".join(rule["text"] for rule in doc["rules"])
-    assert "pale amber" in rules
+    assert "pale amber" not in rules
+    assert "Neutral has no colour" in rules
     assert "no row total" in rules
+    grains = next(s for s in doc["sections"] if s["id"] == "grains")
+    oilseeds = next(s for s in doc["sections"] if s["id"] == "oilseeds")
+    assert [r["label"] for r in grains["rows"]] == [
+        "Corn", "Wheat (Chicago SRW)", "Wheat (KC HRW)", "Wheat (MGEX)",
+    ]
+    assert [r["label"] for r in oilseeds["rows"]][0] == "Soybeans"
+    assert "Soybeans" not in [r["label"] for r in grains["rows"]]
     assert "verdict" not in rules.lower()
     for section in doc["sections"]:
         assert "score" not in section
@@ -90,6 +98,7 @@ def test_thresholds_are_the_config_file():
     assert cfg["cattle_yoy_high"] == 102
     assert cfg["seasonal_score_bull"] == 1
     assert cfg["seasonal_score_bear"] == -1
+    assert cfg["neutral_fill"] is False
     assert "score_supportive" not in cfg
     assert "score_bearish" not in cfg
 

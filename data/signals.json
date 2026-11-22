@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-11-22T02:47:56+00:00",
+ "generated_at": "2026-11-22T02:53:55+00:00",
  "config": {
   "stu_bull_pct": 33,
   "stu_bear_pct": 67,
@@ -9,6 +9,7 @@
   "mm_ext_short_pct": 15,
   "seasonal_score_bull": 1,
   "seasonal_score_bear": -1,
+  "neutral_fill": false,
   "demand_pp": 5,
   "demand_history_years": 5,
   "canola_export_yoy_pct": 3,
@@ -78,7 +79,7 @@
   },
   {
    "id": "colour",
-   "text": "Each signal cell is coloured on its own. Bullish is green, bearish is red, and neutral is pale amber. The cell shows the figure only. A missing figure is a dash with no colour. There is no row total and no section score."
+   "text": "Each signal cell is coloured on its own. Bullish is green and bearish is red. Neutral has no colour. The cell shows the figure only. A missing figure is a dash with no colour. There is no row total and no section score."
   },
   {
    "id": "demand_yoy",
@@ -168,7 +169,7 @@
  "sections": [
   {
    "id": "grains",
-   "title": "Grains & Oilseeds",
+   "title": "Grains",
    "basis": "Fundamentals out of 3 (stocks/use, demand, seasonal). Managed money out of 2. A dash is left out of that row.",
    "groups": [
     {
@@ -327,124 +328,6 @@
      ],
      "page": "usda",
      "comm": "Corn"
-    },
-    {
-     "label": "Soybeans",
-     "signals": {
-      "stu": {
-       "state": "bullish",
-       "rule_id": "stu",
-       "as_of": "2026-11-10",
-       "inputs": {
-        "percentile": 30.0,
-        "revision": -400,
-        "stu": 6.5063,
-        "ending_stocks": 8170,
-        "ending_stocks_prior": 8570,
-        "history": [
-         7.1571,
-         10.1955,
-         23.388,
-         13.624,
-         5.6884,
-         6.1484,
-         6.1366,
-         8.3421,
-         7.3463,
-         7.3411
-        ]
-       },
-       "detail": "US soybean stocks/use. Stocks/use 6.5% is the 30th percentile of the prior 10 years. Ending stocks 8,170 versus prior 8,570 (-400).",
-       "reason": null,
-       "text": "\u25b2 30th pct"
-      },
-      "mm_extension": {
-       "state": "neutral",
-       "rule_id": "mm_extension",
-       "as_of": "2026-11-17",
-       "inputs": {
-        "percentile": 71.7949,
-        "net": 99698,
-        "net_oi_pct": 8.3624,
-        "weeks": 156
-       },
-       "detail": "Managed money net +99,698 contracts, +8.4% of open interest. 72nd percentile of the last 156 weeks. Inside the 15th to 85th percentiles.",
-       "reason": null,
-       "text": "+8.4%"
-      },
-      "mm_flow": {
-       "state": "bearish",
-       "rule_id": "mm_flow",
-       "as_of": "2026-11-17",
-       "inputs": {
-        "change_1w": -4365,
-        "change_4w": -107238
-       },
-       "detail": "Managed money net changed -4,365 contracts in one week and -107,238 over four weeks.",
-       "reason": null,
-       "text": "\u25bc -4.4k / -107k"
-      },
-      "demand": {
-       "state": "bullish",
-       "rule_id": "demand_yoy",
-       "as_of": "2026-11-12",
-       "inputs": {
-        "yoy_pct": 79.883
-       },
-       "detail": "Total export commitment +79.9% versus a year ago. Threshold 5%.",
-       "reason": null,
-       "text": "\u25b2 +79.9%"
-      },
-      "seasonal": {
-       "state": "neutral",
-       "rule_id": "seasonal",
-       "as_of": "2026-10-24",
-       "inputs": {
-        "average": -0.2,
-        "weeks": [
-         {
-          "week": "Nov 16",
-          "score": -2
-         },
-         {
-          "week": "Nov 23",
-          "score": 2
-         },
-         {
-          "week": "Nov 30",
-          "score": -1
-         },
-         {
-          "week": "Dec 07",
-          "score": 0
-         },
-         {
-          "week": "Dec 14",
-          "score": 0
-         }
-        ]
-       },
-       "detail": "Nov 16 -2, Nov 23 +2, Nov 30 -1, Dec 07 0, Dec 14 0. Average -0.2. Peak Trading Research seasonal, last reviewed 2026-10-24.",
-       "reason": null,
-       "text": "-0.2 next 4w"
-      }
-     },
-     "figures": [
-      {
-       "label": "S/U",
-       "value": "6.5%"
-      },
-      {
-       "label": "Ending stocks",
-       "value": "8,170"
-      },
-      {
-       "label": "Stocks revision",
-       "value": "-400"
-      }
-     ],
-     "page": "usda",
-     "comm": "Soybeans"
     },
     {
      "label": "Wheat (Chicago SRW)",
@@ -799,6 +682,171 @@
      ],
      "page": "usda",
      "comm": "Wheat"
+    }
+   ],
+   "figures": []
+  },
+  {
+   "id": "oilseeds",
+   "title": "Oilseeds",
+   "basis": "Fundamentals out of 3 (stocks/use, demand, seasonal). Managed money out of 2. A dash is left out of that row.",
+   "groups": [
+    {
+     "label": "Fundamentals",
+     "ids": [
+      "stu",
+      "demand",
+      "seasonal"
+     ]
+    },
+    {
+     "label": "Managed money",
+     "ids": [
+      "mm_extension",
+      "mm_flow"
+     ]
+    }
+   ],
+   "columns": [
+    {
+     "id": "stu",
+     "label": "Stocks/use"
+    },
+    {
+     "id": "demand",
+     "label": "Demand"
+    },
+    {
+     "id": "seasonal",
+     "label": "Seasonal"
+    },
+    {
+     "id": "mm_extension",
+     "label": "Extended"
+    },
+    {
+     "id": "mm_flow",
+     "label": "Money flow"
+    }
+   ],
+   "rows": [
+    {
+     "label": "Soybeans",
+     "signals": {
+      "stu": {
+       "state": "bullish",
+       "rule_id": "stu",
+       "as_of": "2026-11-10",
+       "inputs": {
+        "percentile": 30.0,
+        "revision": -400,
+        "stu": 6.5063,
+        "ending_stocks": 8170,
+        "ending_stocks_prior": 8570,
+        "history": [
+         7.1571,
+         10.1955,
+         23.388,
+         13.624,
+         5.6884,
+         6.1484,
+         6.1366,
+         8.3421,
+         7.3463,
+         7.3411
+        ]
+       },
+       "detail": "US soybean stocks/use. Stocks/use 6.5% is the 30th percentile of the prior 10 years. Ending stocks 8,170 versus prior 8,570 (-400).",
+       "reason": null,
+       "text": "\u25b2 30th pct"
+      },
+      "mm_extension": {
+       "state": "neutral",
+       "rule_id": "mm_extension",
+       "as_of": "2026-11-17",
+       "inputs": {
+        "percentile": 71.7949,
+        "net": 99698,
+        "net_oi_pct": 8.3624,
+        "weeks": 156
+       },
+       "detail": "Managed money net +99,698 contracts, +8.4% of open interest. 72nd percentile of the last 156 weeks. Inside the 15th to 85th percentiles.",
+       "reason": null,
+       "text": "+8.4%"
+      },
+      "mm_flow": {
+       "state": "bearish",
+       "rule_id": "mm_flow",
+       "as_of": "2026-11-17",
+       "inputs": {
+        "change_1w": -4365,
+        "change_4w": -107238
+       },
+       "detail": "Managed money net changed -4,365 contracts in one week and -107,238 over four weeks.",
+       "reason": null,
+       "text": "\u25bc -4.4k / -107k"
+      },
+      "demand": {
+       "state": "bullish",
+       "rule_id": "demand_yoy",
+       "as_of": "2026-11-12",
+       "inputs": {
+        "yoy_pct": 79.883
+       },
+       "detail": "Total export commitment +79.9% versus a year ago. Threshold 5%.",
+       "reason": null,
+       "text": "\u25b2 +79.9%"
+      },
+      "seasonal": {
+       "state": "neutral",
+       "rule_id": "seasonal",
+       "as_of": "2026-10-24",
+       "inputs": {
+        "average": -0.2,
+        "weeks": [
+         {
+          "week": "Nov 16",
+          "score": -2
+         },
+         {
+          "week": "Nov 23",
+          "score": 2
+         },
+         {
+          "week": "Nov 30",
+          "score": -1
+         },
+         {
+          "week": "Dec 07",
+          "score": 0
+         },
+         {
+          "week": "Dec 14",
+          "score": 0
+         }
+        ]
+       },
+       "detail": "Nov 16 -2, Nov 23 +2, Nov 30 -1, Dec 07 0, Dec 14 0. Average -0.2. Peak Trading Research seasonal, last reviewed 2026-10-24.",
+       "reason": null,
+       "text": "-0.2 next 4w"
+      }
+     },
+     "figures": [
+      {
+       "label": "S/U",
+       "value": "6.5%"
+      },
+      {
+       "label": "Ending stocks",
+       "value": "8,170"
+      },
+      {
+       "label": "Stocks revision",
+       "value": "-400"
+      }
+     ],
+     "page": "usda",
+     "comm": "Soybeans"
     },
     {
      "label": "Canola",

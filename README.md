@@ -12,7 +12,7 @@ The summary page is a rule-based board. Each cell is bullish, bearish, neutral, 
 | Managed money, last 156 weeks | at or above the 85th percentile is extended long (bearish); at or below the 15th is extended short (bullish). |
 | Money flow | both the 1-week and 4-week changes in managed-money net up, or both down. Mixed or zero is neutral. |
 | Seasonal | average of the typed Peak Trading Research scores for this calendar week and the next four, wrapping from December into January. +1 or higher is bullish, −1 or lower is bearish. The same scores are reused every year and do not expire. No typed score is a dash. |
-| Colour | each cell on its own: bullish green, bearish red, neutral pale amber. The cell shows the figure only. A missing figure is a dash with no colour. No row total and no section score. |
+| Colour | each cell on its own: bullish green, bearish red, neutral plain. The cell shows the figure only. A missing figure is a dash with no colour. No row total and no section score. |
 | Demand | export commitment versus a year ago, the same percent the Exports page uses. At least +5% is bullish and at least −5% is bearish. Canola uses CGC exports versus a year ago with the same band. |
 | Energy stocks | 3% versus the 5-year average. Gas uses the published WNGSR percent. Petroleum uses the computed percent. Energy has no seasonal column. |
 | Energy week versus normal | 3 percentage points versus the same-week percent change of the prior five years. |
@@ -26,7 +26,7 @@ A cell older than its cadence (WASDE and AAFC 45 days, cattle 45, the weekly fee
 - Fundamentals (grains and oilseeds, softs, energy, cattle, and the crop calendar for the selected commodity)
 - CFTC
 - Export sales
-- Weather glance (station and region, 90-day and 30-day precip, 7-day temperature, forecast days 1–7 and 8–14, 14-day high/low, SEAS5, then ENSO and US drought), with the Peak seasonal table underneath
+- Weather glance for the grain and oilseed stations (station and region, 90-day and 30-day precip, 7-day temperature, forecast days 1–7 and 8–14, 14-day high/low, SEAS5, then ENSO and US drought), with the Peak seasonal table underneath. Coffee, sugar and cocoa origins are not on this page.
 
 Live cattle and feeder cattle positioning is only on the CFTC page.
 
