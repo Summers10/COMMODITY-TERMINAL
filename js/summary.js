@@ -99,12 +99,14 @@ function renderSummary(){
       return;
     }
     const meta = document.getElementById('summary-meta');
-    if(meta) meta.textContent = 'Signals ' + (SIGNALS.generated_at || '').slice(0, 10);
+    if(meta) meta.textContent = '';
     let html = freshnessPanel(SIGNALS.freshness || []);
     SIGNALS.sections.forEach(section=>{
-      html += `<div class="sec-hdr">${section.title}</div>`;
-      if(section.basis) html += `<p class="legend-line">${section.basis}</p>`;
-      if(section.score) html += `<p class="legend-line">Section ${scoreLine(section.score)}</p>`;
+      const sc = section.score;
+      const sign = sc && sc.score>0 ? '+' : '';
+      const tone = !sc || !sc.scored ? '' : sc.score>0 ? 'pos' : sc.score<0 ? 'neg' : '';
+      const chip = sc && sc.scored ? `<span class="sec-score ${tone}">${sign}${sc.score} / ${sc.scored}</span>` : '';
+      html += `<div class="sec-hdr"><span>${section.title}</span>${chip}</div>`;
       html += signalTable(section);
       html += figureStrip(section);
     });
@@ -158,7 +160,8 @@ function signalTable(section){
       const text = sig.text || na();
       html += `<td class="${cls}"><button type="button" class="sig-hit" data-detail="${escapeAttr(sig.detail||sig.reason||'')}" data-rule="${escapeAttr(ruleText(sig.rule_id))}" data-asof="${escapeAttr(sig.as_of||'')}">${text}</button></td>`;
     });
-    html += `<td class="tally">${scoreText(row)}</td></tr>`;
+    const tally = scoreText(row);
+    html += `<td class="tally ${tally.cls}" title="${escapeAttr(tally.tip)}">${tally.html}</td></tr>`;
   });
   html += `</tbody></table></div>`;
   return html;
@@ -209,11 +212,15 @@ function partScore(s){
 }
 function scoreText(row){
   const s = row.score;
-  if(!s || !s.scored) return na();
+  if(!s || !s.scored) return {html: na(), cls:'', tip:''};
   const sign = s.score>0 ? '+' : '';
   const fund = row.fund ? `F ${partScore(row.fund)}` : '';
   const mm = row.mm ? `MM ${partScore(row.mm)}` : '';
-  return `${fund}${fund&&mm?' · ':''}${mm}<br><span class="score-of">Total ${sign}${s.score}/${s.scored}</span>`;
+  const total = `${sign}${s.score}/${s.scored}`;
+  const text = [fund, mm, total].filter(Boolean).join(' · ');
+  const tip = `Fundamentals ${row.fund ? partScore(row.fund) : '—'}, managed money ${row.mm ? partScore(row.mm) : '—'}. Bullish is +1, bearish is −1, neutral is 0. Dashes are left out.`;
+  const cls = s.score>0 ? 'pos' : s.score<0 ? 'neg' : '';
+  return {html: text, cls, tip};
 }
 function ruleText(id){
   const rule = (SIGNALS && SIGNALS.rules || []).find(r=>r.id===id);

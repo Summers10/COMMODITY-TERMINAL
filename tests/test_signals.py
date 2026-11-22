@@ -96,3 +96,36 @@ def test_thresholds_are_the_config_file():
     assert cfg["seasonal_score_bear"] == -1
     assert cfg["score_supportive"] == 2
     assert cfg["score_bearish"] == -2
+
+
+def test_world_softs_stocks_to_use_is_ending_over_domestic():
+    """World stocks/use is ending stocks divided by domestic use, not by use plus exports.
+
+    The World row is the USDA PSD world aggregate. The percentile is that ratio
+    against the prior ten marketing years, and the current year is not in the sample.
+    """
+    psd = json.loads((ROOT / "data" / "psd_data.json").read_text())
+    signals = json.loads((ROOT / "data" / "signals.json").read_text())
+    softs = next(s for s in signals["sections"] if s["id"] == "softs")
+    module = load_builder()
+    for label, comm in (("Coffee", "Coffee"), ("Sugar", "Sugar"), ("Cotton", "Cotton")):
+        world = psd[comm]["World"]
+        years = sorted(int(y) for y in world if str(y).isdigit())
+        series = []
+        for year in years:
+            row = world[str(year)]
+            domestic = row["dc"]
+            ending = row["es"]
+            assert domestic and ending is not None
+            # Exports are recorded, and they are not part of the world denominator.
+            assert row.get("ex") is not None
+            series.append((year, 100.0 * ending / domestic))
+        current_year, current = series[-1]
+        history = [v for _, v in series[-(11):-1]]
+        assert len(history) == 10
+        pct = module.percentile_at_or_below(current, history)
+        cell = next(r for r in softs["rows"] if r["label"] == label)["signals"]["stu"]
+        assert cell["inputs"]["stu"] == round(current, 4)
+        assert cell["inputs"]["history"] == [round(v, 4) for v in history]
+        assert cell["inputs"]["percentile"] == round(pct, 4)
+        assert cell["inputs"]["ending_stocks"] == world[str(current_year)]["es"]

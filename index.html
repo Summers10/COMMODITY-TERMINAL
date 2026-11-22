@@ -38,7 +38,8 @@ body.light{
 .tbtn.active{background:var(--amber);color:#000}
 .tbtn:hover:not(.active){color:var(--amber)}
 #root{max-width:1280px;margin:0 auto;padding:22px}
-.sec-hdr{font-size:15px;font-weight:900;letter-spacing:.16em;text-transform:uppercase;color:var(--amber);padding:16px 0 9px;border-bottom:2px solid var(--amber);margin:32px 0 14px}
+.sec-hdr{display:flex;align-items:baseline;justify-content:space-between;gap:16px;font-size:15px;font-weight:900;letter-spacing:.16em;text-transform:uppercase;color:var(--amber);padding:16px 0 9px;border-bottom:2px solid var(--amber);margin:32px 0 14px}
+.sec-score{letter-spacing:.04em;font-variant-numeric:tabular-nums;padding:1px 8px}
 .sec-hdr:first-child{margin-top:0}
 .panel{border-bottom:2px solid var(--amber);margin-bottom:20px;overflow:hidden}
 .panel-hdr{display:flex;align-items:baseline;flex-wrap:wrap;gap:6px 10px;padding:8px 14px;background:var(--bg1);border:1px solid var(--border);border-bottom:none;border-top:3px solid var(--amber)}
@@ -497,7 +498,9 @@ function usdaBanner(){
   const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
   const when = d ? ', ' + d.getUTCDate() + ' ' + months[d.getUTCMonth()] + ' ' + d.getUTCFullYear() : '';
   const n = meta.wasde_number ? '-' + meta.wasde_number : '';
-  return `<p class="legend-line">USDA PSD and WASDE${n}${when}</p>`;
+  const metaEl = document.getElementById('meta');
+  if(metaEl) metaEl.textContent = `USDA PSD and WASDE${n}${when}`;
+  return '';
 }
 function exporterOrder(list){
   const names = list.filter(Boolean);
@@ -816,8 +819,7 @@ function renderCanolaCgcPage(root){
   });
   const dated = SD.aafc && SD.aafc.date ? SD.aafc.date : '';
   const priorDated = SD.aafc && SD.aafc.prior_date ? SD.aafc.prior_date : '';
-  root.insertAdjacentHTML('beforeend', `<p class="legend-line">StatsCan 32-10-0013 and 32-10-0359. AAFC Outlook ${dated}. Prior report ${priorDated}. f = AAFC forecast, e = AAFC estimate.</p>`);
-  root.insertAdjacentHTML('beforeend', `<div class="sec-hdr">Canada canola</div>`);
+  root.insertAdjacentHTML('beforeend', `<div class="sec-hdr" title="StatsCan 32-10-0013 and 32-10-0359. AAFC Outlook ${dated}. Prior report ${priorDated}. f = AAFC forecast, e = AAFC estimate.">Canada canola</div>`);
   root.insertAdjacentHTML('beforeend', panelWrap('CANADA', '1000 tonnes, crop year Aug–Jul',
     `<table class="term-table bal-table"><thead>${head}</thead><tbody>${body}</tbody></table>`));
   root.insertAdjacentHTML('beforeend', paceTable(Y[fc], fc));
@@ -1312,9 +1314,25 @@ fetch('data/psd_data.json')
 .summary-table td:first-child{text-align:left;color:var(--text);font-weight:700}
 td.sig{text-align:center;padding:0}
 button.sig-hit{width:100%;border:0;background:transparent;color:inherit;font:inherit;font-size:13px;font-weight:700;padding:6px 2px;cursor:pointer}
-td.sig-bull{background:rgba(46,143,82,.22);color:var(--green)}
-td.sig-bear{background:rgba(184,56,56,.18);color:var(--red)}
-td.sig-neutral{background:transparent;color:inherit}
+/* The table cell paints var(--bg) at the same specificity as a bare td.sig-bull,
+   and the button fills the cell, so the colour has to be on both and more specific. */
+body.light .sig-table td.sig-bull,
+body.light .sig-table td.sig-bull .sig-hit,
+body.light .sig-table td.tally.pos,
+body.light .sec-score.pos{background:#d8f0dc;color:#1a2e1c}
+body.dark .sig-table td.sig-bull,
+body.dark .sig-table td.sig-bull .sig-hit,
+body.dark .sig-table td.tally.pos,
+body.dark .sec-score.pos{background:rgba(46,160,67,0.35);color:#e7f6ea}
+body.light .sig-table td.sig-bear,
+body.light .sig-table td.sig-bear .sig-hit,
+body.light .sig-table td.tally.neg,
+body.light .sec-score.neg{background:#f8d7d7;color:#4a1515}
+body.dark .sig-table td.sig-bear,
+body.dark .sig-table td.sig-bear .sig-hit,
+body.dark .sig-table td.tally.neg,
+body.dark .sec-score.neg{background:rgba(218,54,51,0.35);color:#ffe8e6}
+td.tally{white-space:nowrap}
 .score-of{display:block;font-weight:600;font-size:12px}
 td.tally{text-align:center;font-size:13px;white-space:normal}
 #sig-pop{position:fixed;z-index:30;background:var(--bg1);border:1px solid var(--border2);color:var(--text);font-size:13px;line-height:1.4;padding:8px 10px}
@@ -2270,17 +2288,17 @@ function buildWeatherTable(){
   const names = (wxMeta.order && wxMeta.order.length) ? wxMeta.order : Object.keys(regions);
   const outlookLabel = wxMeta.outlook_label || '3 mo';
   const groups = [
-    {label:'Historical', cols:['90D precip','30D precip','7D temp']},
-    {label:'Days 1–7', cols:['Temp','Precip']},
-    {label:'Days 8–14', cols:['Temp','Precip']},
-    {label:'14-day', cols:['Hi / lo']},
-    {label:'SEAS5 '+outlookLabel, cols:['Temp','Precip']},
+    {label:'Historical', tip:'Trailing windows ending today, versus the 10-year ERA5 mean of the same calendar dates. Temperatures are the daily mean of the high and the low, in UTC.', cols:['90D precip','30D precip','7D temp']},
+    {label:'Days 1–7', tip:'Forecast days 1 to 7 versus the ERA5 normal for those calendar dates. Precip above 500% is shown as >500%.', cols:['Temp','Precip']},
+    {label:'Days 8–14', tip:'Forecast days 8 to 14 versus the ERA5 normal for those calendar dates.', cols:['Temp','Precip']},
+    {label:'14-day', tip:'Highest forecast high and lowest forecast low over the next 14 days, °C.', cols:['Hi / lo']},
+    {label:'SEAS5 '+outlookLabel, tip:'ECMWF SEAS5 ensemble mean versus the model climate over the next three months. Not a daily forecast.', cols:['Temp','Precip']},
   ];
   const totalCols = 2 + groups.reduce((sum,g)=>sum+g.cols.length,0);
   const pcts = colPercents([14, 11, 8, 8, 7, 7, 7, 7, 7, 7, 7, 7]);
   let html = `<table class="term-table weather-table"><colgroup>${pcts.map(pc=>`<col style="width:${pc}">`).join('')}</colgroup><thead>`;
   html += `<tr><th rowspan="2" style="text-align:left">Station</th><th rowspan="2" style="text-align:left">Region</th>`;
-  groups.forEach(g=>{ html += `<th colspan="${g.cols.length}" class="grp-l" style="text-align:center;color:var(--amber);letter-spacing:.04em">${g.label}</th>`; });
+  groups.forEach(g=>{ html += `<th colspan="${g.cols.length}" class="grp-l" style="text-align:center;color:var(--amber);letter-spacing:.04em" title="${escHtml(g.tip||'')}">${g.label}</th>`; });
   html += `</tr><tr>`;
   groups.forEach(g=>{ g.cols.forEach((c,i)=>{ html += `<th class="${i===0?'grp-l':''}">${c}</th>`; }); });
   html += `</tr></thead><tbody>`;
@@ -2328,16 +2346,17 @@ function weatherContextLines(){
     }).join(' · ');
     if(drought.week) dryTxt += ` · week of ${escHtml(drought.week)}`;
   }
-  return `<p class="wx-note">Precip: green above 120% of normal, darker above 150%; brown below 80%, darker below 50%. A figure above 500% is shown as &gt;500%. Temperature: red above +1.0°C, darker above +3.0°C; blue below −1.0°C, darker below −3.0°C. SEAS5 temperature shades beyond ±0.3°C, darker beyond ±1.0°C. Inside the band is plain.</p>`
+  return `<p class="wx-note">Precip: green above 120% (darker above 150%), brown below 80% (darker below 50%). Temp: red above +1° (darker above +3°), blue below −1° (darker below −3°). SEAS5 temp from ±0.3°.</p>`
     + `<p class="wx-note">ENSO: ${ensoTxt}</p>`
-    + `<p class="wx-note">US drought, D1 or worse, percent of state area: ${dryTxt}</p>`;
+    + `<p class="wx-note">Drought D1+: ${dryTxt}</p>`
+    + `<details class="rules"><summary>Method</summary><p>Daily series are UTC. Normals are the 10-year ERA5 mean of the same calendar window. Days 1–7 and 8–14 are the forecast versus that normal. SEAS5 is the ECMWF ensemble mean versus the model climate. ENSO is the CPC discussion and the weekly Niño-3.4 anomaly. Drought is the USDM percent of state area in D1 or worse, and the change from the prior week. A precip figure above 500% is shown as &gt;500%. A dash is a missing value. Each station is one grid point, not a regional average.</p></details>`;
 }
 
 function commodityCalendarHtml(comm){
   const map = {Wheat:'Wheat', Corn:'Corn', Soybeans:'Soybeans', 'Rapeseed/Canola':'Canola', Cotton:'Cotton', Coffee:'Coffee', Sugar:'Sugar', Cocoa:'Cocoa', Oats:'Oats'};
   const section = map[comm];
   if(!section || typeof CROP_CALENDAR==='undefined' || !CROP_CALENDAR.some(r=>r.section===section)) return '';
-  return `<div class="sec-hdr">Crop calendar</div><p class="legend-line"><span style="background:rgba(46,143,82,.30);padding:0 5px">P</span> planting <span style="background:rgba(230,180,20,.40);padding:0 5px">H</span> harvest.</p><div class="tbl-wrap">${buildCropCalendarTable(section)}</div>`;
+  return `<div class="sec-hdr" title="P is planting. H is harvest.">Crop calendar</div><div class="tbl-wrap">${buildCropCalendarTable(section)}</div>`;
 }
 function buildCropCalendarTable(onlySection){
   const curMonth = new Date().getMonth() + 1; // 1-12
@@ -2389,9 +2408,7 @@ function weatherProv(){
   const meta = (WEATHER_DATA && WEATHER_DATA._meta) || {};
   const lines = [
     ...st.parts,
-    'Each station is one grid point, not a provincial or state average.',
-    'Daily series are UTC. Normals are the 10-year ERA5 mean of the same calendar window. Forecast days 1–7 and 8–14 are compared with those normals.',
-    'SEAS5 is the ECMWF ensemble mean versus the model climate' + (meta.outlook_label ? ' ('+meta.outlook_label+')' : '') + '. ENSO is CPC. Drought is USDM percent of state area in D1 or worse.'
+    'UTC daily series. Normals: 10-year ERA5 mean of the same calendar window. SEAS5: ECMWF ensemble mean versus the model climate' + (meta.outlook_label ? ' ('+meta.outlook_label+')' : '') + '.'
   ];
   if(meta.outlook_error) lines.push('Outlook incomplete: '+meta.outlook_error);
   return provMark(lines, weatherState==='ready' && st.stale===true);
@@ -2403,7 +2420,7 @@ function renderWeatherPage(){
   setMetaLines('weather-meta');
   root.insertAdjacentHTML('beforeend', `<div class="panel"><div class="panel-hdr"><span class="panel-title">Weather</span>${weatherProv()}</div>`);
   if(WEATHER_DATA){
-    root.insertAdjacentHTML('beforeend', `<div class="tbl-wrap">${buildWeatherTable()}</div>${weatherContextLines()}<p class="legend-line">Point reading at the named station, not a provincial or state average. A missing value is a dash. Nothing is estimated.</p>`);
+    root.insertAdjacentHTML('beforeend', `<div class="tbl-wrap">${buildWeatherTable()}</div>${weatherContextLines()}`);
   } else {
     root.insertAdjacentHTML('beforeend', `<div style="padding:14px 16px">${weatherState==='loading' ? 'Loading station readings…' : (weatherState==='failed' ? na() : 'Station readings load when this page is opened.')}</div>`);
   }
@@ -2577,8 +2594,8 @@ function renderSeasonals(){
   const spanTxt = (firstBounds && lastBounds)
     ? `${seasWindow(seasonalsMonth).window[0]} ${firstBounds.start.getFullYear()} through ${seasWindow(seasonalsMonth).window[2]} ${lastBounds.start.getFullYear()}`
     : `${seasWindow(seasonalsMonth).window[0]} through ${seasWindow(seasonalsMonth).window[2]}`;
-  selHtml += `</div><div style="font-size:12px;color:var(--text3);margin-bottom:4px">Showing ${spanTxt}</div>`;
-  root.innerHTML = `<div class="panel"><div class="panel-hdr"><span class="panel-title">Seasonal scores</span>${provMark(seasonalsStatus().parts.concat([SEASONALS_METHOD]), seasonalsStatus().stale)}</div><div style="padding:12px 16px 8px">${selHtml}</div></div>`
+  selHtml += `</div>`;
+  root.innerHTML = `<div class="panel"><div class="panel-hdr"><span class="panel-title">Seasonal scores</span>${provMark(seasonalsStatus().parts.concat([SEASONALS_METHOD, spanTxt]), seasonalsStatus().stale)}</div><div style="padding:12px 16px 8px">${selHtml}</div></div>`
     + `<div class="panel"><div class="panel-hdr"><span class="panel-title">Weekly scores</span></div><div class="tbl-wrap">${buildSeasonalsTable(seasonalsMonth)}</div></div>`;
   root.querySelectorAll('.seas-month-btn').forEach(b=>{
     b.addEventListener('click', ()=>{ seasonalsMonth = b.dataset.m; renderSeasonals(); });
@@ -2746,7 +2763,7 @@ function renderExports(){
   }
 
   const expNote = [...st.parts, 'Metric tons (cotton: running bales). Current marketing year.', 'Net sales are new sales this week, net of cancellations. Outstanding is sold and not yet shipped. Accumulated exports are shipped year to date. Total commitment is accumulated plus outstanding.'];
-  root.insertAdjacentHTML('beforeend', `<div class="panel"><div class="panel-hdr"><span class="panel-title">Commodity summary</span><span class="panel-sub">click a row for detail</span>${provMark(expNote, st.stale)}</div>${buildExportsSummaryTable()}</div>`);
+  root.insertAdjacentHTML('beforeend', `<div class="panel"><div class="panel-hdr"><span class="panel-title">Commodity summary</span>${provMark(expNote, st.stale)}</div>${buildExportsSummaryTable()}</div>`);
   root.insertAdjacentHTML('beforeend', `<div id="exports-detail"></div>`);
 
   // click a commodity in the summary to switch the detail below (no re-render of the page, so nothing jumps)
@@ -3066,6 +3083,7 @@ setTimeout(function(){
   var q = new URLSearchParams(location.search);
   if(q.get('src')==='cgc' && typeof usdaSource!=='undefined') usdaSource = 'cgc';
   var page = q.get('page');
+  if(q.get('theme')) setGlobalTheme(q.get('theme'));
   if(page) openPage(page, q.get('comm') || undefined);
   if(q.get('audit')){
     setTimeout(function(){
