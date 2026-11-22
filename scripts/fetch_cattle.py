@@ -109,6 +109,46 @@ def cof_history():
     return rows
 
 
+def parse_outside_feedlots(text: str):
+    """The printed outside-feedlots total. None when the report does not state it.
+
+    July says "is down 1 percent from the 33.8 million head".
+    January says "was 1 percent above January 1". The percent is the one NASS prints.
+    """
+    flat = re.sub(r"\s+", " ", text)
+    m = re.search(
+        r"outside of feedlots\), at\s+([\d.]+) million head, is (up|down|unchanged)"
+        r"(?:\s+(\d+)\s+percent)? from the ([\d.]+) million head",
+        flat,
+    )
+    if m:
+        current = float(m.group(1))
+        direction, points, year_ago = m.group(2), m.group(3), float(m.group(4))
+    else:
+        m = re.search(
+            r"outside of feedlots\), at\s+([\d.]+) million head, was (\d+) percent (above|below)",
+            flat,
+        )
+        if not m:
+            return None
+        current = float(m.group(1))
+        points = m.group(2)
+        direction = "up" if m.group(3) == "above" else "down"
+        year_ago = None
+    if direction == "unchanged" or not points:
+        pct = 100
+    elif direction == "down":
+        pct = 100 - int(points)
+    else:
+        pct = 100 + int(points)
+    return {
+        "current_million": current,
+        "year_ago_million": year_ago,
+        "pct_of_year_ago": pct,
+        "printed": m.group(0),
+    }
+
+
 def parse_inventory(text: str) -> dict:
     header = re.search(
         r"Cattle Inventory by Class and Calf Crop - United States:\s+(\w+) 1, (\d{4}) and (\d{4})",
@@ -148,6 +188,7 @@ def parse_inventory(text: str) -> dict:
         "as_of": f"{y1}-{1 if month == 'January' else 7:02d}-01",
         "released": released.group(1) if released else None,
         "rows": found,
+        "outside_feedlots": parse_outside_feedlots(text),
     }
 
 

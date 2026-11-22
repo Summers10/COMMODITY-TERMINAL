@@ -16,6 +16,7 @@
   "energy_change_vs_norm_pp": 3,
   "cattle_yoy_low": 98,
   "cattle_yoy_high": 102,
+  "cattle_inventory_grace_days": 10,
   "cutout_flat_pct": 1,
   "condition_months": {
     "corn": [6, 7, 8, 9, 10],

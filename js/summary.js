@@ -141,7 +141,10 @@ function signalTable(section){
     html += `<tr><th rowspan="2">Market</th>`;
     groups.forEach(g=>{ html += `<th colspan="${g.ids.length}" class="sig-split">${g.label}</th>`; });
     html += `</tr><tr>`;
-    cols.forEach(col=>{ html += `<th class="${splitIds.has(col.id)?'sig-split':''}">${col.label}</th>`; });
+    cols.forEach(col=>{
+      const tip = col.tip ? ` title="${escapeAttr(col.tip)}"` : '';
+      html += `<th class="${splitIds.has(col.id)?'sig-split':''}"${tip}>${col.label}</th>`;
+    });
     html += `</tr>`;
   } else {
     html += `<tr><th>Market</th>`;
