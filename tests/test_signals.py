@@ -63,6 +63,56 @@ def test_each_signal_replays_and_there_is_no_row_total():
                 assert "Peak Trading Research seasonal, last reviewed" in seasonal["detail"]
 
 
+def test_cattle_rows_score_their_own_inputs():
+    module = load_builder()
+    cfg = module.load_config()
+    book = json.loads((ROOT / "data" / "cattle.json").read_text())
+    feed = book["on_feed"][-1]
+    inventory = [
+        row for row in book["inventory"]
+        if (row.get("outside_feedlots") or {}).get("pct_of_year_ago") is not None
+    ]
+    latest = max(inventory, key=lambda row: row["as_of"])
+    doc = module.build()
+    cattle = next(section for section in doc["sections"] if section["id"] == "cattle")
+    assert [col["label"] for col in cattle["columns"][:2]] == ["Supply", "Pipeline"]
+    live = next(row for row in cattle["rows"] if row["label"] == "Live cattle")["signals"]
+    feeder = next(row for row in cattle["rows"] if row["label"] == "Feeder cattle")["signals"]
+    assert live["supply"]["rule_id"] == "cattle_yoy"
+    assert live["supply"]["inputs"]["pct"] == feed["on_feed"]["pct_of_year_ago"]
+    assert live["pipeline"]["rule_id"] == "cattle_yoy"
+    assert live["pipeline"]["inputs"]["pct"] == feed["marketings"]["pct_of_year_ago"]
+    assert feeder["pipeline"]["rule_id"] == "cattle_demand"
+    assert feeder["pipeline"]["inputs"]["pct"] == feed["placements"]["pct_of_year_ago"]
+    assert feeder["supply"]["rule_id"] == "cattle_yoy"
+    assert feeder["supply"]["inputs"]["pct"] == latest["outside_feedlots"]["pct_of_year_ago"]
+    assert module.rescore("cattle_yoy", {"pct": 95}, cfg) == "bullish"
+    assert module.rescore("cattle_yoy", {"pct": 99}, cfg) == "neutral"
+    assert module.rescore("cattle_demand", {"pct": 93}, cfg) == "bearish"
+    assert module.rescore("cattle_demand", {"pct": 103}, cfg) == "bullish"
+    assert any(row["feed"] == "Cattle inventory" for row in doc["freshness"])
+
+
+def test_outside_feedlots_uses_the_printed_percent():
+    from scripts.fetch_cattle import parse_outside_feedlots
+    july = (
+        "The total of calves under 500 pounds and other heifers and steers over 500 pounds "
+        "(outside of feedlots), at 33.6 million head, is down 1 percent from the 33.8 million head on July 1, 2025."
+    )
+    january = (
+        "The total of calves under 500 pounds and other heifers and steers over 500 pounds "
+        "(outside of feedlots), at 24.5 million head, was 1 percent above January 1, 2025."
+    )
+    july_row = parse_outside_feedlots(july)
+    january_row = parse_outside_feedlots(january)
+    assert july_row["pct_of_year_ago"] == 99
+    assert july_row["current_million"] == 33.6
+    assert july_row["year_ago_million"] == 33.8
+    assert january_row["pct_of_year_ago"] == 101
+    assert january_row["year_ago_million"] is None
+    assert parse_outside_feedlots("no such sentence") is None
+
+
 def test_a_stale_input_becomes_a_dash():
     module = load_builder()
     cfg = module.load_config()

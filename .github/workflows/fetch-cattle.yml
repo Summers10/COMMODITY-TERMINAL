@@ -32,15 +32,17 @@ jobs:
           python-version: '3.12'
       - run: pip install -r requirements.txt
       - id: cattle
+        continue-on-error: true
         run: python scripts/fetch_cattle.py
       - name: Build signals
-        if: steps.cattle.outcome == 'success'
+        if: always()
         run: python scripts/build_signals.py
       - name: Trust audit
-        if: steps.cattle.outcome == 'success'
+        id: trust
+        if: always()
         run: python -m pytest -q tests
       - name: Commit
-        if: steps.cattle.outcome == 'success' && success()
+        if: steps.trust.outcome == 'success'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"

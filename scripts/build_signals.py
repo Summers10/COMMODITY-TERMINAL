@@ -10,7 +10,7 @@ import datetime as dt
 import json
 import os
 import re
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DATA = os.path.join(ROOT, "data")
@@ -138,6 +138,8 @@ def rescore(rule_id, inputs, cfg):
         return change_vs_norm_state(inputs.get("delta_pp"), cfg)
     if rule_id == "cattle_yoy":
         return yoy_pct_state(inputs.get("pct"), cfg["cattle_yoy_low"], cfg["cattle_yoy_high"])
+    if rule_id == "cattle_demand":
+        return band(inputs.get("pct"), "bearish", "bullish", cfg["cattle_yoy_low"], cfg["cattle_yoy_high"])
     if rule_id == "condition":
         return condition_state(inputs.get("delta_pp"), cfg)
     if rule_id == "demand_pace":
@@ -225,7 +227,7 @@ def figure_text(rule_id, state, inputs):
         body = f"{inputs['vs_avg_pct']:+.1f}%"
     elif rule_id == "energy_change":
         body = f"{inputs['delta_pp']:+.1f} pp"
-    elif rule_id == "cattle_yoy":
+    elif rule_id in ("cattle_yoy", "cattle_demand"):
         body = f"{inputs['pct']:g}%"
     elif rule_id in ("canola_exports", "demand_yoy"):
         body = f"{inputs['yoy_pct']:+.1f}%"
@@ -583,18 +585,72 @@ def energy_change(series, cfg):
     }, detail, "energy", cfg)
 
 
-def cattle_pct(report, key, cfg):
+def cattle_pct(report, key, cfg, *, demand=False, what=None):
     block = (report or {}).get(key) or {}
     pct = block.get("pct_of_year_ago")
     as_of = (report or {}).get("released")
+    name = what or key.replace("_", " ")
     if pct is None:
-        return dash("cattle_yoy", f"{key.replace('_', ' ')} percent of a year ago is not in the report.", as_of)
-    state = yoy_pct_state(pct, cfg["cattle_yoy_low"], cfg["cattle_yoy_high"])
+        return dash("cattle_yoy", f"{name} percent of a year ago is not in the report.", as_of)
+    low, high = cfg["cattle_yoy_low"], cfg["cattle_yoy_high"]
+    if demand:
+        state = band(pct, "bearish", "bullish", low, high)
+        rule = "cattle_demand"
+        sense = f"At or above {high} is bullish and at or below {low} is bearish, because placements are demand for feeders."
+    else:
+        state = yoy_pct_state(pct, low, high)
+        rule = "cattle_yoy"
+        sense = f"At or below {low} is bullish and at or above {high} is bearish."
     detail = (
-        f"{key.replace('_', ' ').capitalize()} {block.get('current'):,} versus {block.get('year_ago'):,} a year ago, "
-        f"{pct}% as printed. Thresholds {cfg['cattle_yoy_low']} and {cfg['cattle_yoy_high']}."
+        f"{name}: {block.get('current'):,} versus {block.get('year_ago'):,} a year ago, "
+        f"{pct}% as printed. {sense}"
     )
-    return cell(state, "cattle_yoy", as_of, {"pct": pct}, detail, "cattle", cfg)
+    return cell(state, rule, as_of, {"pct": pct}, detail, "cattle", cfg)
+
+
+def next_cattle_release(as_of):
+    """The Cattle report after this January 1 or July 1 reference date."""
+    if as_of.month == 1:
+        return date(as_of.year, 7, 31)
+    return date(as_of.year + 1, 1, 31)
+
+
+def cattle_inventory_limit(as_of, grace):
+    return next_cattle_release(as_of) + timedelta(days=grace)
+
+
+def outside_feedlots_signal(cattle, cfg):
+    reports = [
+        row for row in (cattle or {}).get("inventory") or []
+        if ((row.get("outside_feedlots") or {}).get("pct_of_year_ago") is not None)
+    ]
+    if not reports:
+        return dash(
+            "cattle_yoy",
+            "The Cattle report did not print calves and other steers and heifers outside feedlots.",
+        )
+    latest = max(reports, key=lambda row: row.get("as_of") or "")
+    block = latest["outside_feedlots"]
+    as_of = parse_day(latest.get("as_of"))
+    grace = cfg.get("cattle_inventory_grace_days", 10)
+    if as_of and TODAY > cattle_inventory_limit(as_of, grace):
+        return dash(
+            "cattle_yoy",
+            f"The {latest.get('as_of')} Cattle report is past 10 days after the next scheduled release.",
+            as_of,
+        )
+    pct = block["pct_of_year_ago"]
+    low, high = cfg["cattle_yoy_low"], cfg["cattle_yoy_high"]
+    state = yoy_pct_state(pct, low, high)
+    ya = block.get("year_ago_million")
+    ya_txt = f" versus {ya} million a year ago" if ya is not None else ""
+    detail = (
+        f"Cattle outside feedlots, {latest.get('released') or latest.get('as_of')}: "
+        f"{block.get('current_million')} million head{ya_txt}, "
+        f"{pct}% of a year ago as printed in the Cattle report. "
+        f"At or below {low} is bullish and at or above {high} is bearish."
+    )
+    return cell(state, "cattle_yoy", as_of, {"pct": pct}, detail, None, cfg)
 
 
 def cutout_signal(cattle, cfg):
@@ -665,9 +721,15 @@ def rule_book(cfg, reviewed=None):
             f"At least {c['energy_change_vs_norm_pp']} the other way is bullish."
         )},
         {"id": "cattle_yoy", "text": (
-            f"Cattle on Feed printed percent of a year ago. At or below {c['cattle_yoy_low']} is bullish. "
-            f"At or above {c['cattle_yoy_high']} is bearish. The same thresholds are used for placements. "
-            "Both cattle rows use this one report."
+            f"Live cattle supply is Cattle on Feed on-feed head, percent of a year ago. "
+            f"Live cattle pipeline is Cattle on Feed marketings, percent of a year ago. "
+            f"Feeder supply is the Cattle report total of calves under 500 pounds and other steers and heifers outside feedlots, percent of a year ago. "
+            f"At or below {c['cattle_yoy_low']} is bullish and at or above {c['cattle_yoy_high']} is bearish. "
+            "The percents are the ones the report prints. The semiannual figure stays current until 10 days after the next January 31 or July 31 release."
+        )},
+        {"id": "cattle_demand", "text": (
+            f"Feeder pipeline is Cattle on Feed placements, percent of a year ago, scored as demand for feeder cattle. "
+            f"At or above {c['cattle_yoy_high']} is bullish and at or below {c['cattle_yoy_low']} is bearish."
         )},
         {"id": "cutout", "text": (
             "Choice boxed beef from the USDA AMS boxed-beef report is an official print, not a futures price. "
@@ -852,14 +914,16 @@ def build(cfg=None):
         energy_row("Distillate (Heating oil)", "dist_stocks", "022651"),
         energy_row("Natural gas", "ng_storage", "023651"),
     ]
-    on_feed = cattle_pct(feed, "on_feed", cfg)
-    placements = cattle_pct(feed, "placements", cfg)
+    on_feed = cattle_pct(feed, "on_feed", cfg, what="Cattle on feed")
+    marketings = cattle_pct(feed, "marketings", cfg, what="Marketings")
+    placements = cattle_pct(feed, "placements", cfg, demand=True, what="Placements")
+    outside = outside_feedlots_signal(cattle, cfg)
     cut = cutout_signal(cattle, cfg)
 
-    def cattle_row(label, code, peak):
+    def cattle_row(label, supply, pipeline, code, peak):
         sigs = {
-            "on_feed": on_feed,
-            "placements": placements,
+            "supply": supply,
+            "pipeline": pipeline,
             "mm_extension": mm_extension(cftc, code, cfg),
             "mm_flow": mm_flow(cftc, code, cfg),
             "seasonal": seasonal_signal(seasonals, peak, cfg),
@@ -867,14 +931,18 @@ def build(cfg=None):
         return row(label, sigs, [], "usda", "Cattle", cfg)
 
     cattle_rows = [
-        cattle_row("Live cattle", "057642", "Cattle"),
-        cattle_row("Feeder cattle", "061641", "Feeder Cattle"),
+        cattle_row("Live cattle", on_feed, marketings, "057642", "Cattle"),
+        cattle_row("Feeder cattle", outside, placements, "061641", "Feeder Cattle"),
     ]
     cattle_figs = []
     if feed and feed.get("on_feed"):
         cattle_figs.append({"label": "On feed", "value": f"{feed['on_feed']['pct_of_year_ago']}% of yr ago"})
+    if feed and feed.get("marketings"):
+        cattle_figs.append({"label": "Marketings", "value": f"{feed['marketings']['pct_of_year_ago']}% of yr ago"})
     if feed and feed.get("placements"):
         cattle_figs.append({"label": "Placements", "value": f"{feed['placements']['pct_of_year_ago']}% of yr ago"})
+    if outside.get("inputs", {}).get("pct") is not None:
+        cattle_figs.append({"label": "Outside feedlots", "value": f"{outside['inputs']['pct']}% of yr ago"})
     choice = (cattle.get("cutout") or {}).get("choice")
     if choice is not None:
         cattle_figs.append({"label": "Choice cutout", "value": f"{choice:.2f}"})
@@ -954,15 +1022,15 @@ def build(cfg=None):
         {
             "id": "cattle",
             "title": "Cattle",
-            "basis": "Fundamentals out of 3 (on feed, placements, seasonal). Managed money out of 2. The cutout trend is not scored.",
+            "basis": "Live supply is on feed and pipeline is marketings. Feeder supply is cattle outside feedlots and pipeline is placements. Seasonal is Peak. Managed money is out of 2.",
             "groups": [
-                {"label": "Fundamentals", "ids": ["on_feed", "placements", "seasonal"]},
+                {"label": "Fundamentals", "ids": ["supply", "pipeline", "seasonal"]},
                 {"label": "Managed money", "ids": ["mm_extension", "mm_flow"]},
             ],
             "columns": [
-                {"id": "on_feed", "label": "On feed"},
-                {"id": "placements", "label": "Placements"},
-                {"id": "seasonal", "label": "Seasonal"},
+                {"id": "supply", "label": "Supply", "tip": "Live cattle: Cattle on Feed, on feed, percent of a year ago. Feeder cattle: Cattle report, calves and other steers and heifers outside feedlots, percent of a year ago."},
+                {"id": "pipeline", "label": "Pipeline", "tip": "Live cattle: Cattle on Feed marketings, percent of a year ago. At or below 98 is bullish. Feeder cattle: placements, percent of a year ago, scored as feeder demand. At or above 102 is bullish."},
+                {"id": "seasonal", "label": "Seasonal", "tip": "Peak Trading Research seasonal for this cattle contract."},
                 {"id": "mm_extension", "label": "Extended"},
                 {"id": "mm_flow", "label": "Money flow"},
             ],
@@ -1007,6 +1075,16 @@ def feed_freshness(cfg, psd, cftc, exports, energy, cattle, cgc, sd, weather):
     add("EIA", series[0].get("period") if series else None, cfg["cadence_days"]["energy"], (energy or {}).get("generated_at"))
     latest_feed = ((cattle or {}).get("on_feed") or [None])[-1] or {}
     add("Cattle on feed", latest_feed.get("released"), cfg["cadence_days"]["cattle"], (cattle or {}).get("updated"))
+    inventory = [
+        row for row in (cattle or {}).get("inventory") or []
+        if (row.get("outside_feedlots") or {}).get("pct_of_year_ago") is not None
+    ]
+    latest_inv = max(inventory, key=lambda row: row.get("as_of") or "") if inventory else {}
+    inv_as_of = parse_day(latest_inv.get("as_of")) if latest_inv else None
+    inv_cadence = None
+    if inv_as_of:
+        inv_cadence = (cattle_inventory_limit(inv_as_of, cfg.get("cattle_inventory_grace_days", 10)) - TODAY).days + age_days(inv_as_of)
+    add("Cattle inventory", latest_inv.get("as_of"), inv_cadence, (cattle or {}).get("updated"))
     add("CGC", (cgc or {}).get("latest_date"), cfg["cadence_days"]["cgc"], (cgc or {}).get("updated"))
     add("AAFC", ((sd or {}).get("aafc") or {}).get("date"), cfg["cadence_days"]["aafc"], (sd or {}).get("updated"))
     wx = (weather or {}).get("_meta") or {}

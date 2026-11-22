@@ -16,9 +16,11 @@ The summary page is a rule-based board. Each cell is bullish, bearish, neutral, 
 | Demand | export commitment versus a year ago, the same percent the Exports page uses. At least +5% is bullish and at least −5% is bearish. Canola uses CGC exports versus a year ago with the same band. |
 | Energy stocks | 3% versus the 5-year average. Gas uses the published WNGSR percent. Petroleum uses the computed percent. Energy has no seasonal column. |
 | Energy week versus normal | 3 percentage points versus the same-week percent change of the prior five years. |
-| Cattle on feed and placements | printed percent of a year ago, 98 and 102. The choice cutout stays in Key figures and is not scored. |
+| Live cattle supply and marketings | Cattle on Feed printed percent of a year ago. At or below 98 is bullish and at or above 102 is bearish. |
+| Feeder placements | the same printed percent, reversed: at or above 102 is bullish and at or below 98 is bearish. |
+| Feeder supply outside feedlots | the percent printed in the January and July Cattle report. At or below 98 is bullish and at or above 102 is bearish. It stays current until 10 days after the next scheduled release. |
 
-A cell older than its cadence (WASDE and AAFC 45 days, cattle 45, the weekly feeds 14, weather 2) is a dash. Seasonal scores are not on that clock. The summary lists each feed's as-of date, the last successful run, and whether it is OK or stale. `scripts/build_signals.py` runs after each fetch. Update the typed Peak scores, and `SEASONALS_REVIEWED`, only when the chart itself changes.
+A cell older than its cadence (WASDE and AAFC 45 days, the monthly Cattle on Feed figures 45 days, the weekly feeds 14, weather 2) is a dash. The semiannual outside-feedlots figure stays until 10 days after the next January 31 or July 31. Seasonal scores are not on that clock. The summary lists each feed's as-of date, the last successful run, and whether it is OK or stale. `scripts/build_signals.py` runs after each fetch. Update the typed Peak scores, and `SEASONALS_REVIEWED`, only when the chart itself changes.
 
 ## Pages
 

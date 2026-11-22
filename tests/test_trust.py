@@ -7,7 +7,7 @@ the same check; the test does not accept a silent change of release.
 from __future__ import annotations
 
 import json
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -181,6 +181,17 @@ def test_cattle_on_feed_uses_the_printed_percent():
     assert "cofd" in latest["source_url"]
     assert isinstance(latest["on_feed"]["pct_of_year_ago"], int)
     assert latest["on_feed"]["current"] > 0
+    assert isinstance(latest["marketings"]["pct_of_year_ago"], int)
+    assert latest["marketings"]["current"] > 0
+    reports = [r for r in book.get("inventory") or [] if (r.get("outside_feedlots") or {}).get("pct_of_year_ago") is not None]
+    assert reports, "Cattle report did not print the outside-feedlots total"
+    latest_inv = max(reports, key=lambda r: r["as_of"])
+    outside = latest_inv["outside_feedlots"]
+    assert isinstance(outside["pct_of_year_ago"], int)
+    assert outside["current_million"] > 0
+    as_of = datetime.strptime(latest_inv["as_of"], "%Y-%m-%d").date()
+    nxt = date(as_of.year, 7, 31) if as_of.month == 1 else date(as_of.year + 1, 1, 31)
+    assert TODAY <= nxt + timedelta(days=10)
 
 
 def test_cgc_week_is_current():
