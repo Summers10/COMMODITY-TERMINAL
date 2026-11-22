@@ -18,7 +18,7 @@ function renderEnergy(box){
     html += `<tr class="jump" data-key="${s.key}"><td>${s.label}</td><td class="latest">${fmt(s.value)}</td><td class="${dir(s.change)}">${s.change==null?na():signed(s.change,d)}</td><td>${fmt(s.year_ago)}</td><td>${s.avg5==null?na():Number(s.avg5).toLocaleString()}</td><td class="${dir(s.vs_avg5_pct)}">${s.vs_avg5_pct==null?na():signed(s.vs_avg5_pct,1)+'%'}</td><td>${s.period||na()}</td></tr>`;
   });
   html += `</tbody></table></div>`;
-  html += `<div class="panel"><div class="panel-hdr"><span class="panel-title" id="en-title">Level</span>${provMark(['Petroleum 5-yr range and avg are computed from EIA weekly levels. The natural gas band is the WNGSR published average and range when ngsstats.xls matches the table.'], st.stale)}</div><div id="en-chart"></div><p class="legend-line" id="en-note">Level / year ago / 5-yr avg / 5-yr range.</p></div>`;
+  html += `<div class="panel"><div class="panel-hdr"><span class="panel-title" id="en-title">Level</span>${provMark(['Petroleum 5-yr range and avg are computed from EIA weekly levels. The natural gas band is the WNGSR published average and range when ngsstats.xls matches the table.', 'Lines: level, year ago, 5-yr avg. Band: 5-yr range.'], st.stale)}</div><div id="en-chart"></div></div>`;
   root.innerHTML = html;
   if(!window._enKey){
     const asked = new URLSearchParams(location.search).get('en');
