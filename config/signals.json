@@ -31,7 +31,7 @@
     "exports": 14,
     "cgc": 14,
     "energy": 14,
-    "crop": 21,
+    "weather": 2,
     "cattle": 45
   }
 }

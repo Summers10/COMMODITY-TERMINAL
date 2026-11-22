@@ -1,6 +1,6 @@
 # Commodity Terminal
 
-Research terminal for grains, oilseeds, energy, crop progress and cattle. Every figure is taken from an official published source. A missing figure reads **not available**.
+Research terminal for grains, oilseeds, softs, energy, and cattle. Every figure is taken from an official published source. A missing figure reads **not available**.
 
 ## Signal summary
 
@@ -12,28 +12,21 @@ The summary page is a rule-based board. Each cell is bullish, bearish, neutral, 
 | Managed money, last 156 weeks | at or above the 85th percentile is extended long (bearish); at or below the 15th is extended short (bullish). |
 | Money flow | both the 1-week and 4-week changes in managed-money net up, or both down. Mixed or zero is neutral. |
 | Seasonal | average of the typed Peak Trading Research scores for this calendar week and the next four, wrapping from December into January. +1 or higher is bullish, −1 or lower is bearish. The same scores are reused every year and do not expire. No typed score is a dash. |
-| Score | bullish +1, bearish −1, neutral 0. Dashes are excluded. +2 or higher is Supportive, −2 or lower is Bearish, otherwise Neutral. |
+| Score | bullish +1, bearish −1, neutral 0. Dashes are excluded. Fundamentals are out of 3, or out of 2 for energy. Managed money is out of 2. |
 | Demand | export commitment versus a year ago, the same percent the Exports page uses. At least +5% is bullish and at least −5% is bearish. Canola uses CGC exports versus a year ago with the same band. |
-| Canola exports | CGC crop-year exports versus the same week a year ago, 3% either way. |
-| Crop condition | 3 points versus the printed 5-year average, or versus year ago. Outside the months in the config the cell says out of season. |
-| Energy stocks | 3% versus the 5-year average. Gas uses the published WNGSR percent. Petroleum uses the computed percent. |
+| Energy stocks | 3% versus the 5-year average. Gas uses the published WNGSR percent. Petroleum uses the computed percent. Energy has no seasonal column. |
 | Energy week versus normal | 3 percentage points versus the same-week percent change of the prior five years. |
-| Cattle on feed and placements | printed percent of a year ago, 98 and 102. |
-| Boxed beef | a 1% band on the four-week change. The file has one print, so the cell is a dash. |
+| Cattle on feed and placements | printed percent of a year ago, 98 and 102. The choice cutout stays in Key figures and is not scored. |
 
-A cell older than its cadence (wasde and AAFC 45 days, crop progress 21, the weekly feeds 14) is a dash. Seasonal scores are not on that clock. `scripts/build_signals.py` runs after each fetch. Update the typed Peak scores, and `SEASONALS_REVIEWED`, only when the chart itself changes.
+A cell older than its cadence (WASDE and AAFC 45 days, cattle 45, the weekly feeds 14, weather 2) is a dash. Seasonal scores are not on that clock. The summary lists each feed's as-of date, the last successful run, and whether it is OK or stale. `scripts/build_signals.py` runs after each fetch. Update the typed Peak scores, and `SEASONALS_REVIEWED`, only when the chart itself changes.
 
 ## Pages
 
 - Summary
-- USDA balances (WASDE world rows, PSD country rows, CGC canola toggle)
+- Fundamentals (grains and oilseeds, softs, energy, cattle, and the crop calendar for the selected commodity)
 - CFTC
-- Seasonals
 - Export sales
-- Weather and crop calendar
-- Energy (EIA WPSR and WNGSR)
-- Crop progress
-- Cattle (NASS on feed and inventory, AMS slaughter and prices, WASDE beef)
+- Weather, with the Peak seasonal table underneath
 
 Live cattle and feeder cattle positioning is only on the CFTC page.
 

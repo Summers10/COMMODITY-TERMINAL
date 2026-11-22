@@ -655,21 +655,19 @@ def rule_book(cfg, reviewed=None):
             f"Peak Trading Research seasonal, last reviewed {reviewed}."
         )},
         {"id": "score", "text": (
-            "A bullish cell is +1, a bearish cell is −1, and a neutral cell is 0. Dashes are left out. "
-            f"A row or section total of {c['score_supportive']:+d} or higher is Supportive. "
-            f"{c['score_bearish']:+d} or lower is Bearish. Anything between is Neutral."
+            "A bullish cell is +1, a bearish cell is −1, and a neutral cell is 0. Dashes are left out of the total. "
+            "Grains, softs, and cattle fundamentals are out of 3. Energy fundamentals are out of 2, because there is no Peak seasonal. "
+            "Managed money is out of 2. The row shows the two subtotals and the total."
         )},
-        {"id": "demand_pace", "text": (
-            f"US export commitments as a percent of the USDA export forecast, minus the {c['demand_history_years']}-year average of that percent at the same week. "
-            f"At least +{c['demand_pp']} percentage points ahead is bullish. At least {c['demand_pp']} behind is bearish. "
-            "The saved export history does not cover those earlier seasons, so the cell is a dash. "
-            f"Canola uses CGC crop-year exports versus the same week a year ago. "
-            f"At least +{c['canola_export_yoy_pct']:g}% is bullish and at least {c['canola_export_yoy_pct']:g}% behind is bearish."
+        {"id": "demand_yoy", "text": (
+            f"Export commitments versus a year ago, the same percent the Exports page uses. "
+            f"At least +{c['demand_pp']:g}% is bullish. At least {c['demand_pp']:g}% below is bearish. Otherwise neutral. "
+            "Canola uses CGC crop-year exports versus the same week a year ago, with the same band. "
+            "Coffee and sugar have no series on the Exports page, so those cells are dashes."
         )},
-        {"id": "condition", "text": (
-            f"NASS good/excellent minus the printed 5-year average, or minus year ago when the average is not printed. "
-            f"At least {c['condition_pp']} points below is bullish. At least {c['condition_pp']} points above is bearish. "
-            "Outside the months listed in the config the cell says out of season. Meal and oil have no condition series."
+        {"id": "canola_exports", "text": (
+            f"CGC canola exports versus the same week a year ago. "
+            f"At least +{c['demand_pp']:g}% is bullish and at least {c['demand_pp']:g}% below is bearish."
         )},
         {"id": "energy_level", "text": (
             f"Stocks versus the 5-year average. At least +{c['energy_vs_avg_pct']}% is bearish. "
@@ -687,9 +685,8 @@ def rule_book(cfg, reviewed=None):
             "Both cattle rows use this one report."
         )},
         {"id": "cutout", "text": (
-            f"Choice boxed beef from the USDA AMS boxed-beef report, over four weeks. Up more than {c['cutout_flat_pct']}% is bullish, down more than that is bearish, "
-            "inside the band is neutral. This is the printed AMS cutout, not a futures price. The cattle file has one print, so the cell is a dash. "
-            "Slaughter pace is omitted because the AMS report does not print a year-ago head count."
+            "Choice boxed beef from the USDA AMS boxed-beef report is an official print, not a futures price. "
+            "The file has a single print, so a four-week trend cannot be scored and the column is omitted. The figure stays in Key figures."
         )},
         {"id": "staleness", "text": (
             "A cell whose as-of date is older than its cadence is a dash. Cadences, in days: "
@@ -896,6 +893,7 @@ def build(cfg=None):
         {
             "id": "grains",
             "title": "Grains & Oilseeds",
+            "basis": "Fundamentals out of 3 (stocks/use, demand, seasonal). Managed money out of 2. A dash is left out of that row.",
             "groups": [
                 {"label": "Fundamentals", "ids": ["stu", "demand", "seasonal"]},
                 {"label": "Managed money", "ids": ["mm_extension", "mm_flow"]},
@@ -913,6 +911,7 @@ def build(cfg=None):
         {
             "id": "softs",
             "title": "Softs",
+            "basis": "Fundamentals out of 3 (stocks/use, demand, seasonal). Managed money out of 2. A dash is left out of that row.",
             "groups": [
                 {"label": "Fundamentals", "ids": ["stu", "demand", "seasonal"]},
                 {"label": "Managed money", "ids": ["mm_extension", "mm_flow"]},
@@ -930,6 +929,7 @@ def build(cfg=None):
         {
             "id": "energy",
             "title": "Energy",
+            "basis": "Fundamentals out of 2 (stocks vs 5-yr and week vs norm). There is no seasonal column. Managed money out of 2.",
             "groups": [
                 {"label": "Fundamentals", "ids": ["energy_level", "energy_change"]},
                 {"label": "Managed money", "ids": ["mm_extension", "mm_flow"]},
@@ -946,6 +946,7 @@ def build(cfg=None):
         {
             "id": "cattle",
             "title": "Cattle",
+            "basis": "Fundamentals out of 3 (on feed, placements, seasonal). Managed money out of 2. The cutout trend is not scored.",
             "groups": [
                 {"label": "Fundamentals", "ids": ["on_feed", "placements", "seasonal"]},
                 {"label": "Managed money", "ids": ["mm_extension", "mm_flow"]},
@@ -969,41 +970,44 @@ def build(cfg=None):
         "generated_at": datetime.now(dt.timezone.utc).replace(microsecond=0).isoformat(),
         "config": cfg,
         "rules": rule_book(cfg, (seasonals or {}).get("reviewed")),
-        "freshness": feed_freshness(cfg, psd, cftc, exports, energy, cattle, cgc, progress, sd),
+        "freshness": feed_freshness(cfg, psd, cftc, exports, energy, cattle, cgc, sd, load_json("weather_data.json")),
         "sections": sections,
     }
 
 
-def feed_freshness(cfg, psd, cftc, exports, energy, cattle, cgc, progress, sd):
-    """As-of dates the summary can show. Stale is decided in the browser from cadence_days."""
+def feed_freshness(cfg, psd, cftc, exports, energy, cattle, cgc, sd, weather):
+    """As-of is the report date. last_run is when the fetch last succeeded. Stale is decided in the browser."""
     rows = []
 
-    def add(feed, as_of, cadence):
+    def add(feed, as_of, cadence, ran):
         day = parse_day(as_of)
+        stamp = str(ran)[:16].replace("T", " ") if ran else None
         rows.append({
             "feed": feed,
             "as_of": day.isoformat() if day else None,
+            "last_run": stamp,
             "cadence_days": cadence,
         })
 
     meta = (psd or {}).get("_meta") or {}
-    add("WASDE", meta.get("wasde_release"), cfg["cadence_days"]["wasde"])
+    add("WASDE", meta.get("wasde_release"), cfg["cadence_days"]["wasde"], meta.get("fetched_at"))
     last_cftc = None
     for node in ((cftc or {}).get("codes") or {}).values():
         if node.get("rows"):
             last_cftc = node["rows"][-1][0]
             break
-    add("CFTC", last_cftc, cfg["cadence_days"]["cftc"])
+    add("CFTC", last_cftc, cfg["cadence_days"]["cftc"], ((cftc or {}).get("_meta") or {}).get("fetched_at"))
     corn = (((exports or {}).get("commodities") or {}).get("CORN - UNMILLED") or {}).get("total") or {}
-    add("Export sales", corn.get("period_ending"), cfg["cadence_days"]["exports"])
+    add("Export sales", corn.get("period_ending"), cfg["cadence_days"]["exports"], ((exports or {}).get("_meta") or {}).get("fetched_at"))
     series = (energy or {}).get("series") or []
-    add("EIA", series[0].get("period") if series else None, cfg["cadence_days"]["energy"])
+    add("EIA", series[0].get("period") if series else None, cfg["cadence_days"]["energy"], (energy or {}).get("generated_at"))
     latest_feed = ((cattle or {}).get("on_feed") or [None])[-1] or {}
-    add("Cattle on feed", latest_feed.get("released"), cfg["cadence_days"]["cattle"])
-    add("CGC", (cgc or {}).get("latest_date"), cfg["cadence_days"]["cgc"])
-    add("AAFC", ((sd or {}).get("aafc") or {}).get("date"), cfg["cadence_days"]["aafc"])
-    add("Crop progress", (progress or {}).get("report_date"), cfg["cadence_days"]["crop"])
-    add("Seasonal", (load_seasonals() or {}).get("reviewed"), None)
+    add("Cattle on feed", latest_feed.get("released"), cfg["cadence_days"]["cattle"], (cattle or {}).get("updated"))
+    add("CGC", (cgc or {}).get("latest_date"), cfg["cadence_days"]["cgc"], (cgc or {}).get("updated"))
+    add("AAFC", ((sd or {}).get("aafc") or {}).get("date"), cfg["cadence_days"]["aafc"], (sd or {}).get("updated"))
+    wx = (weather or {}).get("_meta") or {}
+    add("Weather", wx.get("fetched_at"), cfg["cadence_days"]["weather"], wx.get("fetched_at"))
+    add("Seasonal", (load_seasonals() or {}).get("reviewed"), None, None)
     return rows
 
 
