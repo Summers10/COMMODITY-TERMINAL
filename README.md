@@ -12,7 +12,7 @@ The summary page is a rule-based board. Each cell is bullish, bearish, neutral, 
 | Managed money, last 156 weeks | at or above the 85th percentile is extended long (bearish); at or below the 15th is extended short (bullish). |
 | Money flow | both the 1-week and 4-week changes in managed-money net up, or both down. Mixed or zero is neutral. |
 | Seasonal | average of the typed Peak Trading Research scores for this calendar week and the next four, wrapping from December into January. +1 or higher is bullish, −1 or lower is bearish. The same scores are reused every year and do not expire. No typed score is a dash. |
-| Verdicts | bullish +1, bearish −1, neutral 0. Dashes are excluded. Fundamentals is the net of that group, out of 3, or out of 2 for energy. Managed money is the net of extended and flow, out of 2. Positive is green, negative is red, zero is plain. |
+| Colour | each cell on its own: bullish green, bearish red, neutral pale amber. The cell shows the figure only. A missing figure is a dash with no colour. No row total and no section score. |
 | Demand | export commitment versus a year ago, the same percent the Exports page uses. At least +5% is bullish and at least −5% is bearish. Canola uses CGC exports versus a year ago with the same band. |
 | Energy stocks | 3% versus the 5-year average. Gas uses the published WNGSR percent. Petroleum uses the computed percent. Energy has no seasonal column. |
 | Energy week versus normal | 3 percentage points versus the same-week percent change of the prior five years. |

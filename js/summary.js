@@ -134,32 +134,28 @@ function freshnessPanel(rows){
 function signalTable(section){
   const cols = section.columns || [];
   const groups = section.groups || [];
-  const widths = [1.7, ...cols.map(()=>1), 0.72, 0.82];
+  const widths = [1.6, ...cols.map(()=>1)];
   let html = `<div class="panel"><table class="term-table summary-table sig-table">${fitColgroup(widths)}<thead>`;
   if(groups.length){
     html += `<tr><th rowspan="2">Market</th>`;
     groups.forEach(g=>{ html += `<th colspan="${g.ids.length}">${g.label}</th>`; });
-    html += `<th rowspan="2" class="verdict-h verdict-edge">Fundamentals</th><th rowspan="2" class="verdict-h">Managed money</th></tr><tr>`;
+    html += `</tr><tr>`;
     cols.forEach(col=>{ html += `<th>${col.label}</th>`; });
     html += `</tr>`;
   } else {
     html += `<tr><th>Market</th>`;
     cols.forEach(col=>{ html += `<th>${col.label}</th>`; });
-    html += `<th class="verdict-h verdict-edge">Fundamentals</th><th class="verdict-h">Managed money</th></tr>`;
+    html += `</tr>`;
   }
   html += `</thead><tbody>`;
   (section.rows||[]).forEach(row=>{
     html += `<tr><td class="jump" data-page="${row.page||''}" data-comm="${row.comm||''}">${row.label}</td>`;
     cols.forEach(col=>{
       const sig = (row.signals||{})[col.id] || {};
-      const cls = sig.state && sig.state!=='neutral' ? `sig sig-${sig.state}` : 'sig';
+      const cls = sig.state ? `sig sig-${sig.state}` : 'sig';
       const text = sig.text || na();
       html += `<td class="${cls}"><button type="button" class="sig-hit" data-detail="${escapeAttr(sig.detail||sig.reason||'')}" data-rule="${escapeAttr(ruleText(sig.rule_id))}" data-asof="${escapeAttr(sig.as_of||'')}">${text}</button></td>`;
     });
-    const fundIds = (groups.find(g=>/fund/i.test(g.label)) || {}).ids || [];
-    const mmIds = (groups.find(g=>/money/i.test(g.label)) || {}).ids || [];
-    html += verdictCell(row, fundIds, cols, 'Fundamentals', true);
-    html += verdictCell(row, mmIds, cols, 'Managed money', false);
     html += `</tr>`;
   });
   html += `</tbody></table></div>`;
@@ -197,23 +193,6 @@ function rulesBlock(rules){
   rules.forEach(rule=>{ html += `<p><b>${rule.id}</b> ${rule.text}</p>`; });
   html += `</details>`;
   return html;
-}
-function verdictCell(row, ids, cols, name, edge){
-  const part = name==='Fundamentals' ? row.fund : row.mm;
-  const edgeCls = edge ? ' verdict-edge' : '';
-  if(!part || !part.scored){
-    return `<td class="verdict${edgeCls}">${na()}</td>`;
-  }
-  const sign = part.score>0 ? '+' : '';
-  const tone = part.score>0 ? 'sig sig-bull' : part.score<0 ? 'sig sig-bear' : 'sig';
-  const bits = ids.map(id=>{
-    const sig = (row.signals||{})[id] || {};
-    const label = (cols.find(c=>c.id===id) || {}).label || id;
-    const mark = sig.state==='bullish' ? '+1' : sig.state==='bearish' ? '−1' : sig.state==='neutral' ? '0' : 'dash';
-    return `${label} ${mark}`;
-  }).join(' · ');
-  const detail = `${bits}. Net ${sign}${part.score}/${part.scored}.`;
-  return `<td class="verdict ${tone}${edgeCls}"><button type="button" class="sig-hit" data-detail="${escapeAttr(detail)}" data-rule="${escapeAttr(ruleText('verdict'))}">${sign}${part.score}/${part.scored}</button></td>`;
 }
 function ruleText(id){
   const rule = (SIGNALS && SIGNALS.rules || []).find(r=>r.id===id);

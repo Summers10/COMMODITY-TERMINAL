@@ -1316,23 +1316,18 @@ td.sig{text-align:center;padding:0}
 button.sig-hit{width:100%;border:0;background:transparent;color:inherit;font:inherit;font-size:13px;font-weight:700;padding:6px 2px;cursor:pointer}
 /* The table cell paints var(--bg) at the same specificity as a bare td.sig-bull,
    and the button fills the cell, so the colour has to be on both and more specific. */
-body.light .sig-table td.sig-bull,
-body.light .sig-table td.sig-bull .sig-hit,
-body.light .sig-table td.tally.pos,
-body.light .sec-score.pos{background:#d8f0dc;color:#1a2e1c}
-body.dark .sig-table td.sig-bull,
-body.dark .sig-table td.sig-bull .sig-hit,
-body.dark .sig-table td.tally.pos,
-body.dark .sec-score.pos{background:rgba(46,160,67,0.35);color:#e7f6ea}
-body.light .sig-table td.sig-bear,
-body.light .sig-table td.sig-bear .sig-hit,
-body.light .sig-table td.tally.neg,
-body.light .sec-score.neg{background:#f8d7d7;color:#4a1515}
-body.dark .sig-table td.sig-bear,
-body.dark .sig-table td.sig-bear .sig-hit{background:rgba(218,54,51,0.35);color:#ffe8e6}
-.sig-table th.verdict-h{font-size:11px;letter-spacing:.02em;line-height:1.2}
-.sig-table td.verdict-edge,.sig-table th.verdict-edge{border-left:3px solid var(--grp-line)}
-.sig-table td.verdict .sig-hit{font-size:12px;padding:4px 1px}
+body.light .sig-table td.sig-bullish,
+body.light .sig-table td.sig-bullish .sig-hit{background:#d8f0dc;color:#1a2e1c}
+body.dark .sig-table td.sig-bullish,
+body.dark .sig-table td.sig-bullish .sig-hit{background:rgba(46,160,67,0.35);color:#e7f6ea}
+body.light .sig-table td.sig-bearish,
+body.light .sig-table td.sig-bearish .sig-hit{background:#f8d7d7;color:#4a1515}
+body.dark .sig-table td.sig-bearish,
+body.dark .sig-table td.sig-bearish .sig-hit{background:rgba(218,54,51,0.35);color:#ffe8e6}
+body.light .sig-table td.sig-neutral,
+body.light .sig-table td.sig-neutral .sig-hit{background:#fbefc9;color:#3d3310}
+body.dark .sig-table td.sig-neutral,
+body.dark .sig-table td.sig-neutral .sig-hit{background:rgba(210,153,34,0.30);color:#f8e7c0}
 .score-of{display:block;font-weight:600;font-size:12px}
 td.tally{text-align:center;font-size:13px;white-space:normal}
 #sig-pop{position:fixed;z-index:30;background:var(--bg1);border:1px solid var(--border2);color:var(--text);font-size:13px;line-height:1.4;padding:8px 10px}
