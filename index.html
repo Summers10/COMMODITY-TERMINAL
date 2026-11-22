@@ -166,7 +166,7 @@ document.querySelectorAll('.page-tab').forEach(function(btn){
   <h1 style="font-size:18px;font-weight:900;letter-spacing:.12em;text-transform:uppercase;color:var(--amber);white-space:nowrap">Weather</h1>
   <div id="weather-meta" style="font-size:13px;color:var(--text3);letter-spacing:.04em;margin-left:auto">Loading...</div>
 </div>
-  <div id="weather-root" style="max-width:1300px;margin:0 auto;padding:22px"></div>
+  <div id="weather-root" style="max-width:100%;margin:0 auto;padding:12px 10px"></div>
 </div>
 <style>
 #en-chart{position:relative;max-width:100%}
@@ -1292,8 +1292,17 @@ fetch('data/psd_data.json')
 .weather-table{border:1px solid var(--border2);background:var(--bg)}
 .weather-table th{background:var(--th-bg);padding:4px 3px;text-align:right;letter-spacing:.02em;color:var(--text);border-bottom:2px solid var(--border2);white-space:normal;overflow-wrap:anywhere}
 .weather-table th:first-child{text-align:left}
-.weather-table td{padding:3px 3px;text-align:right;border-bottom:1px solid var(--border);color:var(--text2);white-space:normal;overflow-wrap:anywhere;background:var(--bg)}
-.weather-table td:first-child{text-align:left;color:var(--text);font-weight:700}
+.weather-table td{padding:3px 3px;text-align:right;border-bottom:1px solid var(--border);color:var(--text2);white-space:nowrap;background:var(--bg)}
+.weather-table td:first-child,.weather-table td.wx-region{text-align:left;color:var(--text);font-weight:700;white-space:normal}
+.wx-wet{background:rgba(46,143,82,.22) !important}
+.wx-wet2{background:rgba(46,143,82,.45) !important}
+.wx-dry{background:rgba(166,124,82,.28) !important}
+.wx-dry2{background:rgba(122,78,40,.45) !important}
+.wx-hot{background:rgba(184,56,56,.18) !important}
+.wx-hot2{background:rgba(184,56,56,.40) !important}
+.wx-cold{background:rgba(47,111,176,.20) !important}
+.wx-cold2{background:rgba(47,111,176,.42) !important}
+.wx-note{margin:8px 0 0;font-size:13px;color:var(--text2)}
 .summary-table{border:1px solid var(--border2);background:var(--bg)}
 /* group divider: the first column of each group gets a heavier left line, running the full height of the table */
 .grp-l{border-left:2px solid var(--grp-line)}
@@ -2190,21 +2199,30 @@ const CROP_CALENDAR = [
 ];
 const CAL_MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
-function fmtPctNormal(v){ return (v===null||v===undefined||isNaN(v)) ? na() : Math.round(v)+'%'; }
+function fmtPctNormal(v){
+  if(v===null||v===undefined||isNaN(v)) return na();
+  if(v>500) return '>500%';
+  return Math.round(v)+'%';
+}
 function fmtTempDep(v){
   if(v===null||v===undefined||isNaN(v)) return na();
-  const s = v>=0?'+':'';
+  const s = v>0?'+':'';
   return s+v.toFixed(1)+'°C';
 }
-// band (optional): values within +/-band of normal are left uncoloured ("normal").
-// Without a band, anything above/below normal is coloured (used for the temp departures).
-function weatherDirClass(v, isPct, band){
+function wxPrecipClass(v){
   if(v===null||v===undefined||isNaN(v)) return '';
-  const baseline = isPct ? 100 : 0;
-  const dev = v - baseline;
-  if(band !== undefined && Math.abs(dev) <= band) return '';
-  if(dev>0) return 'cftc-up';
-  if(dev<0) return 'cftc-dn';
+  if(v>=150) return 'wx-wet2';
+  if(v>=120) return 'wx-wet';
+  if(v<=50) return 'wx-dry2';
+  if(v<=80) return 'wx-dry';
+  return '';
+}
+function wxTempClass(v, mild, strong){
+  if(v===null||v===undefined||isNaN(v)) return '';
+  if(v>=strong) return 'wx-hot2';
+  if(v>mild) return 'wx-hot';
+  if(v<=-strong) return 'wx-cold2';
+  if(v<-mild) return 'wx-cold';
   return '';
 }
 
@@ -2249,67 +2267,70 @@ function buildWeatherFootnote(){
 function buildWeatherTable(){
   const regions = (WEATHER_DATA && WEATHER_DATA.regions) || {};
   const wxMeta = (WEATHER_DATA && WEATHER_DATA._meta) || {};
-  // The Outlook group appears whenever the data file carries outlook fields (they're null if the seasonal call failed).
-  const hasOutlook = Object.values(regions).some(r => 'outlook_temp_dep_c' in r);
-
-  // One rule for every precip column: left uncoloured ("normal") within +/-20% of normal, coloured outside it.
-  const PRECIP_BAND = 20;
+  const names = (wxMeta.order && wxMeta.order.length) ? wxMeta.order : Object.keys(regions);
+  const outlookLabel = wxMeta.outlook_label || '3 mo';
   const groups = [
-    {label:'Historical', cols:[
-      {l:'90D Precip', w:10.5},
-      {l:'30D Precip', w:10.5},
-      {l:'7D Temp Dep', w:9.5},
-    ]},
-    {label:'Forecast (Next 14 Days)', cols:[
-      {l:'Temp Dep', w:9.5},
-      {l:'Hi / Lo (°C)', w:10.5},
-      {l:'Precip', w:10.5},
-    ]},
+    {label:'Historical', cols:['90D precip','30D precip','7D temp']},
+    {label:'Days 1–7', cols:['Temp','Precip']},
+    {label:'Days 8–14', cols:['Temp','Precip']},
+    {label:'14-day', cols:['Hi / lo']},
+    {label:'SEAS5 '+outlookLabel, cols:['Temp','Precip']},
   ];
-  if(hasOutlook){
-    groups.push({label:'Outlook ' + (wxMeta.outlook_label || '3 Mo'), cols:[
-      {l:'Temp Dep', w:8},
-      {l:'Precip', w:8},
-    ]});
-  }
-  const totalCols = 1 + groups.reduce((sum,g)=>sum+g.cols.length,0);
-  const pcts = colPercents([23, ...groups.flatMap(g=>g.cols.map(c=>c.w))]);
-  let html = `<table class="term-table weather-table"><colgroup>${pcts.map(pc=>`<col style="width:${pc}">`).join('')}`;
-  html += `</colgroup><thead><tr><th rowspan="2" style="text-align:left">Station</th>`;
-  groups.forEach(g=>{ html += `<th colspan="${g.cols.length}" class="grp-l" style="text-align:center;color:var(--amber);letter-spacing:.06em">${g.label}</th>`; });
+  const totalCols = 2 + groups.reduce((sum,g)=>sum+g.cols.length,0);
+  const pcts = colPercents([14, 11, 8, 8, 7, 7, 7, 7, 7, 7, 7, 7]);
+  let html = `<table class="term-table weather-table"><colgroup>${pcts.map(pc=>`<col style="width:${pc}">`).join('')}</colgroup><thead>`;
+  html += `<tr><th rowspan="2" style="text-align:left">Station</th><th rowspan="2" style="text-align:left">Region</th>`;
+  groups.forEach(g=>{ html += `<th colspan="${g.cols.length}" class="grp-l" style="text-align:center;color:var(--amber);letter-spacing:.04em">${g.label}</th>`; });
   html += `</tr><tr>`;
-  groups.forEach(g=>{
-    g.cols.forEach((c,i)=>{ html += `<th${i===0?' class="grp-l"':''}>${c.l}</th>`; });
-  });
+  groups.forEach(g=>{ g.cols.forEach((c,i)=>{ html += `<th class="${i===0?'grp-l':''}">${c}</th>`; }); });
   html += `</tr></thead><tbody>`;
-
-  // Rows are grouped under a division header (Canada / United States / South America / Europe / Asia).
-  // The division comes from the data file itself (fetch_weather.py is the single place regions are defined).
   let curDiv = null;
-  Object.keys(regions).forEach(name=>{
+  names.forEach(name=>{
     const d = regions[name];
+    if(!d) return;
     if(d.division && d.division !== curDiv){
       curDiv = d.division;
-      html += `<tr class="cftc-row-section"><td colspan="${totalCols}">${curDiv}</td></tr>`;
+      html += `<tr class="cftc-row-section"><td colspan="${totalCols}">${escHtml(curDiv)}</td></tr>`;
     }
-    const coords = (d.latitude===undefined || d.latitude===null || d.longitude===undefined || d.longitude===null)
-      ? '' : `${Number(d.latitude).toFixed(1)}, ${Number(d.longitude).toFixed(1)}`;
-    const tip = 'Point reading' + (coords ? ' at ' + coords : '') + '. Not a provincial, state, or regional average.';
-    html += `<tr><td title="${escHtml(tip)}">${escHtml(name)}<sup class="pt">*</sup></td>`;
-    html += `<td class="grp-l ${weatherDirClass(d.precip_90d_pct_normal, true, PRECIP_BAND)}">${fmtPctNormalWithMm(d.precip_90d_pct_normal, d.precip_90d_mm)}</td>`;
-    html += `<td class="${weatherDirClass(d.precip_30d_pct_normal, true, PRECIP_BAND)}">${fmtPctNormalWithMm(d.precip_30d_pct_normal, d.precip_30d_mm)}</td>`;
-    html += `<td class="${weatherDirClass(d.temp_dep_7d_c, false)}">${fmtTempDep(d.temp_dep_7d_c)}</td>`;
-    html += `<td class="grp-l ${weatherDirClass(d.temp_dep_14d_forecast_c, false)}">${fmtTempDep(d.temp_dep_14d_forecast_c)}</td>`;
-    html += `<td>${fmtHiLo(d.temp_14d_forecast_hi_c, d.temp_14d_forecast_lo_c)}</td>`;
-    html += `<td class="${weatherDirClass(d.precip_14d_forecast_pct_normal, true, PRECIP_BAND)}">${fmtPctNormalWithMm(d.precip_14d_forecast_pct_normal, d.precip_14d_forecast_mm)}</td>`;
-    if(hasOutlook){
-      html += `<td class="grp-l ${weatherDirClass(d.outlook_temp_dep_c, false, 0.3)}">${fmtTempDep(d.outlook_temp_dep_c)}</td>`;
-      html += `<td class="${weatherDirClass(d.outlook_precip_pct_normal, true, PRECIP_BAND)}">${fmtPctNormal(d.outlook_precip_pct_normal)}</td>`;
-    }
+    const coords = (d.latitude==null || d.longitude==null) ? '' : `${Number(d.latitude).toFixed(1)}, ${Number(d.longitude).toFixed(1)}`;
+    const tip = 'Point reading' + (coords ? ' at ' + coords : '') + '. Not a provincial, state, or regional average. Normals are the 10-year ERA5 mean of the same calendar window.';
+    html += `<tr><td title="${escHtml(tip)}">${escHtml(name)}</td><td class="wx-region grp-l">${escHtml(d.region||na())}</td>`;
+    html += `<td class="grp-l ${wxPrecipClass(d.precip_90d_pct_normal)}">${fmtPctNormalWithMm(d.precip_90d_pct_normal, d.precip_90d_mm)}</td>`;
+    html += `<td class="${wxPrecipClass(d.precip_30d_pct_normal)}">${fmtPctNormalWithMm(d.precip_30d_pct_normal, d.precip_30d_mm)}</td>`;
+    html += `<td class="${wxTempClass(d.temp_dep_7d_c, 1, 3)}">${fmtTempDep(d.temp_dep_7d_c)}</td>`;
+    html += `<td class="grp-l ${wxTempClass(d.temp_dep_fc_1_7_c, 1, 3)}">${fmtTempDep(d.temp_dep_fc_1_7_c)}</td>`;
+    html += `<td class="${wxPrecipClass(d.precip_fc_1_7_pct_normal)}">${fmtPctNormalWithMm(d.precip_fc_1_7_pct_normal, d.precip_fc_1_7_mm)}</td>`;
+    html += `<td class="grp-l ${wxTempClass(d.temp_dep_fc_8_14_c, 1, 3)}">${fmtTempDep(d.temp_dep_fc_8_14_c)}</td>`;
+    html += `<td class="${wxPrecipClass(d.precip_fc_8_14_pct_normal)}">${fmtPctNormalWithMm(d.precip_fc_8_14_pct_normal, d.precip_fc_8_14_mm)}</td>`;
+    html += `<td class="grp-l">${fmtHiLo(d.temp_14d_forecast_hi_c, d.temp_14d_forecast_lo_c)}</td>`;
+    html += `<td class="grp-l ${wxTempClass(d.outlook_temp_dep_c, 0.3, 1)}">${fmtTempDep(d.outlook_temp_dep_c)}</td>`;
+    html += `<td class="${wxPrecipClass(d.outlook_precip_pct_normal)}">${fmtPctNormal(d.outlook_precip_pct_normal)}</td>`;
     html += `</tr>`;
   });
   html += `</tbody></table>`;
   return html;
+}
+function weatherContextLines(){
+  const meta = (WEATHER_DATA && WEATHER_DATA._meta) || {};
+  const enso = meta.enso || {};
+  let ensoTxt = na();
+  if(!enso.error && (enso.status || enso.nino34!=null)){
+    const anom = (enso.nino34==null||isNaN(enso.nino34)) ? na() : ((enso.nino34>0?'+':'')+Number(enso.nino34).toFixed(1)+'°C');
+    ensoTxt = `${escHtml(enso.status||na())} · Niño-3.4 ${anom}` + (enso.week ? ` (week of ${escHtml(enso.week)})` : '');
+  }
+  const drought = meta.drought || {};
+  const states = drought.states || [];
+  let dryTxt = na();
+  if(states.length){
+    dryTxt = states.map(s=>{
+      const ch = (s.change==null||isNaN(s.change)) ? na() : ((s.change>0?'+':'')+Number(s.change).toFixed(1));
+      return `${escHtml(s.code)} ${s.d1_pct}% (${ch} wk)`;
+    }).join(' · ');
+    if(drought.week) dryTxt += ` · week of ${escHtml(drought.week)}`;
+  }
+  return `<p class="wx-note">Precip: green above 120% of normal, darker above 150%; brown below 80%, darker below 50%. A figure above 500% is shown as &gt;500%. Temperature: red above +1.0°C, darker above +3.0°C; blue below −1.0°C, darker below −3.0°C. SEAS5 temperature shades beyond ±0.3°C, darker beyond ±1.0°C. Inside the band is plain.</p>`
+    + `<p class="wx-note">ENSO: ${ensoTxt}</p>`
+    + `<p class="wx-note">US drought, D1 or worse, percent of state area: ${dryTxt}</p>`;
 }
 
 function commodityCalendarHtml(comm){
@@ -2368,9 +2389,9 @@ function weatherProv(){
   const meta = (WEATHER_DATA && WEATHER_DATA._meta) || {};
   const lines = [
     ...st.parts,
-    'Each * is a point reading at that station grid point, not a provincial or state average.',
-    'Recent conditions and the 14-day forecast: Open-Meteo blend (NOAA GFS/HRRR, ECMWF IFS, DWD ICON, GEM). Normals: 10 years of ERA5.',
-    'Outlook: ECMWF SEAS5 ensemble lean, not a forecast.' + (meta.outlook_label ? ' Window: '+meta.outlook_label+'.' : '')
+    'Each station is one grid point, not a provincial or state average.',
+    'Daily series are UTC. Normals are the 10-year ERA5 mean of the same calendar window. Forecast days 1–7 and 8–14 are compared with those normals.',
+    'SEAS5 is the ECMWF ensemble mean versus the model climate' + (meta.outlook_label ? ' ('+meta.outlook_label+')' : '') + '. ENSO is CPC. Drought is USDM percent of state area in D1 or worse.'
   ];
   if(meta.outlook_error) lines.push('Outlook incomplete: '+meta.outlook_error);
   return provMark(lines, weatherState==='ready' && st.stale===true);
@@ -2382,7 +2403,7 @@ function renderWeatherPage(){
   setMetaLines('weather-meta');
   root.insertAdjacentHTML('beforeend', `<div class="panel"><div class="panel-hdr"><span class="panel-title">Weather</span>${weatherProv()}</div>`);
   if(WEATHER_DATA){
-    root.insertAdjacentHTML('beforeend', `<div class="tbl-wrap">${buildWeatherTable()}</div><p class="legend-line"><sup class="pt">*</sup> Point reading at the named station, not a provincial or state average. Outlook is an ensemble lean, not a forecast.</p>`);
+    root.insertAdjacentHTML('beforeend', `<div class="tbl-wrap">${buildWeatherTable()}</div>${weatherContextLines()}<p class="legend-line">Point reading at the named station, not a provincial or state average. A missing value is a dash. Nothing is estimated.</p>`);
   } else {
     root.insertAdjacentHTML('beforeend', `<div style="padding:14px 16px">${weatherState==='loading' ? 'Loading station readings…' : (weatherState==='failed' ? na() : 'Station readings load when this page is opened.')}</div>`);
   }
