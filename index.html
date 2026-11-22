@@ -1258,8 +1258,8 @@ fetch('data/psd_data.json')
 .cftc-table th{background:var(--th-bg);padding:4px 2px;text-align:right;letter-spacing:.01em;color:var(--text);border-bottom:2px solid var(--border2);white-space:normal;overflow-wrap:anywhere}
 .cftc-table th:first-child{text-align:left}
 .cftc-row-section td{background:var(--section-bg);color:var(--amber) !important;letter-spacing:.08em;text-transform:uppercase;padding:6px 8px 4px;border-top:2px solid var(--amber)}
-.cftc-table td{padding:3px 4px;text-align:right;border-bottom:1px solid var(--border);color:var(--text2);white-space:nowrap;background:var(--bg)}
-.cftc-table td:first-child{text-align:left;color:var(--text);font-weight:700}
+.cftc-table td{padding:3px 2px;text-align:right;border-bottom:1px solid var(--border);color:var(--text2);white-space:nowrap;background:var(--bg)}
+.cftc-table td:first-child{text-align:left;color:var(--text);font-weight:700;white-space:normal}
 .cftc-note{margin-left:8px;letter-spacing:.02em !important;text-transform:none !important;color:var(--text3) !important}
 .cftc-scale{transform-origin:0 0}
 .cftc-table tr.cftc-click{cursor:pointer}
@@ -1310,6 +1310,17 @@ fetch('data/psd_data.json')
 /* group divider: the first column of each group gets a heavier left line, running the full height of the table */
 .grp-l{border-left:2px solid var(--grp-line)}
 .sig-table th.sig-split,.sig-table td.sig-split{border-left:3px solid var(--sig-split)}
+.sig-table th.sig-group{text-align:center}
+.sig-cap{display:block;color:var(--text3);font-weight:600;line-height:1.2}
+.sig-fig{display:block;font-weight:800;line-height:1.25}
+.cof-chart{margin-top:12px}
+.cof-hd{font-weight:800;color:var(--text);letter-spacing:.02em}
+.cof-src{color:var(--text3);margin-top:2px}
+.cof-legend{display:flex;flex-wrap:wrap;gap:8px 16px;margin:8px 0 4px;color:var(--text2)}
+.cof-legend i{display:inline-block;width:18px;height:10px;margin-right:6px;vertical-align:-1px}
+.cof-sw-band{background:rgba(91,111,148,.45)}
+.cof-sw-ly{height:0;border-top:2px solid var(--text2);vertical-align:middle}
+.cof-sw-cy{height:0;border-top:2.5px solid var(--amber);vertical-align:middle}
 .summary-table th{background:var(--th-bg);padding:4px 3px;text-align:right;letter-spacing:.02em;color:var(--text);border-bottom:2px solid var(--border2);white-space:normal;overflow-wrap:anywhere}
 .summary-table th:first-child{text-align:left}
 .summary-table td{padding:3px 3px;text-align:right;border-bottom:1px solid var(--border);color:var(--text2);white-space:normal;overflow-wrap:anywhere;background:var(--bg)}
@@ -1537,48 +1548,53 @@ let cftcChartMode = 'contracts';   // 'contracts' | 'pct'
 let cftcChartYears = 2;
 
 const CFTC_COL_GROUPS = [
-  {label:'Position', cols:['Net Position','Wkly Chg']},
-  {label:'Net Exposure', cols:['Net % OI','Pctile']},
-  {label:'Gross Positions', cols:['Long · short']},
-  {label:'Open Interest', cols:['OI','OI Chg']},
-  // Reference only: the largest positions in the history window, long and short on one line.
-  {label:'Historical Max', ref:true, cols:['Net L · S','Gross L · S']},
+  {label:'Position', cols:['Net','Wk']},
+  {label:'Net Exposure', cols:['% OI','Pctl']},
+  {label:'Gross Positions', cols:[
+    {label:'Long', tip:'Gross long, contracts. Yellow when this side is at or above the 90th percentile.'},
+    {label:'Short', tip:'Gross short, contracts. Yellow when this side is at or above the 90th percentile.'},
+  ]},
+  {label:'Open Interest', cols:['OI','Chg']},
+  // Each side is its own cell so a highlight shows which extreme is flagged.
+  {label:'Historical Max', ref:true, cols:[
+    {label:'Net L', tip:'Largest net long in the window, contracts. Highlighted when the current net is a crowded long.'},
+    {label:'Net S', tip:'Largest net short in the window, contracts. Highlighted when the current net is a crowded short.'},
+    {label:'Grs L', tip:'Largest gross long in the window, contracts. Yellow when the current gross long is at or above the 90th percentile.'},
+    {label:'Grs S', tip:'Largest gross short in the window, contracts. Yellow when the current gross short is at or above the 90th percentile.'},
+  ]},
 ];
+function cftcColLabel(col){ return typeof col === 'string' ? col : col.label; }
+function cftcColTip(col){ return (col && col.tip) ? ` title="${col.tip.replace(/"/g,'&quot;')}"` : ''; }
 
-// Gross long/short cell: the figure, with the week's change small beside it.
-// Colour = sign of the change, same for longs and shorts: added = green, cut = red.
-function cftcSide(v){
-  return (v===null || v===undefined || isNaN(v)) ? na() : cftcFmt(v);
-}
-function cftcPair(longV, shortV){
-  return `L ${cftcSide(longV)} · S ${cftcSide(shortV)}`;
-}
-
+// Gross long and gross short are separate cells. The week's change stays in the hover.
 function buildCftcRow(entry, hist){
   const m = computeLatestMetrics(entry, hist);
   let html = m
     ? `<tr class="cftc-click${entry.code===cftcSelected?' cftc-sel':''}" data-code="${entry.code}" title="Click to chart"><td>${entry.label}</td>`
     : `<tr><td>${entry.label}</td>`;
   if(!m){
-    html += `<td class="grp-l" colspan="9" style="text-align:left;color:var(--text3)">No data (code ${entry.code})</td>`;
+    html += `<td class="grp-l" colspan="12" style="text-align:left;color:var(--text3)">No data (code ${entry.code})</td>`;
   } else {
     html += `<td class="grp-l ${m.net>=0?'cftc-up':'cftc-dn'}">${cftcFmt(m.net)}</td>`;
     html += `<td class="${m.weeklyChange>=0?'cftc-up':'cftc-dn'}">${cftcSignedNum(m.weeklyChange)}</td>`;
     html += `<td class="grp-l ${m.netPctOi>=0?'cftc-up':'cftc-dn'}">${cftcPct(m.netPctOi)}</td>`;
     html += `<td class="${netExtremeClass(m.netPctile)}">${m.netPctile===null?na():cftcOrdinal(m.netPctile)}</td>`;
-    // gross long / short: yellow when unusually large vs the lookback; hover for the position as a share of open interest
+    // gross long and gross short are separate cells, so a yellow cell names the side that is extreme
     const yrs = CFTC_DATA._meta?.years_history;
     const grossTip = (what, v, pctOi, pctile)=> `${what}: ${cftcFmt(v)} contracts = ${cftcPct(pctOi)} of open interest` + (pctile===null||pctile===undefined ? '' : ` · ${cftcOrdinal(pctile)} percentile${yrs ? ' of the '+yrs+'-yr window' : ''}`);
-    const grossTitle = `${grossTip('Gross long', m.mmL, m.grossLPctOi, m.glPctile)}. Week ${cftcSignedNum(m.grossLChg)}. ${grossTip('Gross short', m.mmS, m.grossSPctOi, m.gsPctile)}. Week ${cftcSignedNum(m.grossSChg)}.`;
-    const grossCls = grossExtremeClass(m.glPctile) || grossExtremeClass(m.gsPctile);
-    html += `<td class="grp-l ${grossCls}" title="${grossTitle}">${cftcPair(m.mmL, m.mmS)}</td>`;
+    html += `<td class="grp-l ${grossExtremeClass(m.glPctile)}" title="${grossTip('Gross long', m.mmL, m.grossLPctOi, m.glPctile)}. Week ${cftcSignedNum(m.grossLChg)}.">${cftcFmt(m.mmL)}</td>`;
+    html += `<td class="${grossExtremeClass(m.gsPctile)}" title="${grossTip('Gross short', m.mmS, m.grossSPctOi, m.gsPctile)}. Week ${cftcSignedNum(m.grossSChg)}.">${cftcFmt(m.mmS)}</td>`;
     html += `<td class="grp-l">${cftcFmt(m.oi)}</td>`;
     html += `<td class="${m.oiChg>=0?'cftc-up':'cftc-dn'}">${cftcSignedNum(m.oiChg)}</td>`;
-    // Historical extremes stay one line: long and short beside each other. The percent of open interest stays in the hover.
-    [['Net', 'maxNetLong','maxNetLongPct','maxNetShort','maxNetShortPct'], ['Gross', 'maxGrossLong','maxGrossLongPct','maxGrossShort','maxGrossShortPct']].forEach(([kind, lk, lpk, sk, spk], i)=>{
-      const tipOf = (what, e, ep)=> e ? `${what}: ${cftcFmt(e.v)} contracts, set ${e.date}` + (ep ? ` · ${cftcPct(ep.v)} of open interest, set ${ep.date}` : '') : '';
-      const tip = [tipOf(`Largest ${kind.toLowerCase()} long`, m[lk], m[lpk]), tipOf(`Largest ${kind.toLowerCase()} short`, m[sk], m[spk])].filter(Boolean).join('. ');
-      html += `<td class="cftc-ref${i===0?' grp-l':''}"${tip?` title="${tip}"`:''}>${cftcPair(m[lk]&&m[lk].v, m[sk]&&m[sk].v)}</td>`;
+    const histCells = [
+      ['Largest net long', m.maxNetLong, m.maxNetLongPct, (m.netPctile!==null && m.netPctile>=90) ? 'cftc-extreme-lo' : ''],
+      ['Largest net short', m.maxNetShort, m.maxNetShortPct, (m.netPctile!==null && m.netPctile<=10) ? 'cftc-extreme-hi' : ''],
+      ['Largest gross long', m.maxGrossLong, m.maxGrossLongPct, grossExtremeClass(m.glPctile)],
+      ['Largest gross short', m.maxGrossShort, m.maxGrossShortPct, grossExtremeClass(m.gsPctile)],
+    ];
+    histCells.forEach(([what, e, ep, extreme], i)=>{
+      const tip = e ? `${what}: ${cftcFmt(e.v)} contracts, set ${e.date}` + (ep ? ` · ${cftcPct(ep.v)} of open interest, set ${ep.date}` : '') : '';
+      html += `<td class="cftc-ref${i===0?' grp-l':''} ${extreme}"${tip?` title="${tip}"`:''}>${e ? cftcFmt(e.v) : na()}</td>`;
     });
   }
   html += `</tr>`;
@@ -1588,7 +1604,7 @@ function buildCftcRow(entry, hist){
 // How spare width is shared out (each column is already sized to fit its content): Product, Net Pos, Wkly Chg, Net%OI,
 // Pctile, Gross Long, Gross Short, OI, OI Chg, then the 4 Historical Max columns - which get very little, so that
 // reference section stays compact instead of stretching.
-const CFTC_COL_WIDTHS = [13, 7, 6, 6, 5, 18, 8, 6, 15.5, 15.5];
+const CFTC_COL_WIDTHS = [16, 7, 7, 6.2, 5.6, 7, 7, 8, 7.2, 7.25, 7.25, 7.25, 7.25];
 function buildCftcMasterTable(){
   const yrs = CFTC_DATA._meta?.years_history;
   let html = `<div class="tbl-wrap"><table class="term-table cftc-table"><colgroup>${CFTC_COL_WIDTHS.map(w=>`<col style="width:${w}%">`).join('')}</colgroup><thead>`;
@@ -1599,12 +1615,12 @@ function buildCftcMasterTable(){
   });
   html += `</tr><tr>`;
   CFTC_COL_GROUPS.forEach(g=>{
-    g.cols.forEach((c,i)=>{ html += `<th class="${i===0?'grp-l ':''}${g.ref?'cftc-ref-h':''}">${c}</th>`; });
+    g.cols.forEach((c,i)=>{ html += `<th class="${i===0?'grp-l ':''}${g.ref?'cftc-ref-h':''}"${cftcColTip(c)}>${cftcColLabel(c)}</th>`; });
   });
   html += `</tr></thead><tbody>`;
 
   CFTC_GROUPS.forEach(group=>{
-    html += `<tr class="cftc-row-section"><td colspan="10">${group.label}${group.note ? `<span class="cftc-note">${group.note}</span>` : ''}</td></tr>`;
+    html += `<tr class="cftc-row-section"><td colspan="13">${group.label}${group.note ? `<span class="cftc-note">${group.note}</span>` : ''}</td></tr>`;
     group.codes.forEach(entry=>{
       const hist = (CFTC_DATA.codes && CFTC_DATA.codes[entry.code]) ? CFTC_DATA.codes[entry.code].history : null;
       html += buildCftcRow(entry, hist);
@@ -1873,9 +1889,9 @@ function renderCftc(){
   const cftcNote = [
     ...st.parts,
     'Managed Money, except currencies, equities and Treasuries, which use Leveraged Funds.',
-    (yrs ? yrs+' year lookback. ' : '')+'Highlighted cells are the top or bottom 10 percent of that window.',
-    'The figure under gross long and gross short is the change since last week.',
-    'Historical max is the largest net long, net short, gross long and gross short in the window. Click a row to chart it.'
+    (yrs ? yrs+' year lookback. ' : '')+'A highlighted cell is that side in the top or bottom 10 percent of the window.',
+    'Gross long and gross short are separate. The hover has the change since last week.',
+    'Historical max is one cell each for net long, net short, gross long and gross short. Click a row to chart it.'
   ];
   root.insertAdjacentHTML('beforeend', `<div class="panel"><div class="panel-hdr"><span class="panel-title">Positions</span>${provMark(cftcNote, st.stale)}</div>${buildCftcMasterTable()}</div>`);
   root.insertAdjacentHTML('beforeend', `<div id="cftc-chart"></div>`);
