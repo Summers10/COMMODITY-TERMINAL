@@ -34,10 +34,21 @@ def load_config():
 
 
 def percentile_at_or_below(value, sample):
-    """Share of sample values at or below `value`, in percent. Sample does not include value."""
+    """Share of sample values at or below `value`, in percent."""
     if value is None or not sample:
         return None
     return 100.0 * sum(1 for x in sample if x <= value) / len(sample)
+
+
+def page_stu_percentile(values):
+    """Stocks/use rank used by the Fundamentals page (index.html stuPctile).
+
+    `values` is every year on that balance sheet, current year included.
+    The rank is count(x <= current) / number of years * 100.
+    """
+    if not values:
+        return None
+    return percentile_at_or_below(values[-1], values)
 
 
 def band(value, low_is, high_is, low, high):
@@ -262,13 +273,11 @@ def fundamentals(psd, prior, comm, country, cfg, note, world=False):
     rows = year_rows(psd, comm, country)
     usable = [(y, stu_of(row, world)) for y, row in rows]
     usable = [(y, v) for y, v in usable if v is not None]
-    if len(usable) < cfg["stu_history_years"] + 1:
-        return dash("stu", f"only {len(usable)} stocks-to-use years; the rule needs {cfg['stu_history_years']} prior years")
+    if not usable:
+        return dash("stu", "no stocks-to-use year is in the file")
     current_year, current = usable[-1]
-    history = [v for _, v in usable[-(cfg["stu_history_years"] + 1):-1]]
-    if len(history) < cfg["stu_history_years"]:
-        return dash("stu", "the prior window is short")
-    pct = percentile_at_or_below(current, history)
+    history = [v for _, v in usable]
+    pct = page_stu_percentile(history)
     es = next(row.get("es") for y, row in rows if y == current_year)
     prev = (((prior or {}).get("data") or {}).get(comm) or {}).get(country) or {}
     prev_row = prev.get(str(current_year)) or {}
@@ -277,7 +286,7 @@ def fundamentals(psd, prior, comm, country, cfg, note, world=False):
     state = stu_state(pct, revision, cfg)
     as_of = (psd.get("_meta") or {}).get("wasde_release")
     detail = (
-        f"{note} Stocks/use {current:.1f}% is the {ordinal(pct)} percentile of the prior {len(history)} years. "
+        f"{note} Stocks/use {current:.1f}% is the {ordinal(pct)} percentile of all {len(history)} years, including this one. "
         f"Ending stocks {es:,.0f}"
         + (f" versus prior {es_prior:,.0f} ({revision:+,.0f})." if revision is not None else ". Prior ending stocks are not in the file.")
     )
@@ -604,11 +613,11 @@ def rule_book(cfg, reviewed=None):
     c = cfg
     return [
         {"id": "stu", "text": (
-            f"Stocks/use percentile versus the prior {c['stu_history_years']} marketing years. "
+            "Stocks/use percentile is the same rank as the Fundamentals page: the share of every year on that sheet, including the current year, with stocks/use at or below this year. "
             f"At or below the {c['stu_bull_pct']}rd percentile is bullish. At or above the {c['stu_bear_pct']}th is bearish. "
-            "Otherwise neutral. Percentile is the share of those prior years at or below the current stocks/use. "
-            "US corn, soybeans, wheat, soybean meal and soybean oil use ending stocks divided by domestic use plus exports. "
-            "Canola uses the AAFC forecast stocks/use, or USDA Canada if that file is missing. "
+            "Otherwise neutral. "
+            "World stocks/use is ending stocks divided by domestic use. A country uses ending stocks divided by domestic use plus exports. "
+            "Canola uses the AAFC forecast stocks/use against the years on the Canada balance sheet, including the forecast year, or USDA Canada if that file is missing. "
             "If the latest ending-stocks revision moves the opposite way from the percentile, the cell becomes neutral."
         )},
         {"id": "mm_extension", "text": (
@@ -691,29 +700,34 @@ def row(label, signals, figures, page=None, comm=None, cfg=None):
     }
 
 
+def canola_sheet_years(crop):
+    """The crop years printed on the Canada canola balance, including the forecast."""
+    years = (crop or {}).get("years") or {}
+    forecast = (crop or {}).get("forecast_year")
+    stat = sorted(key for key, row in years.items() if row.get("src") == "StatsCan" and key != forecast)
+    estimates = [
+        key for key in ((crop or {}).get("aafc_years") or [])
+        if key != forecast and (years.get(key) or {}).get("src") == "AAFC"
+    ]
+    return [key for key in [*stat[-5:], *estimates, forecast] if (years.get(key) or {}).get("su") is not None]
+
+
 def canola_fundamentals(sd, psd, prior, cfg):
     crop = (((sd or {}).get("crops") or {}).get("canola") or {})
     years = crop.get("years") or {}
     forecast = crop.get("forecast_year")
     sheet = years.get(forecast) if forecast else None
-    if sheet and sheet.get("su") is not None:
-        history = []
-        for key in sorted(years):
-            if key == forecast:
-                continue
-            if years[key].get("src") == "StatsCan" and years[key].get("su") is not None:
-                history.append(years[key]["su"])
-        history = history[-cfg["stu_history_years"]:]
-        if len(history) < cfg["stu_history_years"]:
-            return dash("stu", f"StatsCan stocks/use history has {len(history)} years, not {cfg['stu_history_years']}.")
-        current = sheet["su"]
-        pct = percentile_at_or_below(current, history)
+    cols = canola_sheet_years(crop)
+    if sheet and sheet.get("su") is not None and cols:
+        history = [years[key]["su"] for key in cols]
+        current = history[-1]
+        pct = page_stu_percentile(history)
         es = sheet.get("end")
         es_prior = (crop.get("prior") or {}).get("end")
         revision = None if es is None or es_prior is None else es - es_prior
         state = stu_state(pct, revision, cfg)
         detail = (
-            f"AAFC canola stocks/use {current:.1f}% is the {ordinal(pct)} percentile of the prior {len(history)} StatsCan years. "
+            f"AAFC canola stocks/use {current:.1f}% is the {ordinal(pct)} percentile of the {len(history)} years on the Canada sheet, including this one. "
             f"Ending stocks {es:,.0f}"
             + (f" versus the prior report {es_prior:,.0f} ({revision:+,.0f})." if revision is not None else ".")
         )

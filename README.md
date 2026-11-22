@@ -8,7 +8,7 @@ The summary page is a rule-based board. Each cell is bullish, bearish, neutral, 
 
 | Rule | Threshold |
 | --- | --- |
-| Stocks/use percentile of the prior 10 years | at or below the 33rd percentile bullish; at or above the 67th bearish. A stocks revision the other way makes the cell neutral. |
+| Stocks/use percentile, every year on the sheet including the current year | the same rank the Fundamentals page prints. At or below the 33rd percentile bullish; at or above the 67th bearish. A stocks revision the other way makes the cell neutral. |
 | Managed money, last 156 weeks | at or above the 85th percentile is extended long (bearish); at or below the 15th is extended short (bullish). |
 | Money flow | both the 1-week and 4-week changes in managed-money net up, or both down. Mixed or zero is neutral. |
 | Seasonal | average of the typed Peak Trading Research scores for this calendar week and the next four, wrapping from December into January. +1 or higher is bullish, −1 or lower is bearish. The same scores are reused every year and do not expire. No typed score is a dash. |
