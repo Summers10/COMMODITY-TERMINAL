@@ -7,8 +7,6 @@
   "mm_ext_short_pct": 15,
   "seasonal_score_bull": 1,
   "seasonal_score_bear": -1,
-  "score_supportive": 2,
-  "score_bearish": -2,
   "demand_pp": 5,
   "demand_history_years": 5,
   "canola_export_yoy_pct": 3,
