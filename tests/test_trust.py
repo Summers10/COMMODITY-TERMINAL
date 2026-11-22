@@ -173,6 +173,42 @@ def test_crop_progress_keeps_only_the_desk_crops_and_is_current():
     assert crops <= {"Corn", "Soybeans", "Cotton", "Wheat, Winter", "Wheat, Spring", "Oats"}
 
 
+def test_cattle_on_feed_has_every_published_month():
+    """Every month on the ESMIS Cattle on Feed list from January 2021 through the latest file.
+
+    October 2025 is the documented exception: NASS cancelled that release and it is
+    not on the ESMIS list. The chart reads the same note. Nothing is interpolated.
+    """
+    from scripts.fetch_cattle import COF_NOT_RELEASED
+    book = load("cattle.json")
+    rows = {row["as_of"]: row for row in book["on_feed"]}
+    latest = max(rows)
+    gaps = {row["as_of"]: row["reason"] for row in book.get("on_feed_gaps") or []}
+    year, month = 2021, 1
+    end = datetime.strptime(latest, "%Y-%m-%d").date()
+    missing = []
+    while date(year, month, 1) <= end:
+        key = f"{year:04d}-{month:02d}-01"
+        if key in COF_NOT_RELEASED:
+            assert key not in rows
+            assert gaps.get(key) == COF_NOT_RELEASED[key]
+        elif key not in rows:
+            missing.append(key)
+        else:
+            row = rows[key]
+            assert isinstance(row["on_feed"]["pct_of_year_ago"], int)
+            assert row["on_feed"]["current"] > 0
+            assert row["placements"]["current"] > 0
+            assert row["marketings"]["current"] > 0
+            assert "cofd" in row["source_url"]
+            assert row["source_url"].startswith("https://release.nass.usda.gov/") or row["source_url"].startswith("https://usda.library.cornell.edu/")
+        month += 1
+        if month == 13:
+            month = 1
+            year += 1
+    assert missing == []
+
+
 def test_cattle_on_feed_uses_the_printed_percent():
     book = load("cattle.json")
     latest = book["on_feed"][-1]
