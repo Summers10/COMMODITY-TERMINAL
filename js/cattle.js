@@ -4,7 +4,7 @@ function renderCattle(box){
   const C = CATTLE || {};
   const lines = [
     'On feed and inventory: USDA NASS. Percents are the ones printed in the report.',
-    'Slaughter and dressed weights: USDA AMS Actual Slaughter Under Federal Inspection. Year-ago and the 5-year average are not printed in that report.',
+    'The federal slaughter weights table is not shown. The AMS report does not print a year-ago head count.',
     '5-area steer: USDA AMS LM_CT150, live FOB steer weighted average. Boxed beef: USDA AMS LM_XB403.',
     'Beef supply: USDA WASDE. The CME Feeder Cattle Index is not on a keyless feed, so it is not shown.',
     'Live and feeder cattle positioning is on the CFTC page.'

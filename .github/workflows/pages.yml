@@ -12,7 +12,7 @@ permissions:
 
 concurrency:
   group: pages
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   deploy:
@@ -31,5 +31,7 @@ jobs:
       - uses: actions/upload-pages-artifact@v5
         with:
           path: _site
+      - name: Wait for the artifact index
+        run: sleep 15
       - id: deployment
         uses: actions/deploy-pages@v5

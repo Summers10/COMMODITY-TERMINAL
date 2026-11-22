@@ -154,12 +154,6 @@ document.querySelectorAll('.page-tab').forEach(function(btn){
 </div>
   <div id="cftc-root" style="max-width:1500px;margin:0 auto;padding:22px"></div>
 </div>
-<div id="seasonals-page" style="display:none">
-<div id="seasonals-topbar" style="padding:14px 20px;border-bottom:1px solid var(--amber);background:var(--bg);display:flex;align-items:center;gap:20px">
-  <h1 style="font-size:18px;font-weight:900;letter-spacing:.12em;text-transform:uppercase;color:var(--amber);white-space:nowrap">Seasonals</h1>
-</div>
-  <div id="seasonals-root" style="max-width:100%;margin:0 auto;padding:22px"></div>
-</div>
 <div id="exports-page" style="display:none">
 <div id="exports-topbar" style="padding:14px 20px;border-bottom:1px solid var(--amber);background:var(--bg);display:flex;align-items:center;gap:20px">
   <h1 style="font-size:18px;font-weight:900;letter-spacing:.12em;text-transform:uppercase;color:var(--amber);white-space:nowrap">USDA Export Sales</h1>
@@ -174,23 +168,11 @@ document.querySelectorAll('.page-tab').forEach(function(btn){
 </div>
   <div id="weather-root" style="max-width:1300px;margin:0 auto;padding:22px"></div>
 </div>
-<div id="energy-page" style="display:none">
-<div class="topbar-lite" style="padding:14px 20px;border-bottom:1px solid var(--amber);background:var(--bg)"><h1 style="font-size:18px;font-weight:900;letter-spacing:.12em;text-transform:uppercase;color:var(--amber)">Energy</h1></div>
-<div id="energy-root" style="max-width:1200px;margin:0 auto;padding:16px"></div>
 <style>
 #en-chart{position:relative;max-width:100%}
 #en-chart svg{width:100%;height:auto;display:block}
 #en-tip{position:absolute;pointer-events:none;background:var(--bg1);border:1px solid var(--border2);color:var(--text);font-size:12px;line-height:1.4;padding:6px 8px;z-index:2;white-space:nowrap}
 </style>
-</div>
-<div id="progress-page" style="display:none">
-<div class="topbar-lite" style="padding:14px 20px;border-bottom:1px solid var(--amber);background:var(--bg)"><h1 style="font-size:18px;font-weight:900;letter-spacing:.12em;text-transform:uppercase;color:var(--amber)">Crop progress</h1></div>
-<div id="progress-root" style="max-width:1100px;margin:0 auto;padding:16px"></div>
-</div>
-<div id="cattle-page" style="display:none">
-<div class="topbar-lite" style="padding:14px 20px;border-bottom:1px solid var(--amber);background:var(--bg)"><h1 style="font-size:18px;font-weight:900;letter-spacing:.12em;text-transform:uppercase;color:var(--amber)">Cattle</h1></div>
-<div id="cattle-root" style="max-width:1100px;margin:0 auto;padding:16px"></div>
-</div>
 
 <script>
 const COMMS = ["Wheat","Corn","Soybeans","Rapeseed/Canola","Oats","Meal","Vegoils","Cotton","Coffee","Sugar","Energy","Cattle"];
@@ -1273,7 +1255,7 @@ fetch('data/psd_data.json')
 .cftc-table th{background:var(--th-bg);padding:4px 2px;text-align:right;letter-spacing:.01em;color:var(--text);border-bottom:2px solid var(--border2);white-space:normal;overflow-wrap:anywhere}
 .cftc-table th:first-child{text-align:left}
 .cftc-row-section td{background:var(--section-bg);color:var(--amber) !important;letter-spacing:.08em;text-transform:uppercase;padding:6px 8px 4px;border-top:2px solid var(--amber)}
-.cftc-table td{padding:3px 2px;text-align:right;border-bottom:1px solid var(--border);color:var(--text2);white-space:normal;overflow-wrap:anywhere;background:var(--bg)}
+.cftc-table td{padding:3px 4px;text-align:right;border-bottom:1px solid var(--border);color:var(--text2);white-space:nowrap;background:var(--bg)}
 .cftc-table td:first-child{text-align:left;color:var(--text);font-weight:700}
 .cftc-note{margin-left:8px;letter-spacing:.02em !important;text-transform:none !important;color:var(--text3) !important}
 .cftc-scale{transform-origin:0 0}
@@ -1537,22 +1519,19 @@ let cftcChartYears = 2;
 const CFTC_COL_GROUPS = [
   {label:'Position', cols:['Net Position','Wkly Chg']},
   {label:'Net Exposure', cols:['Net % OI','Pctile']},
-  {label:'Gross Positions', cols:['Gross Long','Gross Short']},
+  {label:'Gross Positions', cols:['Long · short']},
   {label:'Open Interest', cols:['OI','OI Chg']},
-  // Reference only (not part of the live positioning): the largest positions seen over the history window, in contracts.
-  {label:'Historical Max', ref:true, cols:['Net Long','Net Short','Gross Long','Gross Short']},
+  // Reference only: the largest positions in the history window, long and short on one line.
+  {label:'Historical Max', ref:true, cols:['Net L · S','Gross L · S']},
 ];
 
 // Gross long/short cell: the figure, with the week's change small beside it.
 // Colour = sign of the change, same for longs and shorts: added = green, cut = red.
-function cftcGrossCell(val, chg, isShort){
-  let chgHtml = '<span class="gc"></span>';
-  if(chg!==null && chg!==undefined && !isNaN(chg)){
-    const r = Math.round(chg);
-    const cls = r===0 ? '' : (r>0 ? 'cftc-up' : 'cftc-dn');
-    chgHtml = `<span class="gc ${cls}" title="${isShort?'Shorts':'Longs'} ${r>0?'added':(r<0?'cut':'unchanged')} vs prior week">${r===0?'0':cftcSignedNum(r)}</span>`;
-  }
-  return `<span class="gf">${cftcFmt(val)}</span>${chgHtml}`;
+function cftcSide(v){
+  return (v===null || v===undefined || isNaN(v)) ? na() : cftcFmt(v);
+}
+function cftcPair(longV, shortV){
+  return `L ${cftcSide(longV)} · S ${cftcSide(shortV)}`;
 }
 
 function buildCftcRow(entry, hist){
@@ -1561,7 +1540,7 @@ function buildCftcRow(entry, hist){
     ? `<tr class="cftc-click${entry.code===cftcSelected?' cftc-sel':''}" data-code="${entry.code}" title="Click to chart"><td>${entry.label}</td>`
     : `<tr><td>${entry.label}</td>`;
   if(!m){
-    html += `<td class="grp-l" colspan="12" style="text-align:left;color:var(--text3)">No data (code ${entry.code})</td>`;
+    html += `<td class="grp-l" colspan="9" style="text-align:left;color:var(--text3)">No data (code ${entry.code})</td>`;
   } else {
     html += `<td class="grp-l ${m.net>=0?'cftc-up':'cftc-dn'}">${cftcFmt(m.net)}</td>`;
     html += `<td class="${m.weeklyChange>=0?'cftc-up':'cftc-dn'}">${cftcSignedNum(m.weeklyChange)}</td>`;
@@ -1570,18 +1549,16 @@ function buildCftcRow(entry, hist){
     // gross long / short: yellow when unusually large vs the lookback; hover for the position as a share of open interest
     const yrs = CFTC_DATA._meta?.years_history;
     const grossTip = (what, v, pctOi, pctile)=> `${what}: ${cftcFmt(v)} contracts = ${cftcPct(pctOi)} of open interest` + (pctile===null||pctile===undefined ? '' : ` · ${cftcOrdinal(pctile)} percentile${yrs ? ' of the '+yrs+'-yr window' : ''}`);
-    html += `<td class="grp-l ${grossExtremeClass(m.glPctile)}" title="${grossTip('Gross long', m.mmL, m.grossLPctOi, m.glPctile)}">${cftcGrossCell(m.mmL, m.grossLChg, false)}</td>`;
-    html += `<td class="${grossExtremeClass(m.gsPctile)}" title="${grossTip('Gross short', m.mmS, m.grossSPctOi, m.gsPctile)}">${cftcGrossCell(m.mmS, m.grossSChg, true)}</td>`;
+    const grossTitle = `${grossTip('Gross long', m.mmL, m.grossLPctOi, m.glPctile)}. Week ${cftcSignedNum(m.grossLChg)}. ${grossTip('Gross short', m.mmS, m.grossSPctOi, m.gsPctile)}. Week ${cftcSignedNum(m.grossSChg)}.`;
+    const grossCls = grossExtremeClass(m.glPctile) || grossExtremeClass(m.gsPctile);
+    html += `<td class="grp-l ${grossCls}" title="${grossTitle}">${cftcPair(m.mmL, m.mmS)}</td>`;
     html += `<td class="grp-l">${cftcFmt(m.oi)}</td>`;
     html += `<td class="${m.oiChg>=0?'cftc-up':'cftc-dn'}">${cftcSignedNum(m.oiChg)}</td>`;
-    // historical extremes (reference columns, styled differently so they don't read as part of the live table)
-    // each shows the largest position in contracts; the net maxes also show the largest share of open interest in small
-    // type (the gross maxes keep theirs in the hover text only)
-    [['maxNetLong','maxNetLongPct','Largest net long', true],['maxNetShort','maxNetShortPct','Largest net short', true],
-     ['maxGrossLong','maxGrossLongPct','Largest gross long', false],['maxGrossShort','maxGrossShortPct','Largest gross short', false]].forEach(([k, kp, what, showPct], i)=>{
-      const e = m[k], ep = m[kp];
-      const tip = e ? `${what}: ${cftcFmt(e.v)} contracts, set ${e.date}` + (ep ? ` · largest % of OI: ${cftcPct(ep.v)}, set ${ep.date}` : '') : '';
-      html += `<td class="cftc-ref${i===0?' grp-l':''}"${tip?` title="${tip}"`:''}><span class="rf">${e ? cftcFmt(e.v) : na()}</span>${showPct ? `<span class="rp">${ep ? cftcPct(ep.v) : ''}</span>` : ''}</td>`;
+    // Historical extremes stay one line: long and short beside each other. The percent of open interest stays in the hover.
+    [['Net', 'maxNetLong','maxNetLongPct','maxNetShort','maxNetShortPct'], ['Gross', 'maxGrossLong','maxGrossLongPct','maxGrossShort','maxGrossShortPct']].forEach(([kind, lk, lpk, sk, spk], i)=>{
+      const tipOf = (what, e, ep)=> e ? `${what}: ${cftcFmt(e.v)} contracts, set ${e.date}` + (ep ? ` · ${cftcPct(ep.v)} of open interest, set ${ep.date}` : '') : '';
+      const tip = [tipOf(`Largest ${kind.toLowerCase()} long`, m[lk], m[lpk]), tipOf(`Largest ${kind.toLowerCase()} short`, m[sk], m[spk])].filter(Boolean).join('. ');
+      html += `<td class="cftc-ref${i===0?' grp-l':''}"${tip?` title="${tip}"`:''}>${cftcPair(m[lk]&&m[lk].v, m[sk]&&m[sk].v)}</td>`;
     });
   }
   html += `</tr>`;
@@ -1591,7 +1568,7 @@ function buildCftcRow(entry, hist){
 // How spare width is shared out (each column is already sized to fit its content): Product, Net Pos, Wkly Chg, Net%OI,
 // Pctile, Gross Long, Gross Short, OI, OI Chg, then the 4 Historical Max columns - which get very little, so that
 // reference section stays compact instead of stretching.
-const CFTC_COL_WIDTHS = [13, 7.2, 7.2, 6.4, 5.6, 8.2, 8.2, 8.2, 7.2, 7.2, 7.2, 7.2, 7.2];
+const CFTC_COL_WIDTHS = [13, 7, 6, 6, 5, 18, 8, 6, 15.5, 15.5];
 function buildCftcMasterTable(){
   const yrs = CFTC_DATA._meta?.years_history;
   let html = `<div class="tbl-wrap"><table class="term-table cftc-table"><colgroup>${CFTC_COL_WIDTHS.map(w=>`<col style="width:${w}%">`).join('')}</colgroup><thead>`;
@@ -1607,7 +1584,7 @@ function buildCftcMasterTable(){
   html += `</tr></thead><tbody>`;
 
   CFTC_GROUPS.forEach(group=>{
-    html += `<tr class="cftc-row-section"><td colspan="13">${group.label}${group.note ? `<span class="cftc-note">${group.note}</span>` : ''}</td></tr>`;
+    html += `<tr class="cftc-row-section"><td colspan="10">${group.label}${group.note ? `<span class="cftc-note">${group.note}</span>` : ''}</td></tr>`;
     group.codes.forEach(entry=>{
       const hist = (CFTC_DATA.codes && CFTC_DATA.codes[entry.code]) ? CFTC_DATA.codes[entry.code].history : null;
       html += buildCftcRow(entry, hist);
@@ -1702,7 +1679,7 @@ function renderCftcChart(){
   lines.forEach(l=>{ lo = Math.min(lo, l.v); hi = Math.max(hi, l.v); });
   const pad = (hi - lo) * 0.05 || 1; lo -= pad; hi += pad;
 
-  const W = 1300, H = 420, M = {l:64, r:16, t:12, b:32};
+  const W = 1300, H = 420, M = {l:64, r:118, t:12, b:32};
   const plotW = W - M.l - M.r, plotH = H - M.t - M.b, n = pts.length, step = plotW / n;
   const bw = Math.max(1, Math.min(step * 0.72, 14));
   const y = v => M.t + (hi - v) / (hi - lo) * plotH;
@@ -1722,9 +1699,18 @@ function renderCftcChart(){
   svg += `<line x1="${M.l}" x2="${M.l + plotW}" y1="${y(0)}" y2="${y(0)}" style="stroke:var(--text3);stroke-width:1"/>`;
   // historical maxima: faint dashed lines, labelled at the right (labels nudged apart if two sit close together)
   const fmtV = v => pct ? cftcPct(v) : cftcFmt(v);
-  lines.forEach(l=>{
-    svg += `<line x1="${M.l}" x2="${M.l + plotW}" y1="${y(l.v)}" y2="${y(l.v)}" style="stroke:var(--ref-color);stroke-opacity:.7;stroke-width:1.2;stroke-dasharray:5 5"><title>${l.name} ${fmtV(l.v)} set ${l.date}</title></line>`;
-    svg += `<text x="${M.l + plotW - 4}" y="${y(l.v) - 3}" text-anchor="end" style="fill:var(--text2);font-size:11px">${l.name}</text>`;
+  const lastPt = pts[pts.length - 1];
+  const labelled = lines.map(l=>({name:l.name, v:l.v, date:l.date, yy:y(l.v), fill:'var(--text2)'}));
+  labelled.push({name:'Net', yy:y(lastPt[kN]), fill:'var(--amber)'});
+  labelled.sort((a,b)=>a.yy-b.yy);
+  let prevLabel = -1e9;
+  labelled.forEach(l=>{
+    let ly = l.yy + 4;
+    if(ly - prevLabel < 13) ly = prevLabel + 13;
+    prevLabel = ly;
+    if(l.v!==undefined) svg += `<line x1="${M.l}" x2="${M.l + plotW}" y1="${l.yy}" y2="${l.yy}" style="stroke:var(--ref-color);stroke-opacity:.85;stroke-width:1.2;stroke-dasharray:5 5"><title>${l.name} ${fmtV(l.v)} set ${l.date}</title></line>`;
+    ly = Math.max(M.t + 11, Math.min(M.t + plotH, ly));
+    svg += `<text x="${M.l + plotW + 8}" y="${ly}" text-anchor="start" style="fill:${l.fill};font-size:11px">${l.name}</text>`;
   });
   // net position line
   svg += `<polyline fill="none" points="${pts.map((p, i)=>cx(i).toFixed(1) + ',' + y(p[kN]).toFixed(1)).join(' ')}" style="stroke:var(--amber);stroke-width:2;stroke-linejoin:round"/>`;
@@ -2557,6 +2543,7 @@ function renderSeasonals(){
   if(!seasonalsMonth) seasonalsMonth = defaultSeasonalsMonth();
   const months = getSeasonalsMonths();
   const root = document.getElementById('seasonals-root');
+  if(!root) return;
   const win = seasonalsWindowState(seasonalsMonth);
   let selHtml = `<div class="toggle" style="margin-bottom:12px;display:inline-flex;flex-wrap:wrap">`;
   months.forEach(m=>{
@@ -3026,7 +3013,6 @@ function renderMealInto(root){
 <script src="js/summary.js"></script>
 <script src="js/usda.js"></script>
 <script src="js/energy.js"></script>
-<script src="js/progress.js"></script>
 <script src="js/cattle.js"></script>
 <script>
 function openPage(page, comm){

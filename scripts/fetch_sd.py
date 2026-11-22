@@ -12,6 +12,7 @@ import json
 import os
 import re
 import sys
+import time
 import zipfile
 from datetime import datetime, timezone
 from html.parser import HTMLParser
@@ -42,6 +43,19 @@ def fetch(url):
     if code != 200 or not raw:
         raise RuntimeError(f"download failed ({code}): {url}")
     return raw
+
+
+def fetch_zip(url):
+    """StatsCan sometimes answers 200 with an HTML page. Retry until the body is a zip."""
+    last = None
+    for attempt in range(1, 5):
+        code, raw = _get(url)
+        if code == 200 and raw[:2] == b"PK":
+            return raw
+        last = (code, len(raw or b""))
+        print(f"    not a zip (HTTP {code}, {len(raw or b'')} bytes), retry {attempt}", flush=True)
+        time.sleep(8 * attempt)
+    raise RuntimeError(f"download was not a zip after retries ({last}): {url}")
 
 
 def cy_label(start):
@@ -325,8 +339,8 @@ def build(sd, ayp, latest, latest_date, latest_url, prior, prior_date):
 
 
 def main():
-    sd = parse_statcan_sd(fetch(SC_SD))
-    ayp = parse_statcan_ayp(fetch(SC_AYP))
+    sd = parse_statcan_sd(fetch_zip(SC_SD))
+    ayp = parse_statcan_ayp(fetch_zip(SC_AYP))
     reports = aafc_report_urls()
     latest_date, latest_url = reports[0]
     latest, _ = parse_aafc(fetch(latest_url).decode("utf-8", "replace"))

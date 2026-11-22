@@ -103,6 +103,7 @@ function renderSummary(){
     let html = freshnessPanel(SIGNALS.freshness || []);
     SIGNALS.sections.forEach(section=>{
       html += `<div class="sec-hdr">${section.title}</div>`;
+      if(section.basis) html += `<p class="legend-line">${section.basis}</p>`;
       if(section.score) html += `<p class="legend-line">Section ${scoreLine(section.score)}</p>`;
       html += signalTable(section);
       html += figureStrip(section);
@@ -117,9 +118,9 @@ function renderSummary(){
 function freshnessPanel(rows){
   if(!rows.length) return '';
   let html = `<div class="panel"><div class="panel-hdr"><span class="panel-title">Freshness</span></div>`;
-  html += `<table class="term-table summary-table"><thead><tr><th>Feed</th><th>As of</th><th>Status</th></tr></thead><tbody>`;
+  html += `<table class="term-table summary-table"><thead><tr><th>Feed</th><th>As of</th><th>Last run</th><th>Status</th></tr></thead><tbody>`;
   rows.forEach(row=>{
-    const asOf = row.as_of || '—';
+    const asOf = row.as_of || na();
     let status = 'OK';
     let cls = 'up';
     if(!row.as_of){ status = 'stale'; cls = 'dn'; }
@@ -127,7 +128,7 @@ function freshnessPanel(rows){
       const age = (Date.now() - Date.parse(row.as_of+'T00:00:00Z'))/86400000;
       if(age > row.cadence_days){ status = 'stale'; cls = 'dn'; }
     }
-    html += `<tr><td>${row.feed}</td><td>${asOf}</td><td class="${cls}">${status}</td></tr>`;
+    html += `<tr><td>${row.feed}</td><td>${asOf}</td><td>${row.last_run || na()}</td><td class="${cls}">${status}</td></tr>`;
   });
   html += `</tbody></table></div>`;
   return html;
@@ -249,13 +250,13 @@ function bindSignals(root){
     btn.addEventListener('blur', close);
     btn.addEventListener('click', ev=>{ ev.stopPropagation(); if(pop.hidden) show(); else close(); });
   });
-  pop.addEventListener('mouseleave', close);
-  document.addEventListener('keydown', ev=>{ if(ev.key==='Escape') close(); });
   root.querySelectorAll('td.jump').forEach(td=>{
     td.addEventListener('click', ()=>{ if(td.dataset.page) openPage(td.dataset.page, td.dataset.comm||undefined); });
   });
   if(!pop.dataset.bound){
     pop.dataset.bound = '1';
+    pop.addEventListener('mouseleave', close);
+    document.addEventListener('keydown', ev=>{ if(ev.key==='Escape') close(); });
     document.addEventListener('click', ev=>{ if(!pop.contains(ev.target)) close(); });
   }
 }

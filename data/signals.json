@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-11-22T02:02:11+00:00",
+ "generated_at": "2026-11-22T02:04:50+00:00",
  "config": {
   "stu_bull_pct": 33,
   "stu_bear_pct": 67,
@@ -57,7 +57,7 @@
    "exports": 14,
    "cgc": 14,
    "energy": 14,
-   "crop": 21,
+   "weather": 2,
    "cattle": 45
   }
  },
@@ -80,15 +80,15 @@
   },
   {
    "id": "score",
-   "text": "A bullish cell is +1, a bearish cell is \u22121, and a neutral cell is 0. Dashes are left out. A row or section total of +2 or higher is Supportive. -2 or lower is Bearish. Anything between is Neutral."
+   "text": "A bullish cell is +1, a bearish cell is \u22121, and a neutral cell is 0. Dashes are left out of the total. Grains, softs, and cattle fundamentals are out of 3. Energy fundamentals are out of 2, because there is no Peak seasonal. Managed money is out of 2. The row shows the two subtotals and the total."
   },
   {
-   "id": "demand_pace",
-   "text": "US export commitments as a percent of the USDA export forecast, minus the 5-year average of that percent at the same week. At least +5 percentage points ahead is bullish. At least 5 behind is bearish. The saved export history does not cover those earlier seasons, so the cell is a dash. Canola uses CGC crop-year exports versus the same week a year ago. At least +3% is bullish and at least 3% behind is bearish."
+   "id": "demand_yoy",
+   "text": "Export commitments versus a year ago, the same percent the Exports page uses. At least +5% is bullish. At least 5% below is bearish. Otherwise neutral. Canola uses CGC crop-year exports versus the same week a year ago, with the same band. Coffee and sugar have no series on the Exports page, so those cells are dashes."
   },
   {
-   "id": "condition",
-   "text": "NASS good/excellent minus the printed 5-year average, or minus year ago when the average is not printed. At least 3 points below is bullish. At least 3 points above is bearish. Outside the months listed in the config the cell says out of season. Meal and oil have no condition series."
+   "id": "canola_exports",
+   "text": "CGC canola exports versus the same week a year ago. At least +5% is bullish and at least 5% below is bearish."
   },
   {
    "id": "energy_level",
@@ -104,57 +104,66 @@
   },
   {
    "id": "cutout",
-   "text": "Choice boxed beef from the USDA AMS boxed-beef report, over four weeks. Up more than 1% is bullish, down more than that is bearish, inside the band is neutral. This is the printed AMS cutout, not a futures price. The cattle file has one print, so the cell is a dash. Slaughter pace is omitted because the AMS report does not print a year-ago head count."
+   "text": "Choice boxed beef from the USDA AMS boxed-beef report is an official print, not a futures price. The file has a single print, so a four-week trend cannot be scored and the column is omitted. The figure stays in Key figures."
   },
   {
    "id": "staleness",
-   "text": "A cell whose as-of date is older than its cadence is a dash. Cadences, in days: wasde 45, aafc 45, cftc 14, exports 14, cgc 14, energy 14, crop 21, cattle 45."
+   "text": "A cell whose as-of date is older than its cadence is a dash. Cadences, in days: wasde 45, aafc 45, cftc 14, exports 14, cgc 14, energy 14, weather 2, cattle 45."
   }
  ],
  "freshness": [
   {
    "feed": "WASDE",
    "as_of": "2026-11-10",
+   "last_run": "2026-11-22 02:00",
    "cadence_days": 45
   },
   {
    "feed": "CFTC",
    "as_of": "2026-11-17",
+   "last_run": "2026-11-22 02:00",
    "cadence_days": 14
   },
   {
    "feed": "Export sales",
    "as_of": "2026-11-12",
+   "last_run": "2026-11-22 02:00",
    "cadence_days": 14
   },
   {
    "feed": "EIA",
    "as_of": "2026-11-13",
+   "last_run": "2026-11-22 01:59",
    "cadence_days": 14
   },
   {
    "feed": "Cattle on feed",
    "as_of": "2026-11-20",
+   "last_run": "2026-11-22",
    "cadence_days": 45
   },
   {
    "feed": "CGC",
    "as_of": "2026-11-15",
+   "last_run": "2026-11-22 01:59",
    "cadence_days": 14
   },
   {
    "feed": "AAFC",
    "as_of": "2026-10-20",
+   "last_run": "2026-11-15 23:47",
    "cadence_days": 45
   },
   {
-   "feed": "Crop progress",
-   "as_of": "2026-11-15",
-   "cadence_days": 21
+   "feed": "Weather",
+   "as_of": "2026-11-22",
+   "last_run": "2026-11-22 02:02",
+   "cadence_days": 2
   },
   {
    "feed": "Seasonal",
    "as_of": "2026-10-24",
+   "last_run": null,
    "cadence_days": null
   }
  ],
@@ -162,6 +171,7 @@
   {
    "id": "grains",
    "title": "Grains & Oilseeds",
+   "basis": "Fundamentals out of 3 (stocks/use, demand, seasonal). Managed money out of 2. A dash is left out of that row.",
    "groups": [
     {
      "label": "Fundamentals",
@@ -1279,6 +1289,7 @@
   {
    "id": "softs",
    "title": "Softs",
+   "basis": "Fundamentals out of 3 (stocks/use, demand, seasonal). Managed money out of 2. A dash is left out of that row.",
    "groups": [
     {
      "label": "Fundamentals",
@@ -1686,6 +1697,7 @@
   {
    "id": "energy",
    "title": "Energy",
+   "basis": "Fundamentals out of 2 (stocks vs 5-yr and week vs norm). There is no seasonal column. Managed money out of 2.",
    "groups": [
     {
      "label": "Fundamentals",
@@ -2076,6 +2088,7 @@
   {
    "id": "cattle",
    "title": "Cattle",
+   "basis": "Fundamentals out of 3 (on feed, placements, seasonal). Managed money out of 2. The cutout trend is not scored.",
    "groups": [
     {
      "label": "Fundamentals",
