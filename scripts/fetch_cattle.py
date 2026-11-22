@@ -31,16 +31,43 @@ def num(raw):
     return float(str(raw).replace(",", ""))
 
 
+# The February report adds the annual supplement, so the contents page lists a
+# United States header before the data table. October 2025 was not released.
+COF_NOT_RELEASED = {
+    "2025-10-01": (
+        "NASS cancelled the October 24, 2025 Cattle on Feed release during the appropriations lapse. "
+        "It is not on the ESMIS Cattle on Feed release list."
+    ),
+}
+HEADER_RE = re.compile(
+    r"1,000\+ Capacity Feedlots - United States:\s+(\w+) 1, (\d{4}) and (\d{4})"
+)
+ROW_RE = re.compile(
+    r"\s*(On feed \w+ 1|Placed on feed during \w+|Fed cattle marketed during \w+|Other disappearance during \w+)"
+    r"\s*\.*:\s*([\d,]+)\s+([\d,]+)\s+(\d+)"
+)
+
+
 def parse_cof(text: str) -> dict:
-    """First U.S. 1,000+ capacity table. Percents are the printed ones."""
-    header = re.search(
-        r"1,000\+ Capacity Feedlots - United States:\s+(\w+) 1, (\d{4}) and (\d{4})",
-        text,
-    )
-    if not header:
+    """The current U.S. 1,000+ capacity table. Percents are the printed ones.
+
+    The header has to be the one sitting on the data rows. A contents line names
+    the same kind of header and is not the table.
+    """
+    matches = list(HEADER_RE.finditer(text))
+    header = None
+    block = ""
+    for i, match in enumerate(matches):
+        end = matches[i + 1].start() if i + 1 < len(matches) else match.end() + 1800
+        candidate = text[match.end():end]
+        month = match.group(1)
+        if ROW_RE.search(candidate) and f"On feed {month} 1" in candidate:
+            header = match
+            block = candidate
+            break
+    if header is None:
         raise ValueError("Cattle on Feed U.S. table header not found")
-    month, y0, y1 = header.group(1), int(header.group(2)), int(header.group(3))
-    block = text[header.end():header.end() + 1800]
+    month, y1 = header.group(1), int(header.group(3))
     rows = {}
     for line in block.splitlines():
         m = re.match(
@@ -75,38 +102,80 @@ def parse_cof(text: str) -> dict:
     }
 
 
+def _esmis_text(year, month):
+    """The Cornell copy, used when release.nass has no cofdMMYY.txt."""
+    for day in range(15, 32):
+        try:
+            stamp = date(year, month, day).isoformat()
+        except ValueError:
+            continue
+        page = f"https://usda.library.cornell.edu/publication/cattle-feed/{stamp}"
+        try:
+            html = get(page, timeout=20).decode("utf-8", "replace")
+        except Exception:
+            continue
+        link = re.search(r'href="([^"]+cofd\d+\.txt)"', html)
+        if not link:
+            continue
+        href = link.group(1)
+        if href.startswith("/"):
+            href = "https://usda.library.cornell.edu" + href
+        return get(href, timeout=40).decode("latin-1", "replace"), href
+    return None, None
+
+
+def fetch_cof_month(year, month):
+    """Text and URL for one release month. (None, None) when NASS did not publish it."""
+    slug = f"cofd{month:02d}{year % 100:02d}.txt"
+    nass = f"https://release.nass.usda.gov/reports/{slug}"
+    try:
+        text = get(nass, timeout=25).decode("latin-1", "replace")
+        if "Cattle on Feed" in text and "1,000 head" in text:
+            return text, nass
+    except Exception:
+        text = ""
+    return _esmis_text(year, month)
+
+
 def cof_history():
-    """About five years of the monthly report. Missing months stay missing."""
+    """Monthly Cattle on Feed from January 2021 through the latest release.
+
+    Returns (rows, gaps). A gap is a month NASS did not publish. Nothing is filled in.
+    """
     today = date.today()
     out = []
-    # Walk release months. The file is cofdMMYY for the release month.
-    y, m = today.year, today.month
-    for _ in range(64):
-        slug = f"cofd{m:02d}{y % 100:02d}.txt"
-        url = f"https://release.nass.usda.gov/reports/{slug}"
-        try:
-            text = get(url, timeout=25).decode("latin-1", "replace")
-        except Exception:
-            text = ""
-        if "Cattle on Feed" in text and "1,000 head" in text:
+    gaps = []
+    year, month = 2021, 1
+    while date(year, month, 1) <= today:
+        as_of = f"{year:04d}-{month:02d}-01"
+        text, url = fetch_cof_month(year, month)
+        if text:
             try:
                 row = parse_cof(text)
+            except ValueError as e:
+                print(f"  skip {as_of}: {e}", file=sys.stderr)
+                row = None
+            if row and row["as_of"] == as_of:
                 row["source_url"] = url
                 out.append(row)
-            except ValueError as e:
-                print(f"  skip {slug}: {e}", file=sys.stderr)
-        m -= 1
-        if m == 0:
-            m = 12
-            y -= 1
-    # Newest first from the walk; sort by as_of and drop duplicate dates.
+            elif row:
+                print(f"  skip {as_of}: file is the {row['as_of']} table", file=sys.stderr)
+        elif as_of in COF_NOT_RELEASED:
+            gaps.append({"as_of": as_of, "reason": COF_NOT_RELEASED[as_of]})
+            print(f"  no release {as_of}", file=sys.stderr)
+        elif date(year, month, 1) < date(today.year, today.month, 1):
+            print(f"  missing {as_of}: no NASS or ESMIS file", file=sys.stderr)
+        month += 1
+        if month == 13:
+            month = 1
+            year += 1
     by_date = {}
     for row in out:
         by_date[row["as_of"]] = row
     rows = [by_date[k] for k in sorted(by_date)]
     if len(rows) < 12:
         raise ValueError(f"only {len(rows)} Cattle on Feed reports parsed")
-    return rows
+    return rows, gaps
 
 
 def parse_outside_feedlots(text: str):
@@ -347,7 +416,18 @@ def main():
                 doc[key] = previous[key]
                 doc[key + "_error"] = str(e)
 
-    keep("on_feed", cof_history)
+    gaps = {}
+
+    def load_on_feed():
+        rows, missing = cof_history()
+        gaps["rows"] = missing
+        return rows
+
+    keep("on_feed", load_on_feed)
+    if "rows" in gaps:
+        doc["on_feed_gaps"] = gaps["rows"]
+    elif "on_feed_gaps" in previous:
+        doc["on_feed_gaps"] = previous["on_feed_gaps"]
     keep("inventory", latest_inventory)
     keep("slaughter", lambda: parse_slaughter(pdf_text("https://www.ams.usda.gov/mnreports/ams_3658.pdf")))
     keep("steer", lambda: parse_steer(pdf_text("https://www.ams.usda.gov/mnreports/ams_2477.pdf")))

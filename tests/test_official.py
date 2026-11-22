@@ -20,6 +20,27 @@ Released October 23, 2026, by the National Agricultural Statistics Service
 """
 
 
+def test_february_supplement_does_not_use_the_contents_header():
+    """The February report lists a January header in the contents before the data table."""
+    text = """
+Cattle on Feed by Class on 1,000+ Capacity Feedlots - United States: January 1, 2021 and 2022
+Cattle on Feed Inventory, Placements, Marketings, and Other Disappearance on
+1,000+ Capacity Feedlots - United States: February 1, 2021 and 2022
+On feed January 1 .....................:   11,967        12,037          101
+Placed on feed during January ..........:    2,024         1,999           99
+Fed cattle marketed during January .....:    1,829         1,773           97
+Other disappearance during January .....:       56            64          114
+On feed February 1 .....................:   12,106        12,199          101
+Released February 25, 2022, by the National Agricultural Statistics Service
+"""
+    row = parse_cof(text)
+    assert row["as_of"] == "2022-02-01"
+    assert row["on_feed"]["current"] == 12199
+    assert row["on_feed"]["year_ago"] == 12106
+    assert row["on_feed"]["pct_of_year_ago"] == 101
+    assert row["placements"]["pct_of_year_ago"] == 99
+
+
 def test_cof_uses_printed_percent_not_a_ratio():
     row = parse_cof(COF)
     assert row["as_of"] == "2026-10-01"

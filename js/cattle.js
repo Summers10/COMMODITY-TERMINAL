@@ -32,7 +32,7 @@ function renderCattle(box){
   html += priceBlock(C);
   html += wasdeBeefBlock(C.wasde);
   root.innerHTML = html;
-  if(latest) drawCof(hist);
+  if(latest) drawCof(hist, C.on_feed_gaps);
 }
 function inventoryBlock(rows){
   let html = `<div class="panel"><div class="panel-hdr"><span class="panel-title">Cattle inventory</span><span class="panel-sub">January and July</span></div>`;
@@ -103,7 +103,7 @@ function cofTicks(lo, hi, n){
   for(let v = Math.ceil(lo / step) * step; v <= hi + step * 1e-9; v += step) ticks.push(v);
   return ticks;
 }
-function drawCof(hist){
+function drawCof(hist, gaps){
   const box = document.getElementById('cof-chart');
   if(!box) return;
   const byYear = {};
@@ -180,8 +180,17 @@ function drawCof(hist){
   };
   stroke(last, 'var(--text2)', 1.8);
   stroke(current, 'var(--amber)', 2.6);
+  const notes = {};
+  (gaps || []).forEach(g=>{
+    if(!g || !g.as_of || !g.reason) return;
+    const parts = g.as_of.split('-').map(Number);
+    (notes[parts[1]] = notes[parts[1]] || []).push(parts[0] + ': ' + g.reason);
+  });
   ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'].forEach((name, i)=>{
-    svg += `<text x="${x(i + 1)}" y="${H - 10}" text-anchor="middle" style="fill:var(--text3);font-size:13px">${name}</text>`;
+    const note = notes[i + 1] ? notes[i + 1].join(' ') : '';
+    const safe = note.replace(/&/g,'&amp;').replace(/</g,'&lt;');
+    svg += `<text x="${x(i + 1)}" y="${H - 10}" text-anchor="middle" style="fill:var(--text3);font-size:13px">${name}${safe ? `<title>${safe}</title>` : ''}</text>`;
+    if(safe) svg += `<rect x="${(x(i + 1) - 22).toFixed(1)}" y="${H - 26}" width="44" height="24" fill="transparent"><title>${safe}</title></rect>`;
   });
   svg += `</svg></div>`;
   box.innerHTML = html + svg;
