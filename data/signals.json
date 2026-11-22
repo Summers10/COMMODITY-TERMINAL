@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-11-22T02:17:34+00:00",
+ "generated_at": "2026-11-22T02:40:16+00:00",
  "config": {
   "stu_bull_pct": 33,
   "stu_bear_pct": 67,
@@ -9,8 +9,6 @@
   "mm_ext_short_pct": 15,
   "seasonal_score_bull": 1,
   "seasonal_score_bear": -1,
-  "score_supportive": 2,
-  "score_bearish": -2,
   "demand_pp": 5,
   "demand_history_years": 5,
   "canola_export_yoy_pct": 3,
@@ -79,8 +77,8 @@
    "text": "Average of the Peak Trading Research weekly scores for the current week and the next four weeks. Scores run from \u22125 to +5. An average of 1 or higher is bullish. An average of -1 or lower is bearish. Otherwise neutral. The same scores are reused every year, keyed by calendar week, and a late-December window continues into January. They are typed on the Seasonals page, not fetched, and they do not expire. A market with no typed score is a dash. Peak Trading Research seasonal, last reviewed 2026-10-24."
   },
   {
-   "id": "score",
-   "text": "A bullish cell is +1, a bearish cell is \u22121, and a neutral cell is 0. Dashes are left out of the total. Grains, softs, and cattle fundamentals are out of 3. Energy fundamentals are out of 2, because there is no Peak seasonal. Managed money is out of 2. The row shows the two subtotals and the total."
+   "id": "verdict",
+   "text": "A bullish cell is +1, a bearish cell is \u22121, and a neutral cell is 0. Dashes are left out. The Fundamentals cell is the net of that row's fundamental signals. Grains, softs, and cattle are out of 3. Energy is out of 2, because there is no Peak seasonal. The Managed money cell is the net of extended and money flow, out of 2. A positive net is green, a negative net is red, and zero is plain. If every signal in the group is a dash, the verdict is a dash. There is no row total and no section score."
   },
   {
    "id": "demand_yoy",
@@ -313,20 +311,13 @@
        "text": "+0.4 next 4w"
       }
      },
-     "score": {
-      "score": -2,
-      "scored": 5,
-      "label": "Bearish"
-     },
      "fund": {
       "score": -1,
-      "scored": 3,
-      "label": "Neutral"
+      "scored": 3
      },
      "mm": {
       "score": -1,
-      "scored": 2,
-      "label": "Neutral"
+      "scored": 2
      },
      "figures": [
       {
@@ -446,20 +437,13 @@
        "text": "-0.2 next 4w"
       }
      },
-     "score": {
-      "score": 1,
-      "scored": 5,
-      "label": "Neutral"
-     },
      "fund": {
       "score": 2,
-      "scored": 3,
-      "label": "Supportive"
+      "scored": 3
      },
      "mm": {
       "score": -1,
-      "scored": 2,
-      "label": "Neutral"
+      "scored": 2
      },
      "figures": [
       {
@@ -579,20 +563,13 @@
        "text": "\u25bc -1.8 next 4w"
       }
      },
-     "score": {
-      "score": -3,
-      "scored": 5,
-      "label": "Bearish"
-     },
      "fund": {
       "score": -2,
-      "scored": 3,
-      "label": "Bearish"
+      "scored": 3
      },
      "mm": {
       "score": -1,
-      "scored": 2,
-      "label": "Neutral"
+      "scored": 2
      },
      "figures": [
       {
@@ -712,20 +689,13 @@
        "text": "\u25bc -1.4 next 4w"
       }
      },
-     "score": {
-      "score": -3,
-      "scored": 5,
-      "label": "Bearish"
-     },
      "fund": {
       "score": -2,
-      "scored": 3,
-      "label": "Bearish"
+      "scored": 3
      },
      "mm": {
       "score": -1,
-      "scored": 2,
-      "label": "Neutral"
+      "scored": 2
      },
      "figures": [
       {
@@ -845,20 +815,13 @@
        "text": "\u25bc -1.8 next 4w"
       }
      },
-     "score": {
-      "score": -3,
-      "scored": 5,
-      "label": "Bearish"
-     },
      "fund": {
       "score": -2,
-      "scored": 3,
-      "label": "Bearish"
+      "scored": 3
      },
      "mm": {
       "score": -1,
-      "scored": 2,
-      "label": "Neutral"
+      "scored": 2
      },
      "figures": [
       {
@@ -980,20 +943,13 @@
        "text": "\u25bc -2.4 next 4w"
       }
      },
-     "score": {
-      "score": -1,
-      "scored": 5,
-      "label": "Neutral"
-     },
      "fund": {
       "score": 0,
-      "scored": 3,
-      "label": "Neutral"
+      "scored": 3
      },
      "mm": {
       "score": -1,
-      "scored": 2,
-      "label": "Neutral"
+      "scored": 2
      },
      "figures": [
       {
@@ -1113,20 +1069,13 @@
        "text": "+0.0 next 4w"
       }
      },
-     "score": {
-      "score": 1,
-      "scored": 5,
-      "label": "Neutral"
-     },
      "fund": {
       "score": 1,
-      "scored": 3,
-      "label": "Neutral"
+      "scored": 3
      },
      "mm": {
       "score": 0,
-      "scored": 2,
-      "label": "Neutral"
+      "scored": 2
      },
      "figures": [
       {
@@ -1246,20 +1195,13 @@
        "text": "\u25bc -2.6 next 4w"
       }
      },
-     "score": {
-      "score": -2,
-      "scored": 5,
-      "label": "Bearish"
-     },
      "fund": {
       "score": -1,
-      "scored": 3,
-      "label": "Neutral"
+      "scored": 3
      },
      "mm": {
       "score": -1,
-      "scored": 2,
-      "label": "Neutral"
+      "scored": 2
      },
      "figures": [
       {
@@ -1279,12 +1221,7 @@
      "comm": "Soybean Oil"
     }
    ],
-   "figures": [],
-   "score": {
-    "score": -12,
-    "scored": 40,
-    "label": "Bearish"
-   }
+   "figures": []
   },
   {
    "id": "softs",
@@ -1429,20 +1366,13 @@
        "text": "+1.8k / -9.6k"
       }
      },
-     "score": {
-      "score": 2,
-      "scored": 4,
-      "label": "Supportive"
-     },
      "fund": {
       "score": 1,
-      "scored": 2,
-      "label": "Neutral"
+      "scored": 2
      },
      "mm": {
       "score": 1,
-      "scored": 2,
-      "label": "Neutral"
+      "scored": 2
      },
      "figures": [],
      "page": "usda",
@@ -1547,20 +1477,13 @@
        "text": "\u25bc -11.7k / -87.5k"
       }
      },
-     "score": {
-      "score": -2,
-      "scored": 4,
-      "label": "Bearish"
-     },
      "fund": {
       "score": 0,
-      "scored": 2,
-      "label": "Neutral"
+      "scored": 2
      },
      "mm": {
       "score": -2,
-      "scored": 2,
-      "label": "Bearish"
+      "scored": 2
      },
      "figures": [],
      "page": "usda",
@@ -1667,32 +1590,20 @@
        "text": "\u25bc -6.4k / -17.5k"
       }
      },
-     "score": {
-      "score": 2,
-      "scored": 5,
-      "label": "Supportive"
-     },
      "fund": {
       "score": 3,
-      "scored": 3,
-      "label": "Supportive"
+      "scored": 3
      },
      "mm": {
       "score": -1,
-      "scored": 2,
-      "label": "Neutral"
+      "scored": 2
      },
      "figures": [],
      "page": "usda",
      "comm": "Cotton"
     }
    ],
-   "figures": [],
-   "score": {
-    "score": 2,
-    "scored": 13,
-    "label": "Supportive"
-   }
+   "figures": []
   },
   {
    "id": "energy",
@@ -1787,20 +1698,13 @@
        "text": "\u25bc -9.8k / -41.1k"
       }
      },
-     "score": {
-      "score": 0,
-      "scored": 4,
-      "label": "Neutral"
-     },
      "fund": {
       "score": 1,
-      "scored": 2,
-      "label": "Neutral"
+      "scored": 2
      },
      "mm": {
       "score": -1,
-      "scored": 2,
-      "label": "Neutral"
+      "scored": 2
      },
      "figures": [
       {
@@ -1873,20 +1777,13 @@
        "text": "\u25bc -6.7k / -14.0k"
       }
      },
-     "score": {
-      "score": -2,
-      "scored": 4,
-      "label": "Bearish"
-     },
      "fund": {
       "score": 0,
-      "scored": 2,
-      "label": "Neutral"
+      "scored": 2
      },
      "mm": {
       "score": -2,
-      "scored": 2,
-      "label": "Bearish"
+      "scored": 2
      },
      "figures": [
       {
@@ -1959,20 +1856,13 @@
        "text": "+1.7k / -8.9k"
       }
      },
-     "score": {
-      "score": 1,
-      "scored": 4,
-      "label": "Neutral"
-     },
      "fund": {
       "score": 1,
-      "scored": 2,
-      "label": "Neutral"
+      "scored": 2
      },
      "mm": {
       "score": 0,
-      "scored": 2,
-      "label": "Neutral"
+      "scored": 2
      },
      "figures": [
       {
@@ -2045,20 +1935,13 @@
        "text": "+12.8k / -54.6k"
       }
      },
-     "score": {
-      "score": 1,
-      "scored": 4,
-      "label": "Neutral"
-     },
      "fund": {
       "score": 0,
-      "scored": 2,
-      "label": "Neutral"
+      "scored": 2
      },
      "mm": {
       "score": 1,
-      "scored": 2,
-      "label": "Neutral"
+      "scored": 2
      },
      "figures": [
       {
@@ -2078,12 +1961,7 @@
      "comm": "Energy"
     }
    ],
-   "figures": [],
-   "score": {
-    "score": 0,
-    "scored": 16,
-    "label": "Neutral"
-   }
+   "figures": []
   },
   {
    "id": "cattle",
@@ -2214,20 +2092,13 @@
        "text": "-0.4 next 4w"
       }
      },
-     "score": {
-      "score": 1,
-      "scored": 5,
-      "label": "Neutral"
-     },
      "fund": {
       "score": 1,
-      "scored": 3,
-      "label": "Neutral"
+      "scored": 3
      },
      "mm": {
       "score": 0,
-      "scored": 2,
-      "label": "Neutral"
+      "scored": 2
      },
      "figures": [],
      "page": "usda",
@@ -2318,20 +2189,13 @@
        "text": "\u25b2 +1.4 next 4w"
       }
      },
-     "score": {
-      "score": 2,
-      "scored": 5,
-      "label": "Supportive"
-     },
      "fund": {
       "score": 2,
-      "scored": 3,
-      "label": "Supportive"
+      "scored": 3
      },
      "mm": {
       "score": 0,
-      "scored": 2,
-      "label": "Neutral"
+      "scored": 2
      },
      "figures": [],
      "page": "usda",
@@ -2351,12 +2215,7 @@
      "label": "Choice cutout",
      "value": "352.84"
     }
-   ],
-   "score": {
-    "score": 3,
-    "scored": 10,
-    "label": "Supportive"
-   }
+   ]
   }
  ]
 }

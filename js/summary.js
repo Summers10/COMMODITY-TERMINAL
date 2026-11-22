@@ -102,11 +102,7 @@ function renderSummary(){
     if(meta) meta.textContent = '';
     let html = freshnessPanel(SIGNALS.freshness || []);
     SIGNALS.sections.forEach(section=>{
-      const sc = section.score;
-      const sign = sc && sc.score>0 ? '+' : '';
-      const tone = !sc || !sc.scored ? '' : sc.score>0 ? 'pos' : sc.score<0 ? 'neg' : '';
-      const chip = sc && sc.scored ? `<span class="sec-score ${tone}">${sign}${sc.score} / ${sc.scored}</span>` : '';
-      html += `<div class="sec-hdr"><span>${section.title}</span>${chip}</div>`;
+      html += `<div class="sec-hdr"><span>${section.title}</span></div>`;
       html += signalTable(section);
       html += figureStrip(section);
     });
@@ -138,18 +134,18 @@ function freshnessPanel(rows){
 function signalTable(section){
   const cols = section.columns || [];
   const groups = section.groups || [];
-  const widths = [1.6, ...cols.map(()=>1), 1.7];
+  const widths = [1.7, ...cols.map(()=>1), 0.72, 0.82];
   let html = `<div class="panel"><table class="term-table summary-table sig-table">${fitColgroup(widths)}<thead>`;
   if(groups.length){
     html += `<tr><th rowspan="2">Market</th>`;
     groups.forEach(g=>{ html += `<th colspan="${g.ids.length}">${g.label}</th>`; });
-    html += `<th rowspan="2">Score</th></tr><tr>`;
+    html += `<th rowspan="2" class="verdict-h verdict-edge">Fundamentals</th><th rowspan="2" class="verdict-h">Managed money</th></tr><tr>`;
     cols.forEach(col=>{ html += `<th>${col.label}</th>`; });
     html += `</tr>`;
   } else {
     html += `<tr><th>Market</th>`;
     cols.forEach(col=>{ html += `<th>${col.label}</th>`; });
-    html += `<th>Score</th></tr>`;
+    html += `<th class="verdict-h verdict-edge">Fundamentals</th><th class="verdict-h">Managed money</th></tr>`;
   }
   html += `</thead><tbody>`;
   (section.rows||[]).forEach(row=>{
@@ -160,8 +156,11 @@ function signalTable(section){
       const text = sig.text || na();
       html += `<td class="${cls}"><button type="button" class="sig-hit" data-detail="${escapeAttr(sig.detail||sig.reason||'')}" data-rule="${escapeAttr(ruleText(sig.rule_id))}" data-asof="${escapeAttr(sig.as_of||'')}">${text}</button></td>`;
     });
-    const tally = scoreText(row);
-    html += `<td class="tally ${tally.cls}" title="${escapeAttr(tally.tip)}">${tally.html}</td></tr>`;
+    const fundIds = (groups.find(g=>/fund/i.test(g.label)) || {}).ids || [];
+    const mmIds = (groups.find(g=>/money/i.test(g.label)) || {}).ids || [];
+    html += verdictCell(row, fundIds, cols, 'Fundamentals', true);
+    html += verdictCell(row, mmIds, cols, 'Managed money', false);
+    html += `</tr>`;
   });
   html += `</tbody></table></div>`;
   return html;
@@ -199,28 +198,22 @@ function rulesBlock(rules){
   html += `</details>`;
   return html;
 }
-function scoreLine(s){
-  if(!s || !s.scored) return na();
-  const glyph = s.label==='Supportive' ? '▲' : s.label==='Bearish' ? '▼' : '▬';
-  const sign = s.score>0 ? '+' : '';
-  return `${glyph} ${sign}${s.score} ${s.label} · of ${s.scored}`;
-}
-function partScore(s){
-  if(!s) return '—';
-  const sign = s.score>0 ? '+' : '';
-  return `${sign}${s.score}/${s.scored}`;
-}
-function scoreText(row){
-  const s = row.score;
-  if(!s || !s.scored) return {html: na(), cls:'', tip:''};
-  const sign = s.score>0 ? '+' : '';
-  const fund = row.fund ? `F ${partScore(row.fund)}` : '';
-  const mm = row.mm ? `MM ${partScore(row.mm)}` : '';
-  const total = `${sign}${s.score}/${s.scored}`;
-  const text = [fund, mm, total].filter(Boolean).join(' · ');
-  const tip = `Fundamentals ${row.fund ? partScore(row.fund) : '—'}, managed money ${row.mm ? partScore(row.mm) : '—'}. Bullish is +1, bearish is −1, neutral is 0. Dashes are left out.`;
-  const cls = s.score>0 ? 'pos' : s.score<0 ? 'neg' : '';
-  return {html: text, cls, tip};
+function verdictCell(row, ids, cols, name, edge){
+  const part = name==='Fundamentals' ? row.fund : row.mm;
+  const edgeCls = edge ? ' verdict-edge' : '';
+  if(!part || !part.scored){
+    return `<td class="verdict${edgeCls}">${na()}</td>`;
+  }
+  const sign = part.score>0 ? '+' : '';
+  const tone = part.score>0 ? 'sig sig-bull' : part.score<0 ? 'sig sig-bear' : 'sig';
+  const bits = ids.map(id=>{
+    const sig = (row.signals||{})[id] || {};
+    const label = (cols.find(c=>c.id===id) || {}).label || id;
+    const mark = sig.state==='bullish' ? '+1' : sig.state==='bearish' ? '−1' : sig.state==='neutral' ? '0' : 'dash';
+    return `${label} ${mark}`;
+  }).join(' · ');
+  const detail = `${bits}. Net ${sign}${part.score}/${part.scored}.`;
+  return `<td class="verdict ${tone}${edgeCls}"><button type="button" class="sig-hit" data-detail="${escapeAttr(detail)}" data-rule="${escapeAttr(ruleText('verdict'))}">${sign}${part.score}/${part.scored}</button></td>`;
 }
 function ruleText(id){
   const rule = (SIGNALS && SIGNALS.rules || []).find(r=>r.id===id);

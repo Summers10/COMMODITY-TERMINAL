@@ -240,15 +240,9 @@ def dash(rule_id, reason, as_of=None):
     }
 
 
-def score_label(score, cfg):
-    if score >= cfg["score_supportive"]:
-        return "Supportive"
-    if score <= cfg["score_bearish"]:
-        return "Bearish"
-    return "Neutral"
-
-
 def score_of(signals, cfg):
+    """Net of a group. Bullish +1, bearish −1, neutral 0. A dash is left out."""
+    del cfg
     total = 0
     scored = 0
     for sig in signals.values():
@@ -261,7 +255,7 @@ def score_of(signals, cfg):
             scored += 1
         elif state == "neutral":
             scored += 1
-    return {"score": total, "scored": scored, "label": score_label(total, cfg)}
+    return {"score": total, "scored": scored}
 
 
 def stu_of(row, world=False):
@@ -654,10 +648,13 @@ def rule_book(cfg, reviewed=None):
             "A market with no typed score is a dash. "
             f"Peak Trading Research seasonal, last reviewed {reviewed}."
         )},
-        {"id": "score", "text": (
-            "A bullish cell is +1, a bearish cell is −1, and a neutral cell is 0. Dashes are left out of the total. "
-            "Grains, softs, and cattle fundamentals are out of 3. Energy fundamentals are out of 2, because there is no Peak seasonal. "
-            "Managed money is out of 2. The row shows the two subtotals and the total."
+        {"id": "verdict", "text": (
+            "A bullish cell is +1, a bearish cell is −1, and a neutral cell is 0. Dashes are left out. "
+            "The Fundamentals cell is the net of that row's fundamental signals. "
+            "Grains, softs, and cattle are out of 3. Energy is out of 2, because there is no Peak seasonal. "
+            "The Managed money cell is the net of extended and money flow, out of 2. "
+            "A positive net is green, a negative net is red, and zero is plain. "
+            "If every signal in the group is a dash, the verdict is a dash. There is no row total and no section score."
         )},
         {"id": "demand_yoy", "text": (
             f"Export commitments versus a year ago, the same percent the Exports page uses. "
@@ -708,7 +705,6 @@ def row(label, signals, figures, page=None, comm=None, cfg=None):
     return {
         "label": label,
         "signals": signals,
-        "score": score_of(signals, cfg) if cfg else None,
         "fund": score_of({k: signals[k] for k in ("stu", "demand", "seasonal", "energy_level", "energy_change", "on_feed", "placements") if k in signals}, cfg) if cfg else None,
         "mm": score_of({k: signals[k] for k in ("mm_extension", "mm_flow") if k in signals}, cfg) if cfg else None,
         "figures": figures,
@@ -962,10 +958,6 @@ def build(cfg=None):
             "figures": cattle_figs,
         },
     ]
-    for section in sections:
-        total = sum(item["score"]["score"] for item in section["rows"])
-        scored = sum(item["score"]["scored"] for item in section["rows"])
-        section["score"] = {"score": total, "scored": scored, "label": score_label(total, cfg)}
     return {
         "generated_at": datetime.now(dt.timezone.utc).replace(microsecond=0).isoformat(),
         "config": cfg,
@@ -1023,7 +1015,7 @@ def main():
             bits = []
             for key, sig in item["signals"].items():
                 bits.append(f"{key}={sig['text'] or '—'}")
-            print(" ", item["label"], item["score"], " ".join(bits))
+            print(" ", item["label"], "F", item.get("fund"), "MM", item.get("mm"), " ".join(bits))
 
 
 if __name__ == "__main__":
