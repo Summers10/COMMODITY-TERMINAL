@@ -34,17 +34,19 @@ jobs:
         run: python -m pytest -q test_parsers.py
       - name: Fetch
         id: crop
+        continue-on-error: true
         env:
           NASS_API_KEY: ${{ secrets.NASS_API_KEY }}
         run: python scripts/crop/run_all.py
       - name: Build signals
-        if: steps.crop.outcome == 'success'
+        if: always()
         run: python scripts/build_signals.py
       - name: Trust audit
-        if: steps.crop.outcome == 'success'
+        id: trust
+        if: always()
         run: python -m pytest -q tests
       - name: Commit
-        if: steps.crop.outcome == 'success' && success()
+        if: steps.trust.outcome == 'success'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"

@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-11-20T21:52:20+00:00",
+ "generated_at": "2026-11-22T01:52:41+00:00",
  "config": {
   "stu_bull_pct": 33,
   "stu_bear_pct": 67,
@@ -109,6 +109,53 @@
   {
    "id": "staleness",
    "text": "A cell whose as-of date is older than its cadence is a dash. Cadences, in days: wasde 45, aafc 45, cftc 14, exports 14, cgc 14, energy 14, crop 21, cattle 45."
+  }
+ ],
+ "freshness": [
+  {
+   "feed": "WASDE",
+   "as_of": "2026-11-10",
+   "cadence_days": 45
+  },
+  {
+   "feed": "CFTC",
+   "as_of": "2026-11-17",
+   "cadence_days": 14
+  },
+  {
+   "feed": "Export sales",
+   "as_of": "2026-11-12",
+   "cadence_days": 14
+  },
+  {
+   "feed": "EIA",
+   "as_of": "2026-11-13",
+   "cadence_days": 14
+  },
+  {
+   "feed": "Cattle on feed",
+   "as_of": "2026-10-23",
+   "cadence_days": 45
+  },
+  {
+   "feed": "CGC",
+   "as_of": "2026-11-08",
+   "cadence_days": 14
+  },
+  {
+   "feed": "AAFC",
+   "as_of": "2026-10-20",
+   "cadence_days": 45
+  },
+  {
+   "feed": "Crop progress",
+   "as_of": "2026-11-08",
+   "cadence_days": 21
+  },
+  {
+   "feed": "Seasonal",
+   "as_of": "2026-10-24",
+   "cadence_days": null
   }
  ],
  "sections": [
@@ -1468,18 +1515,18 @@
      "label": "Natural gas",
      "signals": {
       "energy_level": {
-       "state": "neutral",
+       "state": null,
        "rule_id": "energy_level",
        "as_of": "2026-11-06",
        "inputs": {
         "vs_avg_pct": 2.0
        },
        "detail": "Stocks 3862 versus the 5-year average 3787 (+2.0%). WNGSR published 5-year average.",
-       "reason": null,
-       "text": "\u25ac +2.0%"
+       "reason": "stale: 2026-11-06 is older than 14 days",
+       "text": null
       },
       "energy_change": {
-       "state": "neutral",
+       "state": null,
        "rule_id": "energy_change",
        "as_of": "2026-11-06",
        "inputs": {
@@ -1488,8 +1535,8 @@
         "norm_pct": 1.2584
        },
        "detail": "This week's stock change is +1.60% of the prior week. The same week of the prior five years averaged +1.26%. Difference +0.35 pp.",
-       "reason": null,
-       "text": "\u25ac +0.3 pp"
+       "reason": "stale: 2026-11-06 is older than 14 days",
+       "text": null
       },
       "mm_extension": {
        "state": "bullish",
@@ -1528,7 +1575,7 @@
      },
      "score": {
       "score": 1,
-      "scored": 4,
+      "scored": 2,
       "label": "Neutral"
      },
      "figures": [
@@ -1552,7 +1599,7 @@
    "figures": [],
    "score": {
     "score": 0,
-    "scored": 16,
+    "scored": 14,
     "label": "Neutral"
    }
   },

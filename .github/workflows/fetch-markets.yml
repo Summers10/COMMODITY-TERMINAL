@@ -6,6 +6,10 @@ on:
     - cron: '7 14 * * 1-5'
     - cron: '17 18 * * 1-5'
     - cron: '47 20 * * 1-5'
+    # Catch a Friday CFTC or export-sales file that was not up yet.
+    - cron: '30 18 * * 6'
+    - cron: '30 15 * * 1,2'
+    - cron: '30 22 * * 1,2'
   workflow_dispatch: {}
   push:
     branches: [main]
@@ -62,12 +66,16 @@ jobs:
         run: python scripts/fetch_weather.py
 
       - name: Build signals
+        if: always()
         run: python scripts/build_signals.py
 
       - name: Trust audit
+        id: trust
+        if: always()
         run: python -m pytest -q tests
 
       - name: Commit updated data
+        if: steps.trust.outcome == 'success'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"

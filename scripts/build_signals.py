@@ -917,8 +917,42 @@ def build(cfg=None):
         "generated_at": datetime.now(dt.timezone.utc).replace(microsecond=0).isoformat(),
         "config": cfg,
         "rules": rule_book(cfg, (seasonals or {}).get("reviewed")),
+        "freshness": feed_freshness(cfg, psd, cftc, exports, energy, cattle, cgc, progress, sd),
         "sections": sections,
     }
+
+
+def feed_freshness(cfg, psd, cftc, exports, energy, cattle, cgc, progress, sd):
+    """As-of dates the summary can show. Stale is decided in the browser from cadence_days."""
+    rows = []
+
+    def add(feed, as_of, cadence):
+        day = parse_day(as_of)
+        rows.append({
+            "feed": feed,
+            "as_of": day.isoformat() if day else None,
+            "cadence_days": cadence,
+        })
+
+    meta = (psd or {}).get("_meta") or {}
+    add("WASDE", meta.get("wasde_release"), cfg["cadence_days"]["wasde"])
+    last_cftc = None
+    for node in ((cftc or {}).get("codes") or {}).values():
+        if node.get("rows"):
+            last_cftc = node["rows"][-1][0]
+            break
+    add("CFTC", last_cftc, cfg["cadence_days"]["cftc"])
+    corn = (((exports or {}).get("commodities") or {}).get("CORN - UNMILLED") or {}).get("total") or {}
+    add("Export sales", corn.get("period_ending"), cfg["cadence_days"]["exports"])
+    series = (energy or {}).get("series") or []
+    add("EIA", series[0].get("period") if series else None, cfg["cadence_days"]["energy"])
+    latest_feed = ((cattle or {}).get("on_feed") or [None])[-1] or {}
+    add("Cattle on feed", latest_feed.get("released"), cfg["cadence_days"]["cattle"])
+    add("CGC", (cgc or {}).get("latest_date"), cfg["cadence_days"]["cgc"])
+    add("AAFC", ((sd or {}).get("aafc") or {}).get("date"), cfg["cadence_days"]["aafc"])
+    add("Crop progress", (progress or {}).get("report_date"), cfg["cadence_days"]["crop"])
+    add("Seasonal", (load_seasonals() or {}).get("reviewed"), None)
+    return rows
 
 
 def main():

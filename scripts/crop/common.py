@@ -20,7 +20,7 @@ UA = "Mozilla/5.0 (crop-progress-terminal; +https://github.com) python-requests"
 
 def session() -> requests.Session:
     s = requests.Session()
-    retry = Retry(total=4, backoff_factor=2, status_forcelist=(429, 500, 502, 503, 504))
+    retry = Retry(total=6, connect=6, read=6, backoff_factor=3, status_forcelist=(429, 500, 502, 503, 504))
     s.mount("https://", HTTPAdapter(max_retries=retry))
     s.mount("http://", HTTPAdapter(max_retries=retry))
     s.headers["User-Agent"] = UA
