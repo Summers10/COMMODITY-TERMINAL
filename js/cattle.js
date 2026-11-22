@@ -1,5 +1,5 @@
-function renderCattle(){
-  const root = document.getElementById('cattle-root');
+function renderCattle(box){
+  const root = box || document.getElementById('cattle-root');
   if(!root) return;
   const C = CATTLE || {};
   const lines = [
@@ -29,7 +29,6 @@ function renderCattle(){
     html += `</tbody></table><div id="cof-chart"></div></div>`;
   }
   html += inventoryBlock(C.inventory);
-  html += slaughterBlock(C.slaughter);
   html += priceBlock(C);
   html += wasdeBeefBlock(C.wasde);
   root.innerHTML = html;
@@ -129,8 +128,8 @@ function drawCof(hist){
   svg += `</svg>`;
   box.innerHTML = svg;
 }
-function ensureCattle(){
-  const go = ()=>renderCattle();
+function ensureCattle(box){
+  const go = ()=>renderCattle(box);
   if(CATTLE){ go(); return; }
   fetch('data/cattle.json').then(r=>r.ok?r.json():null).then(d=>{ CATTLE=d; go(); }).catch(go);
 }

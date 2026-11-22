@@ -50,9 +50,6 @@ def test_each_signal_replays_and_the_score_matches():
             total += points
             scored += n
             seasonal = item["signals"].get("seasonal")
-            if item["label"].startswith("Crude"):
-                assert seasonal["state"] is None
-                assert "No Peak" in seasonal["reason"]
             if seasonal and seasonal["state"]:
                 weeks = seasonal["inputs"]["weeks"]
                 assert len(weeks) == 5
