@@ -61,8 +61,6 @@ jobs:
       - name: Weather
         id: weather
         continue-on-error: true
-        env:
-          WEATHER_FORCE: '1'
         run: python scripts/fetch_weather.py
 
       - name: Build signals
@@ -79,7 +77,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          for f in data/psd_data.json data/cftc_data.json data/export_sales.json data/export_sales_history.json data/weather_data.json data/signals.json; do
+          for f in data/psd_data.json data/cftc_data.json data/export_sales.json data/export_sales_history.json data/weather_data.json data/weather_normals.json data/signals.json; do
             if [ -f "$f" ]; then git add "$f"; fi
           done
           if git diff --staged --quiet; then
