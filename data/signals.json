@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-11-22T01:59:52+00:00",
+ "generated_at": "2026-11-22T01:59:57+00:00",
  "config": {
   "stu_bull_pct": 33,
   "stu_bear_pct": 67,
@@ -139,7 +139,7 @@
   },
   {
    "feed": "CGC",
-   "as_of": "2026-11-08",
+   "as_of": "2026-11-15",
    "cadence_days": 14
   },
   {
@@ -926,15 +926,15 @@
       "demand": {
        "state": "bullish",
        "rule_id": "canola_exports",
-       "as_of": "2026-11-08",
+       "as_of": "2026-11-15",
        "inputs": {
-        "yoy_pct": 62.9759,
-        "exports": 2517.0,
-        "year_ago": 1544.4
+        "yoy_pct": 45.3174,
+        "exports": 2658.0,
+        "year_ago": 1829.1
        },
-       "detail": "CGC canola exports 2,517.0 kt versus 1,544.4 kt at the same week a year ago (+63.0%). Threshold 5%.",
+       "detail": "CGC canola exports 2,658.0 kt versus 1,829.1 kt at the same week a year ago (+45.3%). Threshold 5%.",
        "reason": null,
-       "text": "\u25b2 +63.0%"
+       "text": "\u25b2 +45.3%"
       },
       "seasonal": {
        "state": "bearish",
