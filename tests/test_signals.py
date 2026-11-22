@@ -24,44 +24,29 @@ def test_saved_signals_match_a_fresh_build():
     assert fresh["config"] == saved["config"]
 
 
-def _group_net(signals, ids):
-    total = scored = 0
-    for key in ids:
-        state = (signals.get(key) or {}).get("state")
-        if state == "bullish":
-            total += 1
-            scored += 1
-        elif state == "bearish":
-            total -= 1
-            scored += 1
-        elif state == "neutral":
-            scored += 1
-    return total, scored
-
-
-def _sign(value):
-    return 1 if value > 0 else -1 if value < 0 else 0
-
-
-def test_each_signal_replays_and_the_verdict_matches_its_group():
+def test_each_signal_replays_and_there_is_no_row_total():
     module = load_builder()
     cfg = module.load_config()
     doc = json.loads((ROOT / "data" / "signals.json").read_text())
-    fund_ids = ("stu", "demand", "seasonal", "energy_level", "energy_change", "on_feed", "placements")
+    rules = " ".join(rule["text"] for rule in doc["rules"])
+    assert "pale amber" in rules
+    assert "no row total" in rules
+    assert "verdict" not in rules.lower()
     for section in doc["sections"]:
         assert "score" not in section
+        assert section["groups"]
         for item in section["rows"]:
             assert "score" not in item
+            assert "fund" not in item
+            assert "mm" not in item
             for sig in item["signals"].values():
                 if sig["state"]:
                     assert module.rescore(sig["rule_id"], sig["inputs"], cfg) == sig["state"]
-            for key, ids in (("fund", fund_ids), ("mm", ("mm_extension", "mm_flow"))):
-                net, scored = _group_net(item["signals"], ids)
-                verdict = item[key]
-                assert verdict["score"] == net
-                assert verdict["scored"] == scored
-                if scored:
-                    assert _sign(verdict["score"]) == _sign(net)
+                    assert sig["text"]
+                    for word in ("Bullish", "Bearish", "Neutral"):
+                        assert word not in sig["text"]
+                else:
+                    assert sig["text"] is None
             seasonal = item["signals"].get("seasonal")
             if seasonal and seasonal["state"]:
                 weeks = seasonal["inputs"]["weeks"]
