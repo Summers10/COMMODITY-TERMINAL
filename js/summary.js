@@ -134,20 +134,30 @@ function freshnessPanel(rows){
 }
 function signalTable(section){
   const cols = section.columns || [];
-  const widths = [1.7, ...cols.map(()=>0.95), 1.8];
-  let html = `<div class="panel"><table class="term-table summary-table sig-table">${fitColgroup(widths)}<thead><tr><th>Market</th>`;
-  cols.forEach(col=>{ html += `<th>${col.label}</th>`; });
-  html += `<th>Score</th></tr></thead><tbody>`;
+  const groups = section.groups || [];
+  const widths = [1.6, ...cols.map(()=>1), 1.7];
+  let html = `<div class="panel"><table class="term-table summary-table sig-table">${fitColgroup(widths)}<thead>`;
+  if(groups.length){
+    html += `<tr><th rowspan="2">Market</th>`;
+    groups.forEach(g=>{ html += `<th colspan="${g.ids.length}">${g.label}</th>`; });
+    html += `<th rowspan="2">Score</th></tr><tr>`;
+    cols.forEach(col=>{ html += `<th>${col.label}</th>`; });
+    html += `</tr>`;
+  } else {
+    html += `<tr><th>Market</th>`;
+    cols.forEach(col=>{ html += `<th>${col.label}</th>`; });
+    html += `<th>Score</th></tr>`;
+  }
+  html += `</thead><tbody>`;
   (section.rows||[]).forEach(row=>{
     html += `<tr><td class="jump" data-page="${row.page||''}" data-comm="${row.comm||''}">${row.label}</td>`;
     cols.forEach(col=>{
       const sig = (row.signals||{})[col.id] || {};
-      const cls = sig.state ? `sig sig-${sig.state}` : 'sig';
+      const cls = sig.state && sig.state!=='neutral' ? `sig sig-${sig.state}` : 'sig';
       const text = sig.text || na();
       html += `<td class="${cls}"><button type="button" class="sig-hit" data-detail="${escapeAttr(sig.detail||sig.reason||'')}" data-rule="${escapeAttr(ruleText(sig.rule_id))}" data-asof="${escapeAttr(sig.as_of||'')}">${text}</button></td>`;
     });
-    const tone = !row.score || !row.score.scored ? '' : (row.score.label==='Supportive' ? 'sig-bull' : row.score.label==='Bearish' ? 'sig-bear' : 'sig-neutral');
-    html += `<td class="tally ${tone}">${scoreText(row.score)}</td></tr>`;
+    html += `<td class="tally">${scoreText(row)}</td></tr>`;
   });
   html += `</tbody></table></div>`;
   return html;
@@ -158,7 +168,7 @@ function figureStrip(section){
   rows.forEach(row=>{ (row.figures||[]).forEach(fig=>{ if(!labels.includes(fig.label)) labels.push(fig.label); }); });
   const sectionFigs = section.figures || [];
   if(!labels.length && !sectionFigs.length) return '';
-  let html = `<p class="legend-line">Key figures</p><table class="term-table summary-table"><thead><tr><th>Market</th>`;
+  let html = `<details class="rules"><summary>Key figures</summary><table class="term-table summary-table"><thead><tr><th>Market</th>`;
   if(labels.length){
     labels.forEach(label=>{ html += `<th>${label}</th>`; });
     html += `</tr></thead><tbody>`;
@@ -176,7 +186,7 @@ function figureStrip(section){
     sectionFigs.forEach(fig=>{ html += `<td>${fig.value}</td>`; });
     html += `</tr>`;
   }
-  html += `</tbody></table>`;
+  html += `</tbody></table></details>`;
   return html;
 }
 function rulesBlock(rules){
@@ -191,10 +201,18 @@ function scoreLine(s){
   const sign = s.score>0 ? '+' : '';
   return `${glyph} ${sign}${s.score} ${s.label} · of ${s.scored}`;
 }
-function scoreText(s){
+function partScore(s){
+  if(!s) return '—';
+  const sign = s.score>0 ? '+' : '';
+  return `${sign}${s.score}/${s.scored}`;
+}
+function scoreText(row){
+  const s = row.score;
   if(!s || !s.scored) return na();
   const sign = s.score>0 ? '+' : '';
-  return `${sign}${s.score} ${s.label}<br><span class="score-of">of ${s.scored}</span>`;
+  const fund = row.fund ? `F ${partScore(row.fund)}` : '';
+  const mm = row.mm ? `MM ${partScore(row.mm)}` : '';
+  return `${fund}${fund&&mm?' · ':''}${mm}<br><span class="score-of">Total ${sign}${s.score}/${s.scored}</span>`;
 }
 function ruleText(id){
   const rule = (SIGNALS && SIGNALS.rules || []).find(r=>r.id===id);
@@ -226,9 +244,13 @@ function bindSignals(root){
       pop.style.top = Math.min(rect.bottom + 6, window.innerHeight - 8) + 'px';
     };
     btn.addEventListener('mouseenter', show);
+    btn.addEventListener('mouseleave', close);
     btn.addEventListener('focus', show);
-    btn.addEventListener('click', ev=>{ ev.stopPropagation(); show(); });
+    btn.addEventListener('blur', close);
+    btn.addEventListener('click', ev=>{ ev.stopPropagation(); if(pop.hidden) show(); else close(); });
   });
+  pop.addEventListener('mouseleave', close);
+  document.addEventListener('keydown', ev=>{ if(ev.key==='Escape') close(); });
   root.querySelectorAll('td.jump').forEach(td=>{
     td.addEventListener('click', ()=>{ if(td.dataset.page) openPage(td.dataset.page, td.dataset.comm||undefined); });
   });

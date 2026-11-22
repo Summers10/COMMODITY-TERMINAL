@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-11-22T01:52:41+00:00",
+ "generated_at": "2026-11-22T01:57:21+00:00",
  "config": {
   "stu_bull_pct": 33,
   "stu_bear_pct": 67,
@@ -11,7 +11,7 @@
   "seasonal_score_bear": -1,
   "score_supportive": 2,
   "score_bearish": -2,
-  "demand_pp": 3,
+  "demand_pp": 5,
   "demand_history_years": 5,
   "canola_export_yoy_pct": 3,
   "condition_pp": 3,
@@ -68,7 +68,7 @@
   },
   {
    "id": "mm_extension",
-   "text": "Managed money net (long minus short) as a percentile of the last 156 weeks, current week included. At or above the 85th percentile is extended long and the cell reads bearish. At or below the 15th is extended short and the cell reads bullish. Otherwise neutral. Disaggregated managed money only. Leveraged Funds are not used."
+   "text": "Managed money net as a percent of open interest, ranked over the last 156 weeks. At or above the 85th percentile is extended long and reads bearish. At or below the 15th is extended short and reads bullish. Otherwise neutral. The cell shows the percent of open interest. Disaggregated managed money only. Leveraged Funds are not used."
   },
   {
    "id": "mm_flow",
@@ -84,7 +84,7 @@
   },
   {
    "id": "demand_pace",
-   "text": "US export commitments as a percent of the USDA export forecast, minus the 5-year average of that percent at the same week. At least +3 percentage points ahead is bullish. At least 3 behind is bearish. The saved export history does not cover those earlier seasons, so the cell is a dash. Canola uses CGC crop-year exports versus the same week a year ago. At least +3% is bullish and at least 3% behind is bearish."
+   "text": "US export commitments as a percent of the USDA export forecast, minus the 5-year average of that percent at the same week. At least +5 percentage points ahead is bullish. At least 5 behind is bearish. The saved export history does not cover those earlier seasons, so the cell is a dash. Canola uses CGC crop-year exports versus the same week a year ago. At least +3% is bullish and at least 3% behind is bearish."
   },
   {
    "id": "condition",
@@ -162,30 +162,43 @@
   {
    "id": "grains",
    "title": "Grains & Oilseeds",
+   "groups": [
+    {
+     "label": "Fundamentals",
+     "ids": [
+      "stu",
+      "demand",
+      "seasonal"
+     ]
+    },
+    {
+     "label": "Managed money",
+     "ids": [
+      "mm_extension",
+      "mm_flow"
+     ]
+    }
+   ],
    "columns": [
     {
      "id": "stu",
      "label": "Stocks/use"
     },
     {
-     "id": "mm_extension",
-     "label": "Managed money"
-    },
-    {
-     "id": "mm_flow",
-     "label": "Money flow"
+     "id": "demand",
+     "label": "Demand"
     },
     {
      "id": "seasonal",
      "label": "Seasonal"
     },
     {
-     "id": "demand",
-     "label": "Demand"
+     "id": "mm_extension",
+     "label": "Extended"
     },
     {
-     "id": "condition",
-     "label": "Condition"
+     "id": "mm_flow",
+     "label": "Money flow"
     }
    ],
    "rows": [
@@ -217,20 +230,21 @@
        },
        "detail": "US corn stocks/use. Stocks/use 10.8% is the 40th percentile of the prior 10 years. Ending stocks 44,670 versus prior 46,970 (-2,300).",
        "reason": null,
-       "text": "\u25ac 40th pct"
+       "text": "40th pct"
       },
       "mm_extension": {
        "state": "neutral",
        "rule_id": "mm_extension",
        "as_of": "2026-11-17",
        "inputs": {
-        "percentile": 48.7179,
+        "percentile": 50.0,
         "net": -71080,
+        "net_oi_pct": -2.7498,
         "weeks": 156
        },
-       "detail": "Managed money net -71,080 contracts. 49th percentile of the last 156 weeks. Inside the 15th to 85th percentiles.",
+       "detail": "Managed money net -71,080 contracts, -2.7% of open interest. 50th percentile of the last 156 weeks. Inside the 15th to 85th percentiles.",
        "reason": null,
-       "text": "\u25ac 49th pct"
+       "text": "-2.7%"
       },
       "mm_flow": {
        "state": "bearish",
@@ -243,6 +257,17 @@
        "detail": "Managed money net changed -8,769 contracts in one week and -217,337 over four weeks.",
        "reason": null,
        "text": "\u25bc -8.8k / -217k"
+      },
+      "demand": {
+       "state": "bearish",
+       "rule_id": "demand_yoy",
+       "as_of": "2026-11-12",
+       "inputs": {
+        "yoy_pct": -28.1425
+       },
+       "detail": "Total export commitment -28.1% versus a year ago. Threshold 5%.",
+       "reason": null,
+       "text": "\u25bc -28.1%"
       },
       "seasonal": {
        "state": "neutral",
@@ -275,30 +300,22 @@
        },
        "detail": "Nov 16 -2, Nov 23 -1, Nov 30 0, Dec 07 +1, Dec 14 +4. Average +0.4. Peak Trading Research seasonal, last reviewed 2026-10-24.",
        "reason": null,
-       "text": "\u25ac +0.4 next 4w"
-      },
-      "demand": {
-       "state": null,
-       "text": null,
-       "rule_id": "demand_pace",
-       "as_of": "11/12/2026",
-       "inputs": {},
-       "detail": "Export history covers 1 season, not the 5 seasons needed for the same-week pace.",
-       "reason": "Export history covers 1 season, not the 5 seasons needed for the same-week pace."
-      },
-      "condition": {
-       "state": null,
-       "text": null,
-       "rule_id": "condition",
-       "as_of": null,
-       "inputs": {},
-       "detail": "out of season",
-       "reason": "out of season"
+       "text": "+0.4 next 4w"
       }
      },
      "score": {
+      "score": -2,
+      "scored": 5,
+      "label": "Bearish"
+     },
+     "fund": {
       "score": -1,
-      "scored": 4,
+      "scored": 3,
+      "label": "Neutral"
+     },
+     "mm": {
+      "score": -1,
+      "scored": 2,
       "label": "Neutral"
      },
      "figures": [
@@ -353,13 +370,14 @@
        "rule_id": "mm_extension",
        "as_of": "2026-11-17",
        "inputs": {
-        "percentile": 72.4359,
+        "percentile": 71.7949,
         "net": 99698,
+        "net_oi_pct": 8.3624,
         "weeks": 156
        },
-       "detail": "Managed money net +99,698 contracts. 72nd percentile of the last 156 weeks. Inside the 15th to 85th percentiles.",
+       "detail": "Managed money net +99,698 contracts, +8.4% of open interest. 72nd percentile of the last 156 weeks. Inside the 15th to 85th percentiles.",
        "reason": null,
-       "text": "\u25ac 72nd pct"
+       "text": "+8.4%"
       },
       "mm_flow": {
        "state": "bearish",
@@ -372,6 +390,17 @@
        "detail": "Managed money net changed -4,365 contracts in one week and -107,238 over four weeks.",
        "reason": null,
        "text": "\u25bc -4.4k / -107k"
+      },
+      "demand": {
+       "state": "bullish",
+       "rule_id": "demand_yoy",
+       "as_of": "2026-11-12",
+       "inputs": {
+        "yoy_pct": 79.883
+       },
+       "detail": "Total export commitment +79.9% versus a year ago. Threshold 5%.",
+       "reason": null,
+       "text": "\u25b2 +79.9%"
       },
       "seasonal": {
        "state": "neutral",
@@ -404,30 +433,22 @@
        },
        "detail": "Nov 16 -2, Nov 23 +2, Nov 30 -1, Dec 07 0, Dec 14 0. Average -0.2. Peak Trading Research seasonal, last reviewed 2026-10-24.",
        "reason": null,
-       "text": "\u25ac -0.2 next 4w"
-      },
-      "demand": {
-       "state": null,
-       "text": null,
-       "rule_id": "demand_pace",
-       "as_of": "11/12/2026",
-       "inputs": {},
-       "detail": "Export history covers 1 season, not the 5 seasons needed for the same-week pace.",
-       "reason": "Export history covers 1 season, not the 5 seasons needed for the same-week pace."
-      },
-      "condition": {
-       "state": null,
-       "text": null,
-       "rule_id": "condition",
-       "as_of": null,
-       "inputs": {},
-       "detail": "out of season",
-       "reason": "out of season"
+       "text": "-0.2 next 4w"
       }
      },
      "score": {
-      "score": 0,
-      "scored": 4,
+      "score": 1,
+      "scored": 5,
+      "label": "Neutral"
+     },
+     "fund": {
+      "score": 2,
+      "scored": 3,
+      "label": "Supportive"
+     },
+     "mm": {
+      "score": -1,
+      "scored": 2,
       "label": "Neutral"
      },
      "figures": [
@@ -475,20 +496,21 @@
        },
        "detail": "US all-wheat stocks/use. Stocks/use 40.0% is the 30th percentile of the prior 10 years. Ending stocks 20,220 versus prior 20,140 (+80). The stocks revision disagrees with the percentile, so the cell is neutral.",
        "reason": null,
-       "text": "\u25ac 30th pct"
+       "text": "30th pct"
       },
       "mm_extension": {
        "state": "neutral",
        "rule_id": "mm_extension",
        "as_of": "2026-11-17",
        "inputs": {
-        "percentile": 28.2051,
+        "percentile": 60.8974,
         "net": -83763,
+        "net_oi_pct": -12.2267,
         "weeks": 156
        },
-       "detail": "Managed money net -83,763 contracts. 28th percentile of the last 156 weeks. Inside the 15th to 85th percentiles.",
+       "detail": "Managed money net -83,763 contracts, -12.2% of open interest. 61st percentile of the last 156 weeks. Inside the 15th to 85th percentiles.",
        "reason": null,
-       "text": "\u25ac 28th pct"
+       "text": "-12.2%"
       },
       "mm_flow": {
        "state": "bearish",
@@ -501,6 +523,17 @@
        "detail": "Managed money net changed -2,396 contracts in one week and -32,629 over four weeks.",
        "reason": null,
        "text": "\u25bc -2.4k / -32.6k"
+      },
+      "demand": {
+       "state": "bearish",
+       "rule_id": "demand_yoy",
+       "as_of": "2026-11-12",
+       "inputs": {
+        "yoy_pct": -30.5407
+       },
+       "detail": "Total export commitment -30.5% versus a year ago. Threshold 5%.",
+       "reason": null,
+       "text": "\u25bc -30.5%"
       },
       "seasonal": {
        "state": "bearish",
@@ -534,30 +567,22 @@
        "detail": "Nov 16 -3, Nov 23 -2, Nov 30 -2, Dec 07 -2, Dec 14 0. Average -1.8. Peak Trading Research seasonal, last reviewed 2026-10-24.",
        "reason": null,
        "text": "\u25bc -1.8 next 4w"
-      },
-      "demand": {
-       "state": null,
-       "text": null,
-       "rule_id": "demand_pace",
-       "as_of": "11/12/2026",
-       "inputs": {},
-       "detail": "Export history covers 1 season, not the 5 seasons needed for the same-week pace.",
-       "reason": "Export history covers 1 season, not the 5 seasons needed for the same-week pace."
-      },
-      "condition": {
-       "state": null,
-       "text": null,
-       "rule_id": "condition",
-       "as_of": "2026-11-08",
-       "inputs": {},
-       "detail": "Good/excellent has no 5-year average and no year-ago print.",
-       "reason": "Good/excellent has no 5-year average and no year-ago print."
       }
      },
      "score": {
-      "score": -2,
-      "scored": 4,
+      "score": -3,
+      "scored": 5,
       "label": "Bearish"
+     },
+     "fund": {
+      "score": -2,
+      "scored": 3,
+      "label": "Bearish"
+     },
+     "mm": {
+      "score": -1,
+      "scored": 2,
+      "label": "Neutral"
      },
      "figures": [
       {
@@ -604,20 +629,21 @@
        },
        "detail": "US all-wheat stocks/use. There is no separate HRW balance in this file. Stocks/use 40.0% is the 30th percentile of the prior 10 years. Ending stocks 20,220 versus prior 20,140 (+80). The stocks revision disagrees with the percentile, so the cell is neutral.",
        "reason": null,
-       "text": "\u25ac 30th pct"
+       "text": "30th pct"
       },
       "mm_extension": {
        "state": "neutral",
        "rule_id": "mm_extension",
        "as_of": "2026-11-17",
        "inputs": {
-        "percentile": 60.8974,
+        "percentile": 67.3077,
         "net": -19664,
+        "net_oi_pct": -5.2563,
         "weeks": 156
        },
-       "detail": "Managed money net -19,664 contracts. 61st percentile of the last 156 weeks. Inside the 15th to 85th percentiles.",
+       "detail": "Managed money net -19,664 contracts, -5.3% of open interest. 67th percentile of the last 156 weeks. Inside the 15th to 85th percentiles.",
        "reason": null,
-       "text": "\u25ac 61st pct"
+       "text": "-5.3%"
       },
       "mm_flow": {
        "state": "bearish",
@@ -630,6 +656,17 @@
        "detail": "Managed money net changed -4,729 contracts in one week and -26,059 over four weeks.",
        "reason": null,
        "text": "\u25bc -4.7k / -26.1k"
+      },
+      "demand": {
+       "state": "bearish",
+       "rule_id": "demand_yoy",
+       "as_of": "2026-11-12",
+       "inputs": {
+        "yoy_pct": -30.5407
+       },
+       "detail": "Total export commitment -30.5% versus a year ago. Threshold 5%.",
+       "reason": null,
+       "text": "\u25bc -30.5%"
       },
       "seasonal": {
        "state": "bearish",
@@ -663,30 +700,22 @@
        "detail": "Nov 16 -3, Nov 23 -3, Nov 30 -2, Dec 07 -2, Dec 14 +3. Average -1.4. Peak Trading Research seasonal, last reviewed 2026-10-24.",
        "reason": null,
        "text": "\u25bc -1.4 next 4w"
-      },
-      "demand": {
-       "state": null,
-       "text": null,
-       "rule_id": "demand_pace",
-       "as_of": "11/12/2026",
-       "inputs": {},
-       "detail": "Export history covers 1 season, not the 5 seasons needed for the same-week pace.",
-       "reason": "Export history covers 1 season, not the 5 seasons needed for the same-week pace."
-      },
-      "condition": {
-       "state": null,
-       "text": null,
-       "rule_id": "condition",
-       "as_of": "2026-11-08",
-       "inputs": {},
-       "detail": "Good/excellent has no 5-year average and no year-ago print.",
-       "reason": "Good/excellent has no 5-year average and no year-ago print."
       }
      },
      "score": {
-      "score": -2,
-      "scored": 4,
+      "score": -3,
+      "scored": 5,
       "label": "Bearish"
+     },
+     "fund": {
+      "score": -2,
+      "scored": 3,
+      "label": "Bearish"
+     },
+     "mm": {
+      "score": -1,
+      "scored": 2,
+      "label": "Neutral"
      },
      "figures": [
       {
@@ -733,20 +762,21 @@
        },
        "detail": "US all-wheat stocks/use. There is no separate spring-wheat balance in this file. Stocks/use 40.0% is the 30th percentile of the prior 10 years. Ending stocks 20,220 versus prior 20,140 (+80). The stocks revision disagrees with the percentile, so the cell is neutral.",
        "reason": null,
-       "text": "\u25ac 30th pct"
+       "text": "30th pct"
       },
       "mm_extension": {
        "state": "neutral",
        "rule_id": "mm_extension",
        "as_of": "2026-11-17",
        "inputs": {
-        "percentile": 64.7436,
+        "percentile": 65.3846,
         "net": -9981,
+        "net_oi_pct": -12.8542,
         "weeks": 156
        },
-       "detail": "Managed money net -9,981 contracts. 65th percentile of the last 156 weeks. Inside the 15th to 85th percentiles.",
+       "detail": "Managed money net -9,981 contracts, -12.9% of open interest. 65th percentile of the last 156 weeks. Inside the 15th to 85th percentiles.",
        "reason": null,
-       "text": "\u25ac 65th pct"
+       "text": "-12.9%"
       },
       "mm_flow": {
        "state": "bearish",
@@ -759,6 +789,17 @@
        "detail": "Managed money net changed -31 contracts in one week and -14,174 over four weeks.",
        "reason": null,
        "text": "\u25bc -0.0k / -14.2k"
+      },
+      "demand": {
+       "state": "bearish",
+       "rule_id": "demand_yoy",
+       "as_of": "2026-11-12",
+       "inputs": {
+        "yoy_pct": -30.5407
+       },
+       "detail": "Total export commitment -30.5% versus a year ago. Threshold 5%.",
+       "reason": null,
+       "text": "\u25bc -30.5%"
       },
       "seasonal": {
        "state": "bearish",
@@ -792,30 +833,22 @@
        "detail": "Nov 16 -3, Nov 23 -3, Nov 30 -1, Dec 07 -2, Dec 14 0. Average -1.8. Peak Trading Research seasonal, last reviewed 2026-10-24.",
        "reason": null,
        "text": "\u25bc -1.8 next 4w"
-      },
-      "demand": {
-       "state": null,
-       "text": null,
-       "rule_id": "demand_pace",
-       "as_of": "11/12/2026",
-       "inputs": {},
-       "detail": "Export history covers 1 season, not the 5 seasons needed for the same-week pace.",
-       "reason": "Export history covers 1 season, not the 5 seasons needed for the same-week pace."
-      },
-      "condition": {
-       "state": null,
-       "text": null,
-       "rule_id": "condition",
-       "as_of": null,
-       "inputs": {},
-       "detail": "out of season",
-       "reason": "out of season"
       }
      },
      "score": {
-      "score": -2,
-      "scored": 4,
+      "score": -3,
+      "scored": 5,
       "label": "Bearish"
+     },
+     "fund": {
+      "score": -2,
+      "scored": 3,
+      "label": "Bearish"
+     },
+     "mm": {
+      "score": -1,
+      "scored": 2,
+      "label": "Neutral"
      },
      "figures": [
       {
@@ -862,20 +895,21 @@
        },
        "detail": "AAFC canola stocks/use 8.9% is the 40th percentile of the prior 10 StatsCan years. Ending stocks 1,968 versus the prior report 1,979 (-11).",
        "reason": null,
-       "text": "\u25ac 40th pct"
+       "text": "40th pct"
       },
       "mm_extension": {
        "state": "neutral",
        "rule_id": "mm_extension",
        "as_of": "2026-11-17",
        "inputs": {
-        "percentile": 54.4872,
+        "percentile": 55.1282,
         "net": -8076,
+        "net_oi_pct": -2.5207,
         "weeks": 156
        },
-       "detail": "Managed money net -8,076 contracts. 54th percentile of the last 156 weeks. Inside the 15th to 85th percentiles.",
+       "detail": "Managed money net -8,076 contracts, -2.5% of open interest. 55th percentile of the last 156 weeks. Inside the 15th to 85th percentiles.",
        "reason": null,
-       "text": "\u25ac 54th pct"
+       "text": "-2.5%"
       },
       "mm_flow": {
        "state": "bearish",
@@ -888,6 +922,19 @@
        "detail": "Managed money net changed -1,643 contracts in one week and -85,777 over four weeks.",
        "reason": null,
        "text": "\u25bc -1.6k / -85.8k"
+      },
+      "demand": {
+       "state": "bullish",
+       "rule_id": "canola_exports",
+       "as_of": "2026-11-08",
+       "inputs": {
+        "yoy_pct": 62.9759,
+        "exports": 2517.0,
+        "year_ago": 1544.4
+       },
+       "detail": "CGC canola exports 2,517.0 kt versus 1,544.4 kt at the same week a year ago (+63.0%). Threshold 5%.",
+       "reason": null,
+       "text": "\u25b2 +63.0%"
       },
       "seasonal": {
        "state": "bearish",
@@ -921,33 +968,21 @@
        "detail": "Nov 16 -4, Nov 23 -3, Nov 30 -3, Dec 07 -1, Dec 14 -1. Average -2.4. Peak Trading Research seasonal, last reviewed 2026-10-24.",
        "reason": null,
        "text": "\u25bc -2.4 next 4w"
-      },
-      "demand": {
-       "state": "bullish",
-       "rule_id": "canola_exports",
-       "as_of": "2026-11-08",
-       "inputs": {
-        "yoy_pct": 62.9759,
-        "exports": 2517.0,
-        "year_ago": 1544.4
-       },
-       "detail": "CGC canola exports 2,517.0 kt versus 1,544.4 kt at the same week a year ago (+63.0%). Threshold 3%.",
-       "reason": null,
-       "text": "\u25b2 +63%"
-      },
-      "condition": {
-       "state": null,
-       "text": null,
-       "rule_id": "condition",
-       "as_of": null,
-       "inputs": {},
-       "detail": "No canola condition series is in the crop progress file.",
-       "reason": "No canola condition series is in the crop progress file."
       }
      },
      "score": {
       "score": -1,
       "scored": 5,
+      "label": "Neutral"
+     },
+     "fund": {
+      "score": 0,
+      "scored": 3,
+      "label": "Neutral"
+     },
+     "mm": {
+      "score": -1,
+      "scored": 2,
       "label": "Neutral"
      },
      "figures": [
@@ -1002,13 +1037,14 @@
        "rule_id": "mm_extension",
        "as_of": "2026-11-17",
        "inputs": {
-        "percentile": 76.9231,
+        "percentile": 73.7179,
         "net": 86283,
+        "net_oi_pct": 12.4035,
         "weeks": 156
        },
-       "detail": "Managed money net +86,283 contracts. 77th percentile of the last 156 weeks. Inside the 15th to 85th percentiles.",
+       "detail": "Managed money net +86,283 contracts, +12.4% of open interest. 74th percentile of the last 156 weeks. Inside the 15th to 85th percentiles.",
        "reason": null,
-       "text": "\u25ac 77th pct"
+       "text": "+12.4%"
       },
       "mm_flow": {
        "state": "neutral",
@@ -1020,7 +1056,18 @@
        },
        "detail": "Managed money net changed +14,282 contracts in one week and -118,410 over four weeks.",
        "reason": null,
-       "text": "\u25ac +14.3k / -118k"
+       "text": "+14.3k / -118k"
+      },
+      "demand": {
+       "state": "neutral",
+       "rule_id": "demand_yoy",
+       "as_of": "2026-11-12",
+       "inputs": {
+        "yoy_pct": 0.0617
+       },
+       "detail": "Total export commitment +0.1% versus a year ago. Threshold 5%.",
+       "reason": null,
+       "text": "+0.1%"
       },
       "seasonal": {
        "state": "neutral",
@@ -1053,30 +1100,22 @@
        },
        "detail": "Nov 16 -3, Nov 23 0, Nov 30 -1, Dec 07 +2, Dec 14 +2. Average +0.0. Peak Trading Research seasonal, last reviewed 2026-10-24.",
        "reason": null,
-       "text": "\u25ac +0.0 next 4w"
-      },
-      "demand": {
-       "state": null,
-       "text": null,
-       "rule_id": "demand_pace",
-       "as_of": "11/12/2026",
-       "inputs": {},
-       "detail": "Export history covers 2 seasons, not the 5 seasons needed for the same-week pace.",
-       "reason": "Export history covers 2 seasons, not the 5 seasons needed for the same-week pace."
-      },
-      "condition": {
-       "state": null,
-       "text": null,
-       "rule_id": "condition",
-       "as_of": null,
-       "inputs": {},
-       "detail": "not a crop-condition series",
-       "reason": "not a crop-condition series"
+       "text": "+0.0 next 4w"
       }
      },
      "score": {
       "score": 1,
-      "scored": 4,
+      "scored": 5,
+      "label": "Neutral"
+     },
+     "fund": {
+      "score": 1,
+      "scored": 3,
+      "label": "Neutral"
+     },
+     "mm": {
+      "score": 0,
+      "scored": 2,
       "label": "Neutral"
      },
      "figures": [
@@ -1133,11 +1172,12 @@
        "inputs": {
         "percentile": 44.2308,
         "net": 4024,
+        "net_oi_pct": 0.5659,
         "weeks": 156
        },
-       "detail": "Managed money net +4,024 contracts. 44th percentile of the last 156 weeks. Inside the 15th to 85th percentiles.",
+       "detail": "Managed money net +4,024 contracts, +0.6% of open interest. 44th percentile of the last 156 weeks. Inside the 15th to 85th percentiles.",
        "reason": null,
-       "text": "\u25ac 44th pct"
+       "text": "+0.6%"
       },
       "mm_flow": {
        "state": "bearish",
@@ -1150,6 +1190,17 @@
        "detail": "Managed money net changed -3,709 contracts in one week and -65,834 over four weeks.",
        "reason": null,
        "text": "\u25bc -3.7k / -65.8k"
+      },
+      "demand": {
+       "state": "bearish",
+       "rule_id": "demand_yoy",
+       "as_of": "2026-11-12",
+       "inputs": {
+        "yoy_pct": -75.5195
+       },
+       "detail": "Total export commitment -75.5% versus a year ago. Threshold 5%.",
+       "reason": null,
+       "text": "\u25bc -75.5%"
       },
       "seasonal": {
        "state": "bearish",
@@ -1183,29 +1234,21 @@
        "detail": "Nov 16 -2, Nov 23 -2, Nov 30 -4, Dec 07 -4, Dec 14 -1. Average -2.6. Peak Trading Research seasonal, last reviewed 2026-10-24.",
        "reason": null,
        "text": "\u25bc -2.6 next 4w"
-      },
-      "demand": {
-       "state": null,
-       "text": null,
-       "rule_id": "demand_pace",
-       "as_of": "11/12/2026",
-       "inputs": {},
-       "detail": "Export history covers 2 seasons, not the 5 seasons needed for the same-week pace.",
-       "reason": "Export history covers 2 seasons, not the 5 seasons needed for the same-week pace."
-      },
-      "condition": {
-       "state": null,
-       "text": null,
-       "rule_id": "condition",
-       "as_of": null,
-       "inputs": {},
-       "detail": "not a crop-condition series",
-       "reason": "not a crop-condition series"
       }
      },
      "score": {
+      "score": -2,
+      "scored": 5,
+      "label": "Bearish"
+     },
+     "fund": {
       "score": -1,
-      "scored": 4,
+      "scored": 3,
+      "label": "Neutral"
+     },
+     "mm": {
+      "score": -1,
+      "scored": 2,
       "label": "Neutral"
      },
      "figures": [
@@ -1228,14 +1271,437 @@
    ],
    "figures": [],
    "score": {
-    "score": -8,
-    "scored": 33,
+    "score": -12,
+    "scored": 40,
     "label": "Bearish"
+   }
+  },
+  {
+   "id": "softs",
+   "title": "Softs",
+   "groups": [
+    {
+     "label": "Fundamentals",
+     "ids": [
+      "stu",
+      "demand",
+      "seasonal"
+     ]
+    },
+    {
+     "label": "Managed money",
+     "ids": [
+      "mm_extension",
+      "mm_flow"
+     ]
+    }
+   ],
+   "columns": [
+    {
+     "id": "stu",
+     "label": "Stocks/use"
+    },
+    {
+     "id": "demand",
+     "label": "Demand"
+    },
+    {
+     "id": "seasonal",
+     "label": "Seasonal"
+    },
+    {
+     "id": "mm_extension",
+     "label": "Extended"
+    },
+    {
+     "id": "mm_flow",
+     "label": "Money flow"
+    }
+   ],
+   "rows": [
+    {
+     "label": "Coffee",
+     "signals": {
+      "stu": {
+       "state": "bullish",
+       "rule_id": "stu",
+       "as_of": "2026-11-10",
+       "inputs": {
+        "percentile": 30.0,
+        "revision": 0,
+        "stu": 14.6231,
+        "ending_stocks": 26283,
+        "ending_stocks_prior": 26283,
+        "history": [
+         23.5023,
+         19.8914,
+         22.2562,
+         22.0554,
+         23.1312,
+         19.0259,
+         15.9605,
+         14.103,
+         12.8143,
+         14.0494
+        ]
+       },
+       "detail": "World coffee stocks/use. Stocks/use 14.6% is the 30th percentile of the prior 10 years. Ending stocks 26,283 versus prior 26,283 (+0).",
+       "reason": null,
+       "text": "\u25b2 30th pct"
+      },
+      "demand": {
+       "state": null,
+       "text": null,
+       "rule_id": "demand_yoy",
+       "as_of": null,
+       "inputs": {},
+       "detail": "No export series is in the export file for this market.",
+       "reason": "No export series is in the export file for this market."
+      },
+      "seasonal": {
+       "state": "neutral",
+       "rule_id": "seasonal",
+       "as_of": "2026-10-24",
+       "inputs": {
+        "average": 0.0,
+        "weeks": [
+         {
+          "week": "Nov 16",
+          "score": 4
+         },
+         {
+          "week": "Nov 23",
+          "score": 1
+         },
+         {
+          "week": "Nov 30",
+          "score": 0
+         },
+         {
+          "week": "Dec 07",
+          "score": -3
+         },
+         {
+          "week": "Dec 14",
+          "score": -2
+         }
+        ]
+       },
+       "detail": "Nov 16 +4, Nov 23 +1, Nov 30 0, Dec 07 -3, Dec 14 -2. Average +0.0. Peak Trading Research seasonal, last reviewed 2026-10-24.",
+       "reason": null,
+       "text": "+0.0 next 4w"
+      },
+      "mm_extension": {
+       "state": "bullish",
+       "rule_id": "mm_extension",
+       "as_of": "2026-11-17",
+       "inputs": {
+        "percentile": 2.5641,
+        "net": 6767,
+        "net_oi_pct": 3.8407,
+        "weeks": 156
+       },
+       "detail": "Managed money net +6,767 contracts, +3.8% of open interest. 3rd percentile of the last 156 weeks. Extended short, read as bullish.",
+       "reason": null,
+       "text": "\u25b2 +3.8%"
+      },
+      "mm_flow": {
+       "state": "neutral",
+       "rule_id": "mm_flow",
+       "as_of": "2026-11-17",
+       "inputs": {
+        "change_1w": 1795,
+        "change_4w": -9580
+       },
+       "detail": "Managed money net changed +1,795 contracts in one week and -9,580 over four weeks.",
+       "reason": null,
+       "text": "+1.8k / -9.6k"
+      }
+     },
+     "score": {
+      "score": 2,
+      "scored": 4,
+      "label": "Supportive"
+     },
+     "fund": {
+      "score": 1,
+      "scored": 2,
+      "label": "Neutral"
+     },
+     "mm": {
+      "score": 1,
+      "scored": 2,
+      "label": "Neutral"
+     },
+     "figures": [],
+     "page": "usda",
+     "comm": "Coffee"
+    },
+    {
+     "label": "Sugar",
+     "signals": {
+      "stu": {
+       "state": "bullish",
+       "rule_id": "stu",
+       "as_of": "2026-11-10",
+       "inputs": {
+        "percentile": 0.0,
+        "revision": -4621,
+        "stu": 22.5515,
+        "ending_stocks": 39789,
+        "ending_stocks_prior": 44410,
+        "history": [
+         24.4319,
+         29.394,
+         30.3473,
+         27.5137,
+         28.997,
+         26.9915,
+         25.9107,
+         24.9577,
+         24.1041,
+         25.5274
+        ]
+       },
+       "detail": "World sugar stocks/use. Stocks/use 22.6% is the 0th percentile of the prior 10 years. Ending stocks 39,789 versus prior 44,410 (-4,621).",
+       "reason": null,
+       "text": "\u25b2 0th pct"
+      },
+      "demand": {
+       "state": null,
+       "text": null,
+       "rule_id": "demand_yoy",
+       "as_of": null,
+       "inputs": {},
+       "detail": "No export series is in the export file for this market.",
+       "reason": "No export series is in the export file for this market."
+      },
+      "seasonal": {
+       "state": "bearish",
+       "rule_id": "seasonal",
+       "as_of": "2026-10-24",
+       "inputs": {
+        "average": -4.4,
+        "weeks": [
+         {
+          "week": "Nov 16",
+          "score": -4
+         },
+         {
+          "week": "Nov 23",
+          "score": -5
+         },
+         {
+          "week": "Nov 30",
+          "score": -5
+         },
+         {
+          "week": "Dec 07",
+          "score": -5
+         },
+         {
+          "week": "Dec 14",
+          "score": -3
+         }
+        ]
+       },
+       "detail": "Nov 16 -4, Nov 23 -5, Nov 30 -5, Dec 07 -5, Dec 14 -3. Average -4.4. Peak Trading Research seasonal, last reviewed 2026-10-24.",
+       "reason": null,
+       "text": "\u25bc -4.4 next 4w"
+      },
+      "mm_extension": {
+       "state": "bearish",
+       "rule_id": "mm_extension",
+       "as_of": "2026-11-17",
+       "inputs": {
+        "percentile": 89.7436,
+        "net": 181463,
+        "net_oi_pct": 12.8758,
+        "weeks": 156
+       },
+       "detail": "Managed money net +181,463 contracts, +12.9% of open interest. 90th percentile of the last 156 weeks. Extended long, read as bearish.",
+       "reason": null,
+       "text": "\u25bc +12.9%"
+      },
+      "mm_flow": {
+       "state": "bearish",
+       "rule_id": "mm_flow",
+       "as_of": "2026-11-17",
+       "inputs": {
+        "change_1w": -11733,
+        "change_4w": -87545
+       },
+       "detail": "Managed money net changed -11,733 contracts in one week and -87,545 over four weeks.",
+       "reason": null,
+       "text": "\u25bc -11.7k / -87.5k"
+      }
+     },
+     "score": {
+      "score": -2,
+      "scored": 4,
+      "label": "Bearish"
+     },
+     "fund": {
+      "score": 0,
+      "scored": 2,
+      "label": "Neutral"
+     },
+     "mm": {
+      "score": -2,
+      "scored": 2,
+      "label": "Bearish"
+     },
+     "figures": [],
+     "page": "usda",
+     "comm": "Sugar"
+    },
+    {
+     "label": "Cotton",
+     "signals": {
+      "stu": {
+       "state": "bullish",
+       "rule_id": "stu",
+       "as_of": "2026-11-10",
+       "inputs": {
+        "percentile": 0.0,
+        "revision": -113,
+        "stu": 57.4903,
+        "ending_stocks": 70567,
+        "ending_stocks_prior": 70680,
+        "history": [
+         65.2713,
+         60.7629,
+         59.4525,
+         79.5348,
+         58.4222,
+         61.4996,
+         67.2672,
+         64.0858,
+         63.1259,
+         62.6377
+        ]
+       },
+       "detail": "World cotton stocks/use. Stocks/use 57.5% is the 0th percentile of the prior 10 years. Ending stocks 70,567 versus prior 70,680 (-113).",
+       "reason": null,
+       "text": "\u25b2 0th pct"
+      },
+      "demand": {
+       "state": "bullish",
+       "rule_id": "demand_yoy",
+       "as_of": "2026-11-12",
+       "inputs": {
+        "yoy_pct": 14.3007
+       },
+       "detail": "Total export commitment +14.3% versus a year ago. Threshold 5%.",
+       "reason": null,
+       "text": "\u25b2 +14.3%"
+      },
+      "seasonal": {
+       "state": "bullish",
+       "rule_id": "seasonal",
+       "as_of": "2026-10-24",
+       "inputs": {
+        "average": 1.4,
+        "weeks": [
+         {
+          "week": "Nov 16",
+          "score": -1
+         },
+         {
+          "week": "Nov 23",
+          "score": 0
+         },
+         {
+          "week": "Nov 30",
+          "score": 2
+         },
+         {
+          "week": "Dec 07",
+          "score": 2
+         },
+         {
+          "week": "Dec 14",
+          "score": 4
+         }
+        ]
+       },
+       "detail": "Nov 16 -1, Nov 23 0, Nov 30 +2, Dec 07 +2, Dec 14 +4. Average +1.4. Peak Trading Research seasonal, last reviewed 2026-10-24.",
+       "reason": null,
+       "text": "\u25b2 +1.4 next 4w"
+      },
+      "mm_extension": {
+       "state": "neutral",
+       "rule_id": "mm_extension",
+       "as_of": "2026-11-17",
+       "inputs": {
+        "percentile": 84.6154,
+        "net": 48998,
+        "net_oi_pct": 11.9032,
+        "weeks": 156
+       },
+       "detail": "Managed money net +48,998 contracts, +11.9% of open interest. 85th percentile of the last 156 weeks. Inside the 15th to 85th percentiles.",
+       "reason": null,
+       "text": "+11.9%"
+      },
+      "mm_flow": {
+       "state": "bearish",
+       "rule_id": "mm_flow",
+       "as_of": "2026-11-17",
+       "inputs": {
+        "change_1w": -6384,
+        "change_4w": -17468
+       },
+       "detail": "Managed money net changed -6,384 contracts in one week and -17,468 over four weeks.",
+       "reason": null,
+       "text": "\u25bc -6.4k / -17.5k"
+      }
+     },
+     "score": {
+      "score": 2,
+      "scored": 5,
+      "label": "Supportive"
+     },
+     "fund": {
+      "score": 3,
+      "scored": 3,
+      "label": "Supportive"
+     },
+     "mm": {
+      "score": -1,
+      "scored": 2,
+      "label": "Neutral"
+     },
+     "figures": [],
+     "page": "usda",
+     "comm": "Cotton"
+    }
+   ],
+   "figures": [],
+   "score": {
+    "score": 2,
+    "scored": 13,
+    "label": "Supportive"
    }
   },
   {
    "id": "energy",
    "title": "Energy",
+   "groups": [
+    {
+     "label": "Fundamentals",
+     "ids": [
+      "energy_level",
+      "energy_change"
+     ]
+    },
+    {
+     "label": "Managed money",
+     "ids": [
+      "mm_extension",
+      "mm_flow"
+     ]
+    }
+   ],
    "columns": [
     {
      "id": "energy_level",
@@ -1247,15 +1713,11 @@
     },
     {
      "id": "mm_extension",
-     "label": "Managed money"
+     "label": "Extended"
     },
     {
      "id": "mm_flow",
      "label": "Money flow"
-    },
-    {
-     "id": "seasonal",
-     "label": "Seasonal"
     }
    ],
    "rows": [
@@ -1284,20 +1746,21 @@
        },
        "detail": "This week's stock change is +0.82% of the prior week. The same week of the prior five years averaged +0.14%. Difference +0.68 pp.",
        "reason": null,
-       "text": "\u25ac +0.7 pp"
+       "text": "+0.7 pp"
       },
       "mm_extension": {
        "state": "neutral",
        "rule_id": "mm_extension",
        "as_of": "2026-11-17",
        "inputs": {
-        "percentile": 16.0256,
+        "percentile": 17.3077,
         "net": 60819,
+        "net_oi_pct": 2.5906,
         "weeks": 156
        },
-       "detail": "Managed money net +60,819 contracts. 16th percentile of the last 156 weeks. Inside the 15th to 85th percentiles.",
+       "detail": "Managed money net +60,819 contracts, +2.6% of open interest. 17th percentile of the last 156 weeks. Inside the 15th to 85th percentiles.",
        "reason": null,
-       "text": "\u25ac 16th pct"
+       "text": "+2.6%"
       },
       "mm_flow": {
        "state": "bearish",
@@ -1310,20 +1773,21 @@
        "detail": "Managed money net changed -9,765 contracts in one week and -41,087 over four weeks.",
        "reason": null,
        "text": "\u25bc -9.8k / -41.1k"
-      },
-      "seasonal": {
-       "state": null,
-       "text": null,
-       "rule_id": "seasonal",
-       "as_of": null,
-       "inputs": {},
-       "detail": "No Peak Trading Research score is typed for this market on the Seasonals page.",
-       "reason": "No Peak Trading Research score is typed for this market on the Seasonals page."
       }
      },
      "score": {
       "score": 0,
       "scored": 4,
+      "label": "Neutral"
+     },
+     "fund": {
+      "score": 1,
+      "scored": 2,
+      "label": "Neutral"
+     },
+     "mm": {
+      "score": -1,
+      "scored": 2,
       "label": "Neutral"
      },
      "figures": [
@@ -1340,8 +1804,8 @@
        "value": "-3.7%"
       }
      ],
-     "page": "energy",
-     "comm": "crude_stocks"
+     "page": "usda",
+     "comm": "Energy"
     },
     {
      "label": "Gasoline (RBOB)",
@@ -1355,7 +1819,7 @@
        },
        "detail": "Stocks 215.949 versus the 5-year average 211.026 (+2.3%). computed from EIA weekly levels.",
        "reason": null,
-       "text": "\u25ac +2.3%"
+       "text": "+2.3%"
       },
       "energy_change": {
        "state": "neutral",
@@ -1368,20 +1832,21 @@
        },
        "detail": "This week's stock change is +2.46% of the prior week. The same week of the prior five years averaged +0.73%. Difference +1.73 pp.",
        "reason": null,
-       "text": "\u25ac +1.7 pp"
+       "text": "+1.7 pp"
       },
       "mm_extension": {
        "state": "bearish",
        "rule_id": "mm_extension",
        "as_of": "2026-11-17",
        "inputs": {
-        "percentile": 85.8974,
+        "percentile": 92.3077,
         "net": 79636,
+        "net_oi_pct": 23.8545,
         "weeks": 156
        },
-       "detail": "Managed money net +79,636 contracts. 86th percentile of the last 156 weeks. Extended long, read as bearish.",
+       "detail": "Managed money net +79,636 contracts, +23.9% of open interest. 92nd percentile of the last 156 weeks. Extended long, read as bearish.",
        "reason": null,
-       "text": "\u25bc Ext long 86th"
+       "text": "\u25bc +23.9%"
       },
       "mm_flow": {
        "state": "bearish",
@@ -1394,20 +1859,21 @@
        "detail": "Managed money net changed -6,730 contracts in one week and -13,955 over four weeks.",
        "reason": null,
        "text": "\u25bc -6.7k / -14.0k"
-      },
-      "seasonal": {
-       "state": null,
-       "text": null,
-       "rule_id": "seasonal",
-       "as_of": null,
-       "inputs": {},
-       "detail": "No Peak Trading Research score is typed for this market on the Seasonals page.",
-       "reason": "No Peak Trading Research score is typed for this market on the Seasonals page."
       }
      },
      "score": {
       "score": -2,
       "scored": 4,
+      "label": "Bearish"
+     },
+     "fund": {
+      "score": 0,
+      "scored": 2,
+      "label": "Neutral"
+     },
+     "mm": {
+      "score": -2,
+      "scored": 2,
       "label": "Bearish"
      },
      "figures": [
@@ -1424,8 +1890,8 @@
        "value": "+2.3%"
       }
      ],
-     "page": "energy",
-     "comm": "gas_stocks"
+     "page": "usda",
+     "comm": "Energy"
     },
     {
      "label": "Distillate (Heating oil)",
@@ -1452,20 +1918,21 @@
        },
        "detail": "This week's stock change is +1.52% of the prior week. The same week of the prior five years averaged -0.18%. Difference +1.70 pp.",
        "reason": null,
-       "text": "\u25ac +1.7 pp"
+       "text": "+1.7 pp"
       },
       "mm_extension": {
        "state": "neutral",
        "rule_id": "mm_extension",
        "as_of": "2026-11-17",
        "inputs": {
-        "percentile": 37.8205,
+        "percentile": 39.1026,
         "net": 4453,
+        "net_oi_pct": 1.6962,
         "weeks": 156
        },
-       "detail": "Managed money net +4,453 contracts. 38th percentile of the last 156 weeks. Inside the 15th to 85th percentiles.",
+       "detail": "Managed money net +4,453 contracts, +1.7% of open interest. 39th percentile of the last 156 weeks. Inside the 15th to 85th percentiles.",
        "reason": null,
-       "text": "\u25ac 38th pct"
+       "text": "+1.7%"
       },
       "mm_flow": {
        "state": "neutral",
@@ -1477,21 +1944,22 @@
        },
        "detail": "Managed money net changed +1,683 contracts in one week and -8,868 over four weeks.",
        "reason": null,
-       "text": "\u25ac +1.7k / -8.9k"
-      },
-      "seasonal": {
-       "state": null,
-       "text": null,
-       "rule_id": "seasonal",
-       "as_of": null,
-       "inputs": {},
-       "detail": "No Peak Trading Research score is typed for this market on the Seasonals page.",
-       "reason": "No Peak Trading Research score is typed for this market on the Seasonals page."
+       "text": "+1.7k / -8.9k"
       }
      },
      "score": {
       "score": 1,
       "scored": 4,
+      "label": "Neutral"
+     },
+     "fund": {
+      "score": 1,
+      "scored": 2,
+      "label": "Neutral"
+     },
+     "mm": {
+      "score": 0,
+      "scored": 2,
       "label": "Neutral"
      },
      "figures": [
@@ -1508,8 +1976,8 @@
        "value": "-6.6%"
       }
      ],
-     "page": "energy",
-     "comm": "dist_stocks"
+     "page": "usda",
+     "comm": "Energy"
     },
     {
      "label": "Natural gas",
@@ -1545,11 +2013,12 @@
        "inputs": {
         "percentile": 1.9231,
         "net": -211476,
+        "net_oi_pct": -12.8218,
         "weeks": 156
        },
-       "detail": "Managed money net -211,476 contracts. 2nd percentile of the last 156 weeks. Extended short, read as bullish.",
+       "detail": "Managed money net -211,476 contracts, -12.8% of open interest. 2nd percentile of the last 156 weeks. Extended short, read as bullish.",
        "reason": null,
-       "text": "\u25b2 Ext short 2nd"
+       "text": "\u25b2 -12.8%"
       },
       "mm_flow": {
        "state": "neutral",
@@ -1561,19 +2030,20 @@
        },
        "detail": "Managed money net changed +12,850 contracts in one week and -54,628 over four weeks.",
        "reason": null,
-       "text": "\u25ac +12.8k / -54.6k"
-      },
-      "seasonal": {
-       "state": null,
-       "text": null,
-       "rule_id": "seasonal",
-       "as_of": null,
-       "inputs": {},
-       "detail": "No Peak Trading Research score is typed for this market on the Seasonals page.",
-       "reason": "No Peak Trading Research score is typed for this market on the Seasonals page."
+       "text": "+12.8k / -54.6k"
       }
      },
      "score": {
+      "score": 1,
+      "scored": 2,
+      "label": "Neutral"
+     },
+     "fund": {
+      "score": 0,
+      "scored": 0,
+      "label": "Neutral"
+     },
+     "mm": {
       "score": 1,
       "scored": 2,
       "label": "Neutral"
@@ -1592,8 +2062,8 @@
        "value": "+2.0%"
       }
      ],
-     "page": "energy",
-     "comm": "ng_storage"
+     "page": "usda",
+     "comm": "Energy"
     }
    ],
    "figures": [],
@@ -1606,6 +2076,23 @@
   {
    "id": "cattle",
    "title": "Cattle",
+   "groups": [
+    {
+     "label": "Fundamentals",
+     "ids": [
+      "on_feed",
+      "placements",
+      "seasonal"
+     ]
+    },
+    {
+     "label": "Managed money",
+     "ids": [
+      "mm_extension",
+      "mm_flow"
+     ]
+    }
+   ],
    "columns": [
     {
      "id": "on_feed",
@@ -1616,20 +2103,16 @@
      "label": "Placements"
     },
     {
-     "id": "cutout",
-     "label": "Cutout"
+     "id": "seasonal",
+     "label": "Seasonal"
     },
     {
      "id": "mm_extension",
-     "label": "Managed money"
+     "label": "Extended"
     },
     {
      "id": "mm_flow",
      "label": "Money flow"
-    },
-    {
-     "id": "seasonal",
-     "label": "Seasonal"
     }
    ],
    "rows": [
@@ -1645,7 +2128,7 @@
        },
        "detail": "On feed 11,372 versus 11,418 a year ago, 100% as printed. Thresholds 98 and 102.",
        "reason": null,
-       "text": "\u25ac 100%"
+       "text": "100%"
       },
       "placements": {
        "state": "bullish",
@@ -1658,27 +2141,19 @@
        "reason": null,
        "text": "\u25b2 88%"
       },
-      "cutout": {
-       "state": null,
-       "text": null,
-       "rule_id": "cutout",
-       "as_of": "November 19, 2026",
-       "inputs": {},
-       "detail": "Boxed beef history is a single print, so the four-week trend cannot be computed.",
-       "reason": "Boxed beef history is a single print, so the four-week trend cannot be computed."
-      },
       "mm_extension": {
        "state": "neutral",
        "rule_id": "mm_extension",
        "as_of": "2026-11-17",
        "inputs": {
-        "percentile": 16.0256,
+        "percentile": 15.3846,
         "net": 43321,
+        "net_oi_pct": 10.4691,
         "weeks": 156
        },
-       "detail": "Managed money net +43,321 contracts. 16th percentile of the last 156 weeks. Inside the 15th to 85th percentiles.",
+       "detail": "Managed money net +43,321 contracts, +10.5% of open interest. 15th percentile of the last 156 weeks. Inside the 15th to 85th percentiles.",
        "reason": null,
-       "text": "\u25ac 16th pct"
+       "text": "+10.5%"
       },
       "mm_flow": {
        "state": "neutral",
@@ -1690,7 +2165,7 @@
        },
        "detail": "Managed money net changed +8,441 contracts in one week and -7,822 over four weeks.",
        "reason": null,
-       "text": "\u25ac +8.4k / -7.8k"
+       "text": "+8.4k / -7.8k"
       },
       "seasonal": {
        "state": "neutral",
@@ -1723,7 +2198,7 @@
        },
        "detail": "Nov 16 -1, Nov 23 -4, Nov 30 -2, Dec 07 0, Dec 14 +5. Average -0.4. Peak Trading Research seasonal, last reviewed 2026-10-24.",
        "reason": null,
-       "text": "\u25ac -0.4 next 4w"
+       "text": "-0.4 next 4w"
       }
      },
      "score": {
@@ -1731,9 +2206,19 @@
       "scored": 5,
       "label": "Neutral"
      },
+     "fund": {
+      "score": 1,
+      "scored": 3,
+      "label": "Neutral"
+     },
+     "mm": {
+      "score": 0,
+      "scored": 2,
+      "label": "Neutral"
+     },
      "figures": [],
-     "page": "cattle",
-     "comm": null
+     "page": "usda",
+     "comm": "Cattle"
     },
     {
      "label": "Feeder cattle",
@@ -1747,7 +2232,7 @@
        },
        "detail": "On feed 11,372 versus 11,418 a year ago, 100% as printed. Thresholds 98 and 102.",
        "reason": null,
-       "text": "\u25ac 100%"
+       "text": "100%"
       },
       "placements": {
        "state": "bullish",
@@ -1760,27 +2245,19 @@
        "reason": null,
        "text": "\u25b2 88%"
       },
-      "cutout": {
-       "state": null,
-       "text": null,
-       "rule_id": "cutout",
-       "as_of": "November 19, 2026",
-       "inputs": {},
-       "detail": "Boxed beef history is a single print, so the four-week trend cannot be computed.",
-       "reason": "Boxed beef history is a single print, so the four-week trend cannot be computed."
-      },
       "mm_extension": {
        "state": "neutral",
        "rule_id": "mm_extension",
        "as_of": "2026-11-17",
        "inputs": {
-        "percentile": 38.4615,
+        "percentile": 35.8974,
         "net": 9673,
+        "net_oi_pct": 10.6419,
         "weeks": 156
        },
-       "detail": "Managed money net +9,673 contracts. 38th percentile of the last 156 weeks. Inside the 15th to 85th percentiles.",
+       "detail": "Managed money net +9,673 contracts, +10.6% of open interest. 36th percentile of the last 156 weeks. Inside the 15th to 85th percentiles.",
        "reason": null,
-       "text": "\u25ac 38th pct"
+       "text": "+10.6%"
       },
       "mm_flow": {
        "state": "neutral",
@@ -1792,7 +2269,7 @@
        },
        "detail": "Managed money net changed +1,087 contracts in one week and -771 over four weeks.",
        "reason": null,
-       "text": "\u25ac +1.1k / -0.8k"
+       "text": "+1.1k / -0.8k"
       },
       "seasonal": {
        "state": "bullish",
@@ -1833,9 +2310,19 @@
       "scored": 5,
       "label": "Supportive"
      },
+     "fund": {
+      "score": 2,
+      "scored": 3,
+      "label": "Supportive"
+     },
+     "mm": {
+      "score": 0,
+      "scored": 2,
+      "label": "Neutral"
+     },
      "figures": [],
-     "page": "cattle",
-     "comm": null
+     "page": "usda",
+     "comm": "Cattle"
     }
    ],
    "figures": [

@@ -9,6 +9,11 @@ on:
     - cron: '30 16 * * 1,4'
     - cron: '30 18 * * 6'
   workflow_dispatch: {}
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/fetch-energy.yml'
+      - 'scripts/fetch_energy.py'
 
 permissions:
   contents: write

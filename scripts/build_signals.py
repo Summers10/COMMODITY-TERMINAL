@@ -108,7 +108,7 @@ def demand_pace_state(delta_pp, cfg):
 
 
 def canola_export_state(yoy_pct, cfg):
-    return band(yoy_pct, "bearish", "bullish", -cfg["canola_export_yoy_pct"], cfg["canola_export_yoy_pct"])
+    return band(yoy_pct, "bearish", "bullish", -cfg["demand_pp"], cfg["demand_pp"])
 
 
 def rescore(rule_id, inputs, cfg):
@@ -131,8 +131,9 @@ def rescore(rule_id, inputs, cfg):
         return condition_state(inputs.get("delta_pp"), cfg)
     if rule_id == "demand_pace":
         return demand_pace_state(inputs.get("delta_pp"), cfg)
-    if rule_id == "canola_exports":
-        return canola_export_state(inputs.get("yoy_pct"), cfg)
+    if rule_id in ("canola_exports", "demand_yoy"):
+        limit = cfg["demand_pp"]
+        return band(inputs.get("yoy_pct"), "bearish", "bullish", -limit, limit)
     if rule_id == "seasonal":
         return seasonal_state(inputs.get("average"), cfg)
     return None
@@ -188,7 +189,7 @@ def cell(state, rule_id, as_of, inputs, detail, cadence_key, cfg, reason=None):
     return rec
 
 
-GLYPH = {"bullish": "▲", "bearish": "▼", "neutral": "▬"}
+GLYPH = {"bullish": "▲", "bearish": "▼", "neutral": ""}
 
 
 def k_contracts(n):
@@ -204,13 +205,7 @@ def figure_text(rule_id, state, inputs):
     if rule_id == "stu":
         body = f"{ordinal(inputs['percentile'])} pct"
     elif rule_id == "mm_extension":
-        rank = ordinal(inputs["percentile"])
-        if state == "bearish":
-            body = f"Ext long {rank}"
-        elif state == "bullish":
-            body = f"Ext short {rank}"
-        else:
-            body = f"{rank} pct"
+        body = f"{inputs['net_oi_pct']:+.1f}%"
     elif rule_id == "mm_flow":
         body = f"{k_contracts(inputs['change_1w'])} / {k_contracts(inputs['change_4w'])}"
     elif rule_id == "seasonal":
@@ -221,15 +216,16 @@ def figure_text(rule_id, state, inputs):
         body = f"{inputs['delta_pp']:+.1f} pp"
     elif rule_id == "cattle_yoy":
         body = f"{inputs['pct']:g}%"
-    elif rule_id == "canola_exports":
-        body = f"{inputs['yoy_pct']:+.0f}%"
+    elif rule_id in ("canola_exports", "demand_yoy"):
+        body = f"{inputs['yoy_pct']:+.1f}%"
     elif rule_id == "condition":
         body = f"{inputs['delta_pp']:+.1f} pp"
     elif rule_id == "demand_pace":
         body = f"{inputs['delta_pp']:+.1f} pp"
     else:
         body = state
-    return f"{GLYPH[state]} {body}"
+    mark = GLYPH[state]
+    return f"{mark} {body}".strip()
 
 
 def dash(rule_id, reason, as_of=None):
@@ -286,9 +282,9 @@ def year_rows(book, comm, country):
     return sorted(out)
 
 
-def fundamentals(psd, prior, comm, country, cfg, note):
+def fundamentals(psd, prior, comm, country, cfg, note, world=False):
     rows = year_rows(psd, comm, country)
-    usable = [(y, stu_of(row, False)) for y, row in rows]
+    usable = [(y, stu_of(row, world)) for y, row in rows]
     usable = [(y, v) for y, v in usable if v is not None]
     if len(usable) < cfg["stu_history_years"] + 1:
         return dash("stu", f"only {len(usable)} stocks-to-use years; the rule needs {cfg['stu_history_years']} prior years")
@@ -326,42 +322,44 @@ def fundamentals(psd, prior, comm, country, cfg, note):
 def mm_series(cftc, code):
     node = (cftc or {}).get("codes", {}).get(code)
     if not node:
-        return None, []
-    nets = []
+        return None, [], []
+    nets, ratios = [], []
     last = None
     for row in node.get("rows") or []:
         if row[3] is None or row[4] is None:
             continue
-        nets.append(row[3] - row[4])
+        net = row[3] - row[4]
+        nets.append(net)
+        ratios.append(None if not row[1] else 100.0 * net / row[1])
         last = row[0]
-    return last, nets
+    return last, nets, ratios
 
 
 def mm_extension(cftc, code, cfg):
-    last, nets = mm_series(cftc, code)
+    last, nets, ratios = mm_series(cftc, code)
     need = cfg["mm_weeks"]
-    if len(nets) < need:
-        return dash("mm_extension", f"managed-money history is {len(nets)} weeks; the rule needs {need}", last)
-    window = nets[-need:]
+    window = [r for r in ratios if r is not None][-need:]
+    if len(window) < need:
+        return dash("mm_extension", f"managed-money history is {len(window)} weeks; the rule needs {need}", last)
     pct = percentile_at_or_below(window[-1], window)
-    # The current week is inside the window, so the percentile includes it.
     state = extension_state(pct, cfg)
     detail = (
-        f"Managed money net {window[-1]:+,} contracts. "
+        f"Managed money net {nets[-1]:+,} contracts, {window[-1]:+.1f}% of open interest. "
         f"{ordinal(pct)} percentile of the last {need} weeks. "
-        + ("Extended long, read as bearish." if state == "bearish" and pct >= cfg["mm_ext_long_pct"]
-           else "Extended short, read as bullish." if state == "bullish" and pct <= cfg["mm_ext_short_pct"]
+        + ("Extended long, read as bearish." if pct >= cfg["mm_ext_long_pct"]
+           else "Extended short, read as bullish." if pct <= cfg["mm_ext_short_pct"]
            else "Inside the 15th to 85th percentiles.")
     )
     return cell(state, "mm_extension", last, {
         "percentile": round(pct, 4),
-        "net": window[-1],
+        "net": nets[-1],
+        "net_oi_pct": round(window[-1], 4),
         "weeks": need,
     }, detail, "cftc", cfg)
 
 
 def mm_flow(cftc, code, cfg):
-    last, nets = mm_series(cftc, code)
+    last, nets, _ratios = mm_series(cftc, code)
     if len(nets) < 5:
         return dash("mm_flow", "managed-money history is shorter than four weeks", last)
     chg1 = nets[-1] - nets[-2]
@@ -470,6 +468,17 @@ def export_history_years(history, commodity):
     return years
 
 
+def demand_yoy(exports, commodity, cfg):
+    total = (((exports or {}).get("commodities") or {}).get(commodity) or {}).get("total") or {}
+    pct = total.get("yoy_total_commitment_pct")
+    as_of = total.get("period_ending")
+    if pct is None:
+        return dash("demand_yoy", "Year-ago export commitment is not in the export file.", as_of)
+    state = band(pct, "bearish", "bullish", -cfg["demand_pp"], cfg["demand_pp"])
+    detail = f"Total export commitment {pct:+.1f}% versus a year ago. Threshold {cfg['demand_pp']:g}%."
+    return cell(state, "demand_yoy", as_of, {"yoy_pct": round(float(pct), 4)}, detail, "exports", cfg)
+
+
 def demand_grains(exports, history, commodity, cfg):
     years = export_history_years(history, commodity)
     as_of = None
@@ -496,7 +505,7 @@ def canola_demand(cgc, cfg):
     state = canola_export_state(yoy, cfg)
     detail = (
         f"CGC canola exports {cur:,.1f} kt versus {ya:,.1f} kt at the same week a year ago ({yoy:+.1f}%). "
-        f"Threshold {cfg['canola_export_yoy_pct']:g}%."
+        f"Threshold {cfg['demand_pp']:g}%."
     )
     return cell(state, "canola_exports", as_of, {
         "yoy_pct": round(yoy, 4),
@@ -627,9 +636,9 @@ def rule_book(cfg, reviewed=None):
             "If the latest ending-stocks revision moves the opposite way from the percentile, the cell becomes neutral."
         )},
         {"id": "mm_extension", "text": (
-            f"Managed money net (long minus short) as a percentile of the last {c['mm_weeks']} weeks, current week included. "
-            f"At or above the {c['mm_ext_long_pct']}th percentile is extended long and the cell reads bearish. "
-            f"At or below the {c['mm_ext_short_pct']}th is extended short and the cell reads bullish. Otherwise neutral. "
+            f"Managed money net as a percent of open interest, ranked over the last {c['mm_weeks']} weeks. "
+            f"At or above the {c['mm_ext_long_pct']}th percentile is extended long and reads bearish. "
+            f"At or below the {c['mm_ext_short_pct']}th is extended short and reads bullish. Otherwise neutral. The cell shows the percent of open interest. "
             "Disaggregated managed money only. Leveraged Funds are not used."
         )},
         {"id": "mm_flow", "text": (
@@ -703,6 +712,8 @@ def row(label, signals, figures, page=None, comm=None, cfg=None):
         "label": label,
         "signals": signals,
         "score": score_of(signals, cfg) if cfg else None,
+        "fund": score_of({k: signals[k] for k in ("stu", "demand", "seasonal", "energy_level", "energy_change", "on_feed", "placements") if k in signals}, cfg) if cfg else None,
+        "mm": score_of({k: signals[k] for k in ("mm_extension", "mm_flow") if k in signals}, cfg) if cfg else None,
         "figures": figures,
         "page": page,
         "comm": comm,
@@ -764,17 +775,15 @@ def build(cfg=None):
 
     def grain(label, comm, country, cftc_code, fas, condition_kind, crop_name, fund_note, peak):
         fund = fundamentals(psd, prior, comm, country, cfg, fund_note)
-        demand = demand_grains(exports, history, fas, cfg) if fas else dash("demand_pace", "No export series is wired for this row.")
+        demand = demand_yoy(exports, fas, cfg) if fas else dash("demand_yoy", "No export series is wired for this row.")
         if fas is None and label == "Canola":
             demand = canola_demand(cgc, cfg)
-        cond = condition_signal(progress, crop_name, condition_kind, cfg) if condition_kind else dash("condition", "not a crop-condition series")
         sigs = {
             "stu": fund,
             "mm_extension": mm_extension(cftc, cftc_code, cfg),
             "mm_flow": mm_flow(cftc, cftc_code, cfg),
-            "seasonal": seasonal_signal(seasonals, peak, cfg),
             "demand": demand,
-            "condition": cond,
+            "seasonal": seasonal_signal(seasonals, peak, cfg),
         }
         figs = []
         if fund["inputs"].get("stu") is not None:
@@ -797,9 +806,8 @@ def build(cfg=None):
         "stu": canola_fund,
         "mm_extension": mm_extension(cftc, "135731", cfg),
         "mm_flow": mm_flow(cftc, "135731", cfg),
-        "seasonal": seasonal_signal(seasonals, "Canola Seed", cfg),
         "demand": canola_demand(cgc, cfg),
-        "condition": dash("condition", "No canola condition series is in the crop progress file."),
+        "seasonal": seasonal_signal(seasonals, "Canola Seed", cfg),
     }
     canola_figs = []
     if canola_fund["inputs"].get("stu") is not None:
@@ -821,7 +829,6 @@ def build(cfg=None):
             "energy_change": change,
             "mm_extension": mm_extension(cftc, code, cfg),
             "mm_flow": mm_flow(cftc, code, cfg),
-            "seasonal": seasonal_signal(seasonals, None, cfg),
         }
         figs = []
         if ser.get("value") is not None:
@@ -830,7 +837,27 @@ def build(cfg=None):
             figs.append({"label": "Week change", "value": f"{ser['change']:+,}"})
         if ser.get("vs_avg5_pct") is not None:
             figs.append({"label": "Vs 5-yr", "value": f"{ser['vs_avg5_pct']:+.1f}%"})
-        return row(label, sigs, figs, "energy", key, cfg)
+        return row(label, sigs, figs, "usda", "Energy", cfg)
+
+    soft_specs = [
+        ("Coffee", "Coffee", "World", "083731", None, "Arabica Coffee", "World coffee stocks/use."),
+        ("Sugar", "Sugar", "World", "080732", None, "Sugar No. 11", "World sugar stocks/use."),
+        ("Cotton", "Cotton", "World", "033661", "ALL UPLAND COTTON", "Cotton", "World cotton stocks/use."),
+        ("Cocoa", "Cocoa", "World", "073732", None, "NY Cocoa", "World cocoa stocks/use."),
+    ]
+    softs = []
+    for label, comm, country, code, fas, peak, note in soft_specs:
+        if comm not in (psd or {}):
+            continue
+        fund = fundamentals(psd, prior, comm, country, cfg, note, world=(country == "World"))
+        sigs = {
+            "stu": fund,
+            "demand": demand_yoy(exports, fas, cfg) if fas else dash("demand_yoy", "No export series is in the export file for this market."),
+            "seasonal": seasonal_signal(seasonals, peak, cfg),
+            "mm_extension": mm_extension(cftc, code, cfg),
+            "mm_flow": mm_flow(cftc, code, cfg),
+        }
+        softs.append(row(label, sigs, [], "usda", comm, cfg))
 
     energy_rows = [
         energy_row("Crude (WTI)", "crude_stocks", "067651"),
@@ -846,12 +873,11 @@ def build(cfg=None):
         sigs = {
             "on_feed": on_feed,
             "placements": placements,
-            "cutout": cut,
             "mm_extension": mm_extension(cftc, code, cfg),
             "mm_flow": mm_flow(cftc, code, cfg),
             "seasonal": seasonal_signal(seasonals, peak, cfg),
         }
-        return row(label, sigs, [], "cattle", None, cfg)
+        return row(label, sigs, [], "usda", "Cattle", cfg)
 
     cattle_rows = [
         cattle_row("Live cattle", "057642", "Cattle"),
@@ -870,26 +896,49 @@ def build(cfg=None):
         {
             "id": "grains",
             "title": "Grains & Oilseeds",
+            "groups": [
+                {"label": "Fundamentals", "ids": ["stu", "demand", "seasonal"]},
+                {"label": "Managed money", "ids": ["mm_extension", "mm_flow"]},
+            ],
             "columns": [
                 {"id": "stu", "label": "Stocks/use"},
-                {"id": "mm_extension", "label": "Managed money"},
-                {"id": "mm_flow", "label": "Money flow"},
-                {"id": "seasonal", "label": "Seasonal"},
                 {"id": "demand", "label": "Demand"},
-                {"id": "condition", "label": "Condition"},
+                {"id": "seasonal", "label": "Seasonal"},
+                {"id": "mm_extension", "label": "Extended"},
+                {"id": "mm_flow", "label": "Money flow"},
             ],
             "rows": grains,
             "figures": [],
         },
         {
+            "id": "softs",
+            "title": "Softs",
+            "groups": [
+                {"label": "Fundamentals", "ids": ["stu", "demand", "seasonal"]},
+                {"label": "Managed money", "ids": ["mm_extension", "mm_flow"]},
+            ],
+            "columns": [
+                {"id": "stu", "label": "Stocks/use"},
+                {"id": "demand", "label": "Demand"},
+                {"id": "seasonal", "label": "Seasonal"},
+                {"id": "mm_extension", "label": "Extended"},
+                {"id": "mm_flow", "label": "Money flow"},
+            ],
+            "rows": softs,
+            "figures": [],
+        },
+        {
             "id": "energy",
             "title": "Energy",
+            "groups": [
+                {"label": "Fundamentals", "ids": ["energy_level", "energy_change"]},
+                {"label": "Managed money", "ids": ["mm_extension", "mm_flow"]},
+            ],
             "columns": [
                 {"id": "energy_level", "label": "Stocks vs 5-yr"},
                 {"id": "energy_change", "label": "Week vs norm"},
-                {"id": "mm_extension", "label": "Managed money"},
+                {"id": "mm_extension", "label": "Extended"},
                 {"id": "mm_flow", "label": "Money flow"},
-                {"id": "seasonal", "label": "Seasonal"},
             ],
             "rows": energy_rows,
             "figures": [],
@@ -897,13 +946,16 @@ def build(cfg=None):
         {
             "id": "cattle",
             "title": "Cattle",
+            "groups": [
+                {"label": "Fundamentals", "ids": ["on_feed", "placements", "seasonal"]},
+                {"label": "Managed money", "ids": ["mm_extension", "mm_flow"]},
+            ],
             "columns": [
                 {"id": "on_feed", "label": "On feed"},
                 {"id": "placements", "label": "Placements"},
-                {"id": "cutout", "label": "Cutout"},
-                {"id": "mm_extension", "label": "Managed money"},
-                {"id": "mm_flow", "label": "Money flow"},
                 {"id": "seasonal", "label": "Seasonal"},
+                {"id": "mm_extension", "label": "Extended"},
+                {"id": "mm_flow", "label": "Money flow"},
             ],
             "rows": cattle_rows,
             "figures": cattle_figs,

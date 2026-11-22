@@ -83,14 +83,10 @@ td.dn{color:var(--red) !important}
 <body class="light">
 <div id="page-tabs" style="display:flex;align-items:center;border-bottom:2px solid #f5a623;background:#000">
   <button class="page-tab active" data-page="summary" style="flex:0 0 auto;padding:10px 22px;background:none;border:none;color:#f5a623;cursor:pointer;font-family:'Courier New',Courier,monospace;font-size:14px;font-weight:900;letter-spacing:.08em">SUMMARY</button>
-  <button class="page-tab" data-page="usda" style="flex:0 0 auto;padding:10px 22px;background:none;border:none;color:#6a5a4a;cursor:pointer;font-family:'Courier New',Courier,monospace;font-size:14px;font-weight:900;letter-spacing:.08em">USDA REPORT</button>
+  <button class="page-tab" data-page="usda" style="flex:0 0 auto;padding:10px 22px;background:none;border:none;color:#6a5a4a;cursor:pointer;font-family:'Courier New',Courier,monospace;font-size:14px;font-weight:900;letter-spacing:.08em">FUNDAMENTALS</button>
   <button class="page-tab" data-page="cftc" style="flex:0 0 auto;padding:10px 22px;background:none;border:none;color:#6a5a4a;cursor:pointer;font-family:'Courier New',Courier,monospace;font-size:14px;font-weight:900;letter-spacing:.08em">CFTC REPORT</button>
-  <button class="page-tab" data-page="seasonals" style="flex:0 0 auto;padding:10px 22px;background:none;border:none;color:#6a5a4a;cursor:pointer;font-family:'Courier New',Courier,monospace;font-size:14px;font-weight:900;letter-spacing:.08em">SEASONALS</button>
   <button class="page-tab" data-page="exports" style="flex:0 0 auto;padding:10px 22px;background:none;border:none;color:#6a5a4a;cursor:pointer;font-family:'Courier New',Courier,monospace;font-size:14px;font-weight:900;letter-spacing:.08em">EXPORTS</button>
   <button class="page-tab" data-page="weather" style="flex:0 0 auto;padding:10px 14px;background:none;border:none;color:#6a5a4a;cursor:pointer;font-family:'Courier New',Courier,monospace;font-size:14px;font-weight:900;letter-spacing:.08em">WEATHER</button>
-  <button class="page-tab" data-page="energy" style="flex:0 0 auto;padding:10px 14px;background:none;border:none;color:#6a5a4a;cursor:pointer;font-family:'Courier New',Courier,monospace;font-size:14px;font-weight:900;letter-spacing:.08em">ENERGY</button>
-  <button class="page-tab" data-page="progress" style="flex:0 0 auto;padding:10px 14px;background:none;border:none;color:#6a5a4a;cursor:pointer;font-family:'Courier New',Courier,monospace;font-size:14px;font-weight:900;letter-spacing:.08em">CROP PROGRESS</button>
-  <button class="page-tab" data-page="cattle" style="flex:0 0 auto;padding:10px 14px;background:none;border:none;color:#6a5a4a;cursor:pointer;font-family:'Courier New',Courier,monospace;font-size:14px;font-weight:900;letter-spacing:.08em">CATTLE</button>
   <div style="margin-left:auto;padding-right:16px;display:flex;border:1px solid #1e1e1e;border-radius:3px;overflow:hidden">
     <button class="global-theme-btn" data-t="dark" style="padding:7px 15px;background:none;border:none;color:#6a5a4a;cursor:pointer;font-family:'Courier New',Courier,monospace;font-size:13px;font-weight:700;letter-spacing:.06em;text-transform:uppercase">Dark</button>
     <button class="global-theme-btn" data-t="light" style="padding:7px 15px;background:#f5a623;border:none;color:#000;cursor:pointer;font-family:'Courier New',Courier,monospace;font-size:13px;font-weight:700;letter-spacing:.06em;text-transform:uppercase">Light</button>
@@ -173,7 +169,7 @@ document.querySelectorAll('.page-tab').forEach(function(btn){
 </div>
 <div id="weather-page" style="display:none">
 <div id="weather-topbar" style="padding:14px 20px;border-bottom:1px solid var(--amber);background:var(--bg);display:flex;align-items:center;gap:20px">
-  <h1 style="font-size:18px;font-weight:900;letter-spacing:.12em;text-transform:uppercase;color:var(--amber);white-space:nowrap">Weather &amp; Crop Calendar</h1>
+  <h1 style="font-size:18px;font-weight:900;letter-spacing:.12em;text-transform:uppercase;color:var(--amber);white-space:nowrap">Weather</h1>
   <div id="weather-meta" style="font-size:13px;color:var(--text3);letter-spacing:.04em;margin-left:auto">Loading...</div>
 </div>
   <div id="weather-root" style="max-width:1300px;margin:0 auto;padding:22px"></div>
@@ -197,7 +193,7 @@ document.querySelectorAll('.page-tab').forEach(function(btn){
 </div>
 
 <script>
-const COMMS = ["Wheat","Corn","Soybeans","Rapeseed/Canola","Oats","Cotton","Coffee","Sugar","Vegoils","Meal"];
+const COMMS = ["Wheat","Corn","Soybeans","Rapeseed/Canola","Oats","Meal","Vegoils","Cotton","Coffee","Sugar","Energy","Cattle"];
 const BU_PER_MT = {Wheat:36.7437, Corn:39.3680, Soybeans:36.7437, "Rapeseed/Canola":44.0924, Oats:68.8955};
 const ACRES_PER_HA = 2.47105;
 const HIST_YEARS = 6;
@@ -901,6 +897,15 @@ function render(){
   root.innerHTML = '';
   const comm = currentComm;
   updateUsdaMeta();
+  if(comm==='Energy' || comm==='Cattle'){
+    const convLabel = document.getElementById('conv-label');
+    const unitToggleEl = document.getElementById('unit-toggle');
+    if(unitToggleEl) unitToggleEl.style.display = 'none';
+    if(convLabel) convLabel.textContent = comm==='Energy' ? 'EIA weekly stocks' : 'USDA NASS and AMS cattle reports';
+    if(comm==='Energy' && typeof ensureEnergy==='function') ensureEnergy(root);
+    if(comm==='Cattle' && typeof ensureCattle==='function') ensureCattle(root);
+    return;
+  }
   if(comm==='Rapeseed/Canola' && typeof usdaSource!=='undefined' && usdaSource==='cgc'){
     const go = ()=>renderCanolaCgcPage(root);
     if(SD) go();
@@ -965,6 +970,7 @@ function render(){
   root.insertAdjacentHTML('beforeend', `<div id="origin-sheet"></div>`);
   refreshOrigin();
   wireUsda(root);
+  root.insertAdjacentHTML('beforeend', commodityCalendarHtml(comm));
   const want = new URLSearchParams(location.search).get('expand');
   if(want){
     want.split(',').forEach(key=>{
@@ -1287,8 +1293,8 @@ fetch('data/psd_data.json')
 .cftc-legend .lg-g{background:rgba(46,143,82,.35)}
 .cftc-legend .lg-r{background:rgba(192,57,43,.35)}
 .cftc-legend .lg-dash{width:18px;height:0;border-top:1.5px dashed var(--ref-color)}
-.rf,.gf{display:block;min-width:0;text-align:right}
-.rp,.gc{display:block;min-width:0;margin:0;text-align:right}
+.rf,.gf{display:inline;min-width:0;text-align:right}
+.rp,.gc{display:inline;min-width:0;margin:0 0 0 6px;text-align:right}
 .cftc-table td.cftc-ref{color:var(--ref-color);font-style:italic;font-weight:600;background:var(--ref-bg)}
 .cftc-table th.cftc-ref-h{color:var(--ref-color) !important;font-style:italic;background:var(--ref-bg)}
 .cftc-ref-sub{display:block;letter-spacing:.02em;text-transform:none}
@@ -1317,7 +1323,7 @@ td.sig{text-align:center;padding:0}
 button.sig-hit{width:100%;border:0;background:transparent;color:inherit;font:inherit;font-size:13px;font-weight:700;padding:6px 2px;cursor:pointer}
 td.sig-bull{background:rgba(46,143,82,.22);color:var(--green)}
 td.sig-bear{background:rgba(184,56,56,.18);color:var(--red)}
-td.sig-neutral{background:rgba(245,166,35,.28);color:var(--amber)}
+td.sig-neutral{background:transparent;color:inherit}
 .score-of{display:block;font-weight:600;font-size:12px}
 td.tally{text-align:center;font-size:13px;white-space:normal}
 #sig-pop{position:fixed;z-index:30;background:var(--bg1);border:1px solid var(--border2);color:var(--text);font-size:13px;line-height:1.4;padding:8px 10px}
@@ -1718,6 +1724,7 @@ function renderCftcChart(){
   const fmtV = v => pct ? cftcPct(v) : cftcFmt(v);
   lines.forEach(l=>{
     svg += `<line x1="${M.l}" x2="${M.l + plotW}" y1="${y(l.v)}" y2="${y(l.v)}" style="stroke:var(--ref-color);stroke-opacity:.7;stroke-width:1.2;stroke-dasharray:5 5"><title>${l.name} ${fmtV(l.v)} set ${l.date}</title></line>`;
+    svg += `<text x="${M.l + plotW - 4}" y="${y(l.v) - 3}" text-anchor="end" style="fill:var(--text2);font-size:11px">${l.name}</text>`;
   });
   // net position line
   svg += `<polyline fill="none" points="${pts.map((p, i)=>cx(i).toFixed(1) + ',' + y(p[kN]).toFixed(1)).join(' ')}" style="stroke:var(--amber);stroke-width:2;stroke-linejoin:round"/>`;
@@ -2319,7 +2326,13 @@ function buildWeatherTable(){
   return html;
 }
 
-function buildCropCalendarTable(){
+function commodityCalendarHtml(comm){
+  const map = {Wheat:'Wheat', Corn:'Corn', Soybeans:'Soybeans', 'Rapeseed/Canola':'Canola', Cotton:'Cotton', Coffee:'Coffee', Sugar:'Sugar', Cocoa:'Cocoa', Oats:'Oats'};
+  const section = map[comm];
+  if(!section || typeof CROP_CALENDAR==='undefined' || !CROP_CALENDAR.some(r=>r.section===section)) return '';
+  return `<div class="sec-hdr">Crop calendar</div><p class="legend-line"><span style="background:rgba(46,143,82,.30);padding:0 5px">P</span> planting <span style="background:rgba(230,180,20,.40);padding:0 5px">H</span> harvest.</p><div class="tbl-wrap">${buildCropCalendarTable(section)}</div>`;
+}
+function buildCropCalendarTable(onlySection){
   const curMonth = new Date().getMonth() + 1; // 1-12
 
   const calPcts = colPercents([20, ...CAL_MONTHS.map(()=>80/CAL_MONTHS.length)]);
@@ -2333,6 +2346,7 @@ function buildCropCalendarTable(){
 
   let curSection = null;
   CROP_CALENDAR.forEach(row=>{
+    if(onlySection && row.section !== onlySection) return;
     if(row.section !== curSection){
       curSection = row.section;
       html += `<tr class="cftc-row-section"><td colspan="13">${curSection}</td></tr>`;
@@ -2387,7 +2401,8 @@ function renderWeatherPage(){
     root.insertAdjacentHTML('beforeend', `<div style="padding:14px 16px">${weatherState==='loading' ? 'Loading station readings…' : (weatherState==='failed' ? na() : 'Station readings load when this page is opened.')}</div>`);
   }
   root.insertAdjacentHTML('beforeend', `</div>`);
-  root.insertAdjacentHTML('beforeend', `<div class="panel" style="margin-top:22px"><div class="panel-hdr"><span class="panel-title">Crop calendar</span>${provMark(['Static reference windows published by USDA-FAS, IGC and trade references.','Release: —','Last fetch: —','Not a live feed.'], null)}</div><p class="legend-line"><span style="background:rgba(46,143,82,.30);padding:0 5px">P</span> planting <span style="background:rgba(230,180,20,.40);padding:0 5px">H</span> harvest. Dates shift with weather and within each country.</p><div class="tbl-wrap">${buildCropCalendarTable()}</div></div>`);
+  root.insertAdjacentHTML('beforeend', `<div id="seasonals-root"></div>`);
+  if(typeof renderSeasonals==='function') renderSeasonals();
 }
 renderWeatherPage();   // the crop calendar is static, so draw the page right away; the weather table fills in when its data arrives
 </script>
@@ -3015,7 +3030,11 @@ function renderMealInto(root){
 <script src="js/cattle.js"></script>
 <script>
 function openPage(page, comm){
-  if(comm && typeof currentComm!=='undefined' && (comm==='Vegoils' || comm==='Meal' || (DATA && (DATA[comm]||comm==='Rapeseed/Canola')))){
+  if(page==='energy'){ page = 'usda'; comm = comm || 'Energy'; }
+  if(page==='cattle'){ page = 'usda'; comm = comm || 'Cattle'; }
+  if(page==='seasonals') page = 'weather';
+  if(page==='progress') page = 'summary';
+  if(comm && typeof currentComm!=='undefined' && (comm==='Energy' || comm==='Cattle' || comm==='Vegoils' || comm==='Meal' || (DATA && (DATA[comm]||comm==='Rapeseed/Canola')))){
     currentComm = comm;
     var ct = document.getElementById('comm-toggle');
     if(ct) ct.querySelectorAll('.tbtn').forEach(function(b){ b.classList.toggle('active', b.dataset.c===comm); });
@@ -3033,6 +3052,7 @@ function openPage(page, comm){
   if(page==='energy' && typeof ensureEnergy==='function') ensureEnergy();
   if(page==='progress' && typeof ensureProgress==='function') ensureProgress();
   if(page==='cattle' && typeof ensureCattle==='function') ensureCattle();
+  if(page==='weather' && typeof ensureWeather==='function') ensureWeather();
   if(page==='cftc' && typeof fitCftcTable==='function') fitCftcTable();
 }
 setTimeout(function(){

@@ -10,6 +10,12 @@ on:
     - cron: '30 16 20 * *'
     - cron: '30 16 27 * *'
   workflow_dispatch: {}
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/fetch-cgc.yml'
+      - 'scripts/fetch_cgc.py'
+      - 'scripts/fetch_sd.py'
 
 permissions:
   contents: write

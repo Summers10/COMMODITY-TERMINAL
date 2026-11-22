@@ -1,5 +1,5 @@
-function renderEnergy(){
-  const root = document.getElementById('energy-root');
+function renderEnergy(box){
+  const root = box || document.getElementById('energy-root');
   if(!root) return;
   const st = energyStatus();
   if(!ENERGY || !ENERGY.series){
@@ -186,7 +186,8 @@ function drawEnergy(s){
     requestAnimationFrame(()=>showAt(i));
   }
 }
-function ensureEnergy(){
-  if(ENERGY){ renderEnergy(); return; }
-  fetch('data/energy.json').then(r=>r.json()).then(d=>{ ENERGY=d; renderEnergy(); }).catch(()=>renderEnergy());
+function ensureEnergy(box){
+  const go = ()=>renderEnergy(box);
+  if(ENERGY){ go(); return; }
+  fetch('data/energy.json').then(r=>r.json()).then(d=>{ ENERGY=d; go(); }).catch(go);
 }
