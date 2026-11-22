@@ -125,9 +125,16 @@ def fetch_page(where_clause, offset, limit=50000, base=None, fields=None):
             with urllib.request.urlopen(req, timeout=120) as resp:
                 return json.loads(resp.read().decode("utf-8"))
         except urllib.error.HTTPError as e:
-            if e.code in (503, 429) and attempt < max_attempts:
-                wait = 10 * attempt
+            if e.code in (429, 500, 502, 503, 504) and attempt < max_attempts:
+                wait = 15 * attempt
                 print(f"HTTP {e.code} (transient) — retrying in {wait}s (attempt {attempt}/{max_attempts})...")
+                time.sleep(wait)
+                continue
+            raise
+        except (urllib.error.URLError, TimeoutError) as e:
+            if attempt < max_attempts:
+                wait = 15 * attempt
+                print(f"CFTC connection error ({e}) — retrying in {wait}s (attempt {attempt}/{max_attempts})...")
                 time.sleep(wait)
                 continue
             raise

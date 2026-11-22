@@ -100,7 +100,7 @@ function renderSummary(){
     }
     const meta = document.getElementById('summary-meta');
     if(meta) meta.textContent = 'Signals ' + (SIGNALS.generated_at || '').slice(0, 10);
-    let html = '';
+    let html = freshnessPanel(SIGNALS.freshness || []);
     SIGNALS.sections.forEach(section=>{
       html += `<div class="sec-hdr">${section.title}</div>`;
       if(section.score) html += `<p class="legend-line">Section ${scoreLine(section.score)}</p>`;
@@ -113,6 +113,24 @@ function renderSummary(){
   };
   if(SIGNALS){ draw(); return; }
   fetch('data/signals.json').then(r=>r.ok?r.json():null).then(d=>{ SIGNALS = d; draw(); }).catch(()=>draw());
+}
+function freshnessPanel(rows){
+  if(!rows.length) return '';
+  let html = `<div class="panel"><div class="panel-hdr"><span class="panel-title">Freshness</span></div>`;
+  html += `<table class="term-table summary-table"><thead><tr><th>Feed</th><th>As of</th><th>Status</th></tr></thead><tbody>`;
+  rows.forEach(row=>{
+    const asOf = row.as_of || '—';
+    let status = 'OK';
+    let cls = 'up';
+    if(!row.as_of){ status = 'stale'; cls = 'dn'; }
+    else if(row.cadence_days!=null){
+      const age = (Date.now() - Date.parse(row.as_of+'T00:00:00Z'))/86400000;
+      if(age > row.cadence_days){ status = 'stale'; cls = 'dn'; }
+    }
+    html += `<tr><td>${row.feed}</td><td>${asOf}</td><td class="${cls}">${status}</td></tr>`;
+  });
+  html += `</tbody></table></div>`;
+  return html;
 }
 function signalTable(section){
   const cols = section.columns || [];

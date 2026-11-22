@@ -4,6 +4,8 @@ on:
   schedule:
     - cron: '30 22 * * 4'
     - cron: '30 14 * * 5'
+    - cron: '30 16 * * 6'
+    - cron: '30 15 * * 1'
     # AAFC's monthly outlook usually lands in the second half of the month.
     - cron: '30 16 20 * *'
     - cron: '30 16 27 * *'

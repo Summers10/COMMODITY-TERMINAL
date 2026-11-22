@@ -4,6 +4,8 @@ on:
   schedule:
     - cron: '20 21 * * 1-5'
     - cron: '20 16 * * 5'
+    - cron: '20 18 * * 6'
+    - cron: '30 16 * * 1,2'
   workflow_dispatch: {}
   push:
     branches: [main]
