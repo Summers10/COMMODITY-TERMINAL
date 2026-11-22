@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-11-22T01:54:30+00:00",
+ "generated_at": "2026-11-22T01:58:24+00:00",
  "config": {
   "stu_bull_pct": 33,
   "stu_bear_pct": 67,
@@ -149,7 +149,7 @@
   },
   {
    "feed": "Crop progress",
-   "as_of": "2026-11-08",
+   "as_of": "2026-11-15",
    "cadence_days": 21
   },
   {
@@ -545,18 +545,22 @@
        "reason": "Export history covers 1 season, not the 5 seasons needed for the same-week pace."
       },
       "condition": {
-       "state": null,
-       "text": null,
+       "state": "bearish",
        "rule_id": "condition",
-       "as_of": "2026-11-08",
-       "inputs": {},
-       "detail": "Good/excellent has no 5-year average and no year-ago print.",
-       "reason": "Good/excellent has no 5-year average and no year-ago print."
+       "as_of": "2026-11-15",
+       "inputs": {
+        "delta_pp": 8.0,
+        "current": 53.0,
+        "base": 45.0
+       },
+       "detail": "Good/excellent 53 versus year ago 45 (+8.0 pp).",
+       "reason": null,
+       "text": "\u25bc +8.0 pp"
       }
      },
      "score": {
-      "score": -2,
-      "scored": 4,
+      "score": -3,
+      "scored": 5,
       "label": "Bearish"
      },
      "figures": [
@@ -674,18 +678,22 @@
        "reason": "Export history covers 1 season, not the 5 seasons needed for the same-week pace."
       },
       "condition": {
-       "state": null,
-       "text": null,
+       "state": "bearish",
        "rule_id": "condition",
-       "as_of": "2026-11-08",
-       "inputs": {},
-       "detail": "Good/excellent has no 5-year average and no year-ago print.",
-       "reason": "Good/excellent has no 5-year average and no year-ago print."
+       "as_of": "2026-11-15",
+       "inputs": {
+        "delta_pp": 8.0,
+        "current": 53.0,
+        "base": 45.0
+       },
+       "detail": "Good/excellent 53 versus year ago 45 (+8.0 pp).",
+       "reason": null,
+       "text": "\u25bc +8.0 pp"
       }
      },
      "score": {
-      "score": -2,
-      "scored": 4,
+      "score": -3,
+      "scored": 5,
       "label": "Bearish"
      },
      "figures": [
@@ -1228,8 +1236,8 @@
    ],
    "figures": [],
    "score": {
-    "score": -8,
-    "scored": 33,
+    "score": -10,
+    "scored": 35,
     "label": "Bearish"
    }
   },
