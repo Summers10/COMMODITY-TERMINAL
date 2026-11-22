@@ -80,21 +80,42 @@ STRATEGIES = [
 _good = None  # remember the first strategy that works
 
 
+def _attempt(name, fn, url):
+    t0 = time.time()
+    try:
+        code, raw, err = fn(url)
+    except Exception as e:  # noqa: BLE001
+        code, raw, err = 0, b"", f"{type(e).__name__}: {e}"[:120]
+    print(f"    [{name}] HTTP {code} {len(raw)/1e6:.1f} MB {time.time()-t0:.0f}s {err}", flush=True)
+    return code, raw
+
+
 def _get(url):
     global _good
     order = [_good] if _good else STRATEGIES
     for name, fn in order:
-        t0 = time.time()
-        try:
-            code, raw, err = fn(url)
-        except Exception as e:  # noqa: BLE001
-            code, raw, err = 0, b"", f"{type(e).__name__}: {e}"[:120]
-        print(f"    [{name}] HTTP {code} {len(raw)/1e6:.1f} MB {time.time()-t0:.0f}s {err}", flush=True)
+        code, raw = _attempt(name, fn, url)
         if code in (200, 404):
             if code == 200:
                 _good = (name, fn)
             return code, raw
     return 0, b""
+
+
+def _get_matching(url, ok):
+    """Try each strategy until ok(body). A 200 that fails ok is not remembered."""
+    global _good
+    order = list(STRATEGIES)
+    if _good:
+        order = [_good] + [s for s in STRATEGIES if s[0] != _good[0]]
+    last = (0, b"")
+    for name, fn in order:
+        code, raw = _attempt(name, fn, url)
+        if code == 200 and ok(raw or b""):
+            _good = (name, fn)
+            return code, raw
+        last = (code, raw or b"")
+    return last
 
 
 def fetch_csv(cy: str):

@@ -18,7 +18,7 @@ from datetime import datetime, timezone
 from html.parser import HTMLParser
 
 sys.path.insert(0, os.path.dirname(__file__))
-from fetch_cgc import _get  # noqa: E402
+from fetch_cgc import _get, _get_matching  # noqa: E402
 
 OUT = os.environ.get("SD_OUT", os.path.join(os.path.dirname(__file__), "..", "data", "sd.json"))
 ARCHIVE = os.path.join(os.path.dirname(OUT), "aafc")
@@ -46,15 +46,18 @@ def fetch(url):
 
 
 def fetch_zip(url):
-    """StatsCan sometimes answers 200 with an HTML page. Retry until the body is a zip."""
+    """StatsCan's Chrome-fingerprint response is sometimes an HTML page. Fall through to curl."""
+    def is_zip(raw):
+        return raw[:2] == b"PK"
+
     last = None
-    for attempt in range(1, 5):
-        code, raw = _get(url)
-        if code == 200 and raw[:2] == b"PK":
+    for attempt in range(1, 4):
+        code, raw = _get_matching(url, is_zip)
+        if code == 200 and is_zip(raw):
             return raw
-        last = (code, len(raw or b""))
+        last = (code, len(raw or b""), (raw or b"")[:40])
         print(f"    not a zip (HTTP {code}, {len(raw or b'')} bytes), retry {attempt}", flush=True)
-        time.sleep(8 * attempt)
+        time.sleep(5 * attempt)
     raise RuntimeError(f"download was not a zip after retries ({last}): {url}")
 
 
