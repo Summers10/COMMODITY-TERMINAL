@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-11-22T01:59:07+00:00",
+ "generated_at": "2026-11-22T01:59:52+00:00",
  "config": {
   "stu_bull_pct": 33,
   "stu_bear_pct": 67,
@@ -1983,28 +1983,28 @@
      "label": "Natural gas",
      "signals": {
       "energy_level": {
-       "state": null,
+       "state": "neutral",
        "rule_id": "energy_level",
-       "as_of": "2026-11-06",
+       "as_of": "2026-11-13",
        "inputs": {
-        "vs_avg_pct": 2.0
+        "vs_avg_pct": 2.1
        },
-       "detail": "Stocks 3862 versus the 5-year average 3787 (+2.0%). WNGSR published 5-year average.",
-       "reason": "stale: 2026-11-06 is older than 14 days",
-       "text": null
+       "detail": "Stocks 3882 versus the 5-year average 3802 (+2.1%). WNGSR published 5-year average.",
+       "reason": null,
+       "text": "+2.1%"
       },
       "energy_change": {
-       "state": null,
+       "state": "neutral",
        "rule_id": "energy_change",
-       "as_of": "2026-11-06",
+       "as_of": "2026-11-13",
        "inputs": {
-        "delta_pp": 0.3465,
-        "change_pct": 1.6048,
-        "norm_pct": 1.2584
+        "delta_pp": 1.1947,
+        "change_pct": 0.5179,
+        "norm_pct": -0.6769
        },
-       "detail": "This week's stock change is +1.60% of the prior week. The same week of the prior five years averaged +1.26%. Difference +0.35 pp.",
-       "reason": "stale: 2026-11-06 is older than 14 days",
-       "text": null
+       "detail": "This week's stock change is +0.52% of the prior week. The same week of the prior five years averaged -0.68%. Difference +1.19 pp.",
+       "reason": null,
+       "text": "+1.2 pp"
       },
       "mm_extension": {
        "state": "bullish",
@@ -2035,12 +2035,12 @@
      },
      "score": {
       "score": 1,
-      "scored": 2,
+      "scored": 4,
       "label": "Neutral"
      },
      "fund": {
       "score": 0,
-      "scored": 0,
+      "scored": 2,
       "label": "Neutral"
      },
      "mm": {
@@ -2051,15 +2051,15 @@
      "figures": [
       {
        "label": "Stocks",
-       "value": "3,862"
+       "value": "3,882"
       },
       {
        "label": "Week change",
-       "value": "+61"
+       "value": "+20"
       },
       {
        "label": "Vs 5-yr",
-       "value": "+2.0%"
+       "value": "+2.1%"
       }
      ],
      "page": "usda",
@@ -2069,7 +2069,7 @@
    "figures": [],
    "score": {
     "score": 0,
-    "scored": 14,
+    "scored": 16,
     "label": "Neutral"
    }
   },
