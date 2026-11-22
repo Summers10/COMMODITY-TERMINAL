@@ -96,37 +96,95 @@ function wasdeBeefBlock(w){
   html += `</tbody></table></div>`;
   return html;
 }
+function cofTicks(lo, hi, n){
+  const span = (hi - lo) || 1, raw = span / n, mag = Math.pow(10, Math.floor(Math.log10(raw))), norm = raw / mag;
+  const step = (norm < 1.5 ? 1 : norm < 3 ? 2 : norm < 7 ? 5 : 10) * mag;
+  const ticks = [];
+  for(let v = Math.ceil(lo / step) * step; v <= hi + step * 1e-9; v += step) ticks.push(v);
+  return ticks;
+}
 function drawCof(hist){
   const box = document.getElementById('cof-chart');
   if(!box) return;
   const byYear = {};
-  hist.forEach(r=>{
-    const [y,m] = r.as_of.split('-').map(Number);
+  (hist || []).forEach(r=>{
+    if(!r || !r.as_of || !r.on_feed || r.on_feed.current==null) return;
+    const [y, m] = r.as_of.split('-').map(Number);
     (byYear[y] = byYear[y] || {})[m] = r.on_feed.current;
   });
-  const years = Object.keys(byYear).map(Number).sort().slice(-6);
-  const vals = [];
-  years.forEach(y=>Object.values(byYear[y]).forEach(v=>vals.push(v)));
-  if(vals.length<2){ box.innerHTML=''; return; }
-  let lo=Math.min(...vals), hi=Math.max(...vals);
-  const pad=(hi-lo)*0.08||1; lo-=pad; hi+=pad;
-  const W=1000,H=260,M={l:54,r:10,t:16,b:26};
-  const x=m=>M.l+(m-1)/11*(W-M.l-M.r);
-  const y=v=>M.t+(hi-v)/(hi-lo)*(H-M.t-M.b);
-  const colors=['#8a7a68','#5b6f94','#6B7280','#0E7A3A','#C4302B','#B8720A'];
-  let svg=`<svg viewBox="0 0 ${W} ${H}" width="100%" role="img">`;
-  years.forEach((yr,idx)=>{
-    const pts=[];
-    for(let m=1;m<=12;m++) if(byYear[yr][m]!=null) pts.push(x(m).toFixed(1)+','+y(byYear[yr][m]).toFixed(1));
-    svg += `<polyline fill="none" stroke="${colors[idx%colors.length]}" stroke-width="${idx===years.length-1?2.4:1.2}" points="${pts.join(' ')}"/>`;
+  const years = Object.keys(byYear).map(Number).sort((a, b)=>a - b);
+  if(!years.length){ box.innerHTML = ''; return; }
+  const current = years[years.length - 1];
+  const last = current - 1;
+  const bandYears = [];
+  for(let y = current - 5; y < current; y++) if(byYear[y]) bandYears.push(y);
+  const months = [];
+  for(let m = 1; m <= 12; m++){
+    const vals = bandYears.map(y=>byYear[y][m]).filter(v=>v!=null);
+    months.push(vals.length ? {m, lo:Math.min(...vals), hi:Math.max(...vals)} : {m});
+  }
+  const seriesVals = [];
+  months.forEach(p=>{ if(p.lo!=null) seriesVals.push(p.lo, p.hi); });
+  [last, current].forEach(y=>{
+    const row = byYear[y] || {};
+    for(let m = 1; m <= 12; m++) if(row[m]!=null) seriesVals.push(row[m]);
   });
-  years.forEach((yr,idx)=>{
-    const x0 = M.l + idx*70;
-    svg += `<text x="${x0}" y="12" style="fill:${colors[idx%colors.length]};font-size:12px;font-weight:700">${yr}</text>`;
+  if(!seriesVals.length){ box.innerHTML = ''; return; }
+  let lo = Math.min(...seriesVals), hi = Math.max(...seriesVals);
+  const pad = (hi - lo) * 0.08 || 1;
+  lo -= pad; hi += pad;
+  const W = 1000, H = 340, M = {l:86, r:14, t:10, b:32};
+  const plotW = W - M.l - M.r, plotH = H - M.t - M.b;
+  const x = m => M.l + (m - 1) / 11 * plotW;
+  const yOf = v => M.t + (hi - v) / (hi - lo) * plotH;
+  const bandLabel = bandYears.length ? `${bandYears[0]}–${bandYears[bandYears.length - 1]} min–max` : 'No prior years';
+  let html = `<div class="cof-chart"><div class="cof-hd">Cattle on feed, first of the month</div><div class="cof-src">USDA NASS Cattle on Feed · on-feed headcount · 000 head · a month with no report is left blank</div><div class="cof-legend"><span><i class="cof-sw-band"></i>${bandLabel}</span>${byYear[last] ? `<span><i class="cof-sw-ly"></i>${last}</span>` : ''}<span><i class="cof-sw-cy"></i>${current}</span></div>`;
+  let svg = `<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="USDA NASS Cattle on Feed, cattle on feed, 000 head">`;
+  cofTicks(lo, hi, 5).forEach(t=>{
+    svg += `<line x1="${M.l}" x2="${M.l + plotW}" y1="${yOf(t)}" y2="${yOf(t)}" style="stroke:var(--border);stroke-width:1"/>`;
+    svg += `<text x="${M.l - 8}" y="${yOf(t) + 4}" text-anchor="end" style="fill:var(--text3);font-size:13px">${Math.round(t).toLocaleString()}</text>`;
   });
-  svg += `<text x="${M.l}" y="${H-6}" style="fill:var(--text3);font-size:12px">Jan</text><text x="${W-M.r}" y="${H-6}" text-anchor="end" style="fill:var(--text3);font-size:12px">Dec</text>`;
-  svg += `</svg>`;
-  box.innerHTML = svg;
+  svg += `<text transform="rotate(-90)" x="${-(M.t + plotH / 2)}" y="16" text-anchor="middle" style="fill:var(--text3);font-size:13px">000 head</text>`;
+  let run = [];
+  const flush = ()=>{
+    if(!run.length) return;
+    if(run.length === 1){
+      const p = run[0], w = 16, top = yOf(p.hi), bot = yOf(p.lo);
+      svg += `<rect x="${(x(p.m) - w / 2).toFixed(1)}" y="${top.toFixed(1)}" width="${w}" height="${Math.max(2, bot - top).toFixed(1)}" fill="rgba(91,111,148,.35)" stroke="#5b6f94" stroke-width="1"/>`;
+    } else {
+      const upper = run.map(p=>`${x(p.m).toFixed(1)},${yOf(p.hi).toFixed(1)}`);
+      const lower = run.slice().reverse().map(p=>`${x(p.m).toFixed(1)},${yOf(p.lo).toFixed(1)}`);
+      svg += `<polygon points="${upper.concat(lower).join(' ')}" fill="rgba(91,111,148,.35)" stroke="#5b6f94" stroke-width="1"/>`;
+    }
+    run = [];
+  };
+  months.forEach(p=>{ if(p.lo==null) flush(); else run.push(p); });
+  flush();
+  const stroke = (year, color, width)=>{
+    const row = byYear[year];
+    if(!row) return;
+    let seg = [];
+    const draw = ()=>{
+      if(seg.length >= 2) svg += `<polyline fill="none" stroke="${color}" stroke-width="${width}" points="${seg.join(' ')}"/>`;
+      else if(seg.length === 1){
+        const [px, py] = seg[0].split(',');
+        svg += `<circle cx="${px}" cy="${py}" r="3.5" fill="${color}"/>`;
+      }
+      seg = [];
+    };
+    for(let m = 1; m <= 12; m++){
+      if(row[m]==null) draw();
+      else seg.push(`${x(m).toFixed(1)},${yOf(row[m]).toFixed(1)}`);
+    }
+    draw();
+  };
+  stroke(last, 'var(--text2)', 1.8);
+  stroke(current, 'var(--amber)', 2.6);
+  ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'].forEach((name, i)=>{
+    svg += `<text x="${x(i + 1)}" y="${H - 10}" text-anchor="middle" style="fill:var(--text3);font-size:13px">${name}</text>`;
+  });
+  svg += `</svg></div>`;
+  box.innerHTML = html + svg;
 }
 function ensureCattle(box){
   const go = ()=>renderCattle(box);

@@ -78,6 +78,10 @@ def test_cattle_rows_score_their_own_inputs():
     assert [col["label"] for col in cattle["columns"][:2]] == ["Supply", "Pipeline"]
     live = next(row for row in cattle["rows"] if row["label"] == "Live cattle")["signals"]
     feeder = next(row for row in cattle["rows"] if row["label"] == "Feeder cattle")["signals"]
+    assert live["supply"]["caption"] == "On feed"
+    assert live["pipeline"]["caption"] == "Marketings"
+    assert feeder["supply"]["caption"] == "Outside feedlots"
+    assert feeder["pipeline"]["caption"] == "Placements"
     assert live["supply"]["rule_id"] == "cattle_yoy"
     assert live["supply"]["inputs"]["pct"] == feed["on_feed"]["pct_of_year_ago"]
     assert live["pipeline"]["rule_id"] == "cattle_yoy"

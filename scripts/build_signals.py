@@ -918,6 +918,10 @@ def build(cfg=None):
     marketings = cattle_pct(feed, "marketings", cfg, what="Marketings")
     placements = cattle_pct(feed, "placements", cfg, demand=True, what="Placements")
     outside = outside_feedlots_signal(cattle, cfg)
+    on_feed["caption"] = "On feed"
+    marketings["caption"] = "Marketings"
+    outside["caption"] = "Outside feedlots"
+    placements["caption"] = "Placements"
     cut = cutout_signal(cattle, cfg)
 
     def cattle_row(label, supply, pipeline, code, peak):
