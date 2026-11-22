@@ -19,13 +19,13 @@ body.dark{
   --bg:#000;--bg1:#060606;--bg2:#0a0a0a;--border:#141414;--border2:#1e1e1e;
   --text:#d4b896;--text2:#8a7a68;--text3:#6a5a4a;--na:#8d8478;
   --amber:#f5a623;--green:#2e8f52;--red:#b83838;
-  --th-bg:#040404;--section-bg:#050505;--row-alt:#030303;--row-latest:#0c0800;--grp-line:#4a4034;--ref-color:#8496bd;--ref-bg:rgba(132,150,189,.07);
+  --th-bg:#040404;--section-bg:#050505;--row-alt:#030303;--row-latest:#0c0800;--grp-line:#4a4034;--sig-split:#f0e2cc;--ref-color:#8496bd;--ref-bg:rgba(132,150,189,.07);
 }
 body.light{
   --bg:#FFFFFF;--bg1:#F7F8FA;--bg2:#F0F1F4;--border:#E0E2E8;--border2:#C8CCD4;
   --text:#1A1D24;--text2:#3A3F4A;--text3:#6B7280;--na:#8b909a;
   --amber:#B8720A;--green:#0E7A3A;--red:#C4302B;
-  --th-bg:#F2F3F6;--section-bg:#ECEDF0;--row-alt:#F7F8FA;--row-latest:#FFF3DC;--grp-line:#9AA1AD;--ref-color:#5b6f94;--ref-bg:rgba(91,111,148,.07);
+  --th-bg:#F2F3F6;--section-bg:#ECEDF0;--row-alt:#F7F8FA;--row-latest:#FFF3DC;--grp-line:#9AA1AD;--sig-split:#1A1D24;--ref-color:#5b6f94;--ref-bg:rgba(91,111,148,.07);
 }
 #topbar{position:sticky;top:0;z-index:10;padding:14px 20px;border-bottom:1px solid var(--amber);background:var(--bg);display:flex;align-items:center;gap:12px 20px;flex-wrap:wrap;max-width:100%}
 #page-tabs,#summary-topbar,#cftc-topbar,#exports-topbar,#weather-topbar,#seasonals-topbar{flex-wrap:wrap;max-width:100%}
@@ -1308,6 +1308,7 @@ fetch('data/psd_data.json')
 .summary-table{border:1px solid var(--border2);background:var(--bg)}
 /* group divider: the first column of each group gets a heavier left line, running the full height of the table */
 .grp-l{border-left:2px solid var(--grp-line)}
+.sig-table th.sig-split,.sig-table td.sig-split{border-left:3px solid var(--sig-split)}
 .summary-table th{background:var(--th-bg);padding:4px 3px;text-align:right;letter-spacing:.02em;color:var(--text);border-bottom:2px solid var(--border2);white-space:normal;overflow-wrap:anywhere}
 .summary-table th:first-child{text-align:left}
 .summary-table td{padding:3px 3px;text-align:right;border-bottom:1px solid var(--border);color:var(--text2);white-space:normal;overflow-wrap:anywhere;background:var(--bg)}

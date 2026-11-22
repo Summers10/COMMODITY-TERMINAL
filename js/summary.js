@@ -136,11 +136,12 @@ function signalTable(section){
   const groups = section.groups || [];
   const widths = [1.6, ...cols.map(()=>1)];
   let html = `<div class="panel"><table class="term-table summary-table sig-table">${fitColgroup(widths)}<thead>`;
+  const splitIds = new Set(groups.map(g=>g.ids && g.ids[0]).filter(Boolean));
   if(groups.length){
     html += `<tr><th rowspan="2">Market</th>`;
-    groups.forEach(g=>{ html += `<th colspan="${g.ids.length}">${g.label}</th>`; });
+    groups.forEach(g=>{ html += `<th colspan="${g.ids.length}" class="sig-split">${g.label}</th>`; });
     html += `</tr><tr>`;
-    cols.forEach(col=>{ html += `<th>${col.label}</th>`; });
+    cols.forEach(col=>{ html += `<th class="${splitIds.has(col.id)?'sig-split':''}">${col.label}</th>`; });
     html += `</tr>`;
   } else {
     html += `<tr><th>Market</th>`;
@@ -153,8 +154,9 @@ function signalTable(section){
     cols.forEach(col=>{
       const sig = (row.signals||{})[col.id] || {};
       const cls = sig.state ? `sig sig-${sig.state}` : 'sig';
+      const split = splitIds.has(col.id) ? ' sig-split' : '';
       const text = sig.text || na();
-      html += `<td class="${cls}"><button type="button" class="sig-hit" data-detail="${escapeAttr(sig.detail||sig.reason||'')}" data-rule="${escapeAttr(ruleText(sig.rule_id))}" data-asof="${escapeAttr(sig.as_of||'')}">${text}</button></td>`;
+      html += `<td class="${cls}${split}"><button type="button" class="sig-hit" data-detail="${escapeAttr(sig.detail||sig.reason||'')}" data-rule="${escapeAttr(ruleText(sig.rule_id))}" data-asof="${escapeAttr(sig.as_of||'')}">${text}</button></td>`;
     });
     html += `</tr>`;
   });
