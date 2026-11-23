@@ -115,7 +115,7 @@ document.querySelectorAll('.page-tab').forEach(function(btn){
   btn.addEventListener('click', function(){
     document.querySelectorAll('.page-tab').forEach(function(b){ b.classList.remove('active'); b.style.color = '#6a5a4a'; });
     btn.classList.add('active'); btn.style.color = '#f5a623';
-    ['summary','usda','cftc','seasonals','exports','weather','energy','progress','cattle'].forEach(function(p){
+    ['summary','usda','cftc','seasonals','exports','weather','energy','cattle'].forEach(function(p){
       var el = document.getElementById(p+'-page');
       if(el) el.style.display = btn.dataset.page === p ? '' : 'none';
     });
@@ -123,7 +123,6 @@ document.querySelectorAll('.page-tab').forEach(function(btn){
     if(btn.dataset.page === 'weather' && typeof ensureWeather === 'function') ensureWeather();
     if(btn.dataset.page === 'exports' && typeof ensureExportHistory === 'function') ensureExportHistory();
     if(btn.dataset.page === 'energy' && typeof ensureEnergy === 'function') ensureEnergy();
-    if(btn.dataset.page === 'progress' && typeof ensureProgress === 'function') ensureProgress();
     if(btn.dataset.page === 'cattle' && typeof ensureCattle === 'function') ensureCattle();
   });
 });
@@ -3079,12 +3078,11 @@ function openPage(page, comm){
     b.classList.toggle('active', on);
     b.style.color = on ? '#f5a623' : '#6a5a4a';
   });
-  ['summary','usda','cftc','seasonals','exports','weather','energy','progress','cattle'].forEach(function(p){
+  ['summary','usda','cftc','seasonals','exports','weather','energy','cattle'].forEach(function(p){
     var el = document.getElementById(p+'-page');
     if(el) el.style.display = p===page ? '' : 'none';
   });
   if(page==='energy' && typeof ensureEnergy==='function') ensureEnergy();
-  if(page==='progress' && typeof ensureProgress==='function') ensureProgress();
   if(page==='cattle' && typeof ensureCattle==='function') ensureCattle();
   if(page==='weather' && typeof ensureWeather==='function') ensureWeather();
   if(page==='cftc' && typeof fitCftcTable==='function') fitCftcTable();

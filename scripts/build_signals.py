@@ -109,11 +109,6 @@ def yoy_pct_state(pct, low, high):
     return band(pct, "bullish", "bearish", low, high)
 
 
-def condition_state(delta_pp, cfg):
-    # A crop worse than the comparison is bullish.
-    return band(delta_pp, "bullish", "bearish", -cfg["condition_pp"], cfg["condition_pp"])
-
-
 def demand_pace_state(delta_pp, cfg):
     return band(delta_pp, "bearish", "bullish", -cfg["demand_pp"], cfg["demand_pp"])
 
@@ -140,8 +135,6 @@ def rescore(rule_id, inputs, cfg):
         return yoy_pct_state(inputs.get("pct"), cfg["cattle_yoy_low"], cfg["cattle_yoy_high"])
     if rule_id == "cattle_demand":
         return band(inputs.get("pct"), "bearish", "bullish", cfg["cattle_yoy_low"], cfg["cattle_yoy_high"])
-    if rule_id == "condition":
-        return condition_state(inputs.get("delta_pp"), cfg)
     if rule_id == "demand_pace":
         return demand_pace_state(inputs.get("delta_pp"), cfg)
     if rule_id in ("canola_exports", "demand_yoy"):
@@ -231,8 +224,6 @@ def figure_text(rule_id, state, inputs):
         body = f"{inputs['pct']:g}%"
     elif rule_id in ("canola_exports", "demand_yoy"):
         body = f"{inputs['yoy_pct']:+.1f}%"
-    elif rule_id == "condition":
-        body = f"{inputs['delta_pp']:+.1f} pp"
     elif rule_id == "demand_pace":
         body = f"{inputs['delta_pp']:+.1f} pp"
     else:
@@ -499,35 +490,6 @@ def canola_demand(cgc, cfg):
         "exports": cur,
         "year_ago": ya,
     }, detail, "cgc", cfg)
-
-
-def in_season(kind, cfg):
-    months = cfg["condition_months"].get(kind)
-    if not months:
-        return False
-    return TODAY.month in months
-
-
-def condition_signal(progress, crop_name, kind, cfg):
-    if not in_season(kind, cfg):
-        return dash("condition", "out of season")
-    rows = [r for r in ((progress or {}).get("rows") or []) if r.get("crop") == crop_name and r.get("metric") == "condition_ge"]
-    as_of = (progress or {}).get("report_date")
-    if not rows:
-        return dash("condition", "Good/excellent was not printed in the latest crop progress report.", as_of)
-    row = rows[0]
-    current = row.get("current")
-    base = row.get("avg5")
-    base_name = "5-year average"
-    if base is None:
-        base = row.get("last_year")
-        base_name = "year ago"
-    if current is None or base is None:
-        return dash("condition", "Good/excellent has no 5-year average and no year-ago print.", as_of)
-    delta = current - base
-    state = condition_state(delta, cfg)
-    detail = f"Good/excellent {current:g} versus {base_name} {base:g} ({delta:+.1f} pp)."
-    return cell(state, "condition", as_of, {"delta_pp": round(delta, 4), "current": current, "base": base}, detail, "crop", cfg)
 
 
 def iso_change(history):
@@ -813,14 +775,13 @@ def build(cfg=None):
     history = load_json("export_sales_history.json")
     energy = load_json("energy.json") or {}
     cattle = load_json("cattle.json") or {}
-    progress = load_json("us.json")
     cgc = load_json("cgc.json")
     sd = load_json("sd.json")
     series = {s["key"]: s for s in energy.get("series") or []}
     feed = (cattle.get("on_feed") or [None])[-1]
     seasonals = load_seasonals()
 
-    def grain(label, comm, country, cftc_code, fas, condition_kind, crop_name, fund_note, peak):
+    def grain(label, comm, country, cftc_code, fas, fund_note, peak):
         fund = fundamentals(psd, prior, comm, country, cfg, fund_note)
         demand = demand_yoy(exports, fas, cfg) if fas else dash("demand_yoy", "No export series is wired for this row.")
         if fas is None and label == "Canola":
@@ -842,13 +803,13 @@ def build(cfg=None):
         return row(label, sigs, figs, "usda", comm, cfg)
 
     grains = [
-        grain("Corn", "Corn", "United States", "002602", "CORN - UNMILLED", "corn", "Corn", "US corn stocks/use.", "Corn"),
-        grain("Wheat (Chicago SRW)", "Wheat", "United States", "001602", "ALL WHEAT", "wheat_winter", "Wheat, Winter", "US all-wheat stocks/use.", "Chicago Wheat"),
-        grain("Wheat (KC HRW)", "Wheat", "United States", "001612", "ALL WHEAT", "wheat_winter", "Wheat, Winter", "US all-wheat stocks/use. There is no separate HRW balance in this file.", "Kansas Wheat"),
-        grain("Wheat (MGEX)", "Wheat", "United States", "001626", "ALL WHEAT", "wheat_spring", "Wheat, Spring", "US all-wheat stocks/use. There is no separate spring-wheat balance in this file.", "Spring Wheat"),
+        grain("Corn", "Corn", "United States", "002602", "CORN - UNMILLED", "US corn stocks/use.", "Corn"),
+        grain("Wheat (Chicago SRW)", "Wheat", "United States", "001602", "ALL WHEAT", "US all-wheat stocks/use.", "Chicago Wheat"),
+        grain("Wheat (KC HRW)", "Wheat", "United States", "001612", "ALL WHEAT", "US all-wheat stocks/use. There is no separate HRW balance in this file.", "Kansas Wheat"),
+        grain("Wheat (MGEX)", "Wheat", "United States", "001626", "ALL WHEAT", "US all-wheat stocks/use. There is no separate spring-wheat balance in this file.", "Spring Wheat"),
     ]
     oilseeds = [
-        grain("Soybeans", "Soybeans", "United States", "005602", "SOYBEANS", "soybeans", "Soybeans", "US soybean stocks/use.", "Soybeans"),
+        grain("Soybeans", "Soybeans", "United States", "005602", "SOYBEANS", "US soybean stocks/use.", "Soybeans"),
     ]
     canola_fund = canola_fundamentals(sd, psd, prior, cfg)
     canola_sigs = {
@@ -866,8 +827,8 @@ def build(cfg=None):
     if canola_fund["inputs"].get("revision") is not None:
         canola_figs.append({"label": "Stocks revision", "value": f"{canola_fund['inputs']['revision']:+,.0f}"})
     oilseeds.append(row("Canola", canola_sigs, canola_figs, "usda", "Rapeseed/Canola", cfg))
-    oilseeds.append(grain("Soybean meal", "Soybean Meal", "United States", "026603", "SOYBEAN CAKE AND MEAL", None, None, "US soybean meal stocks/use.", "Soybean Meal"))
-    oilseeds.append(grain("Soybean oil", "Soybean Oil", "United States", "007601", "SOYBEAN OIL", None, None, "US soybean oil stocks/use.", "Soybean Oil"))
+    oilseeds.append(grain("Soybean meal", "Soybean Meal", "United States", "026603", "SOYBEAN CAKE AND MEAL", "US soybean meal stocks/use.", "Soybean Meal"))
+    oilseeds.append(grain("Soybean oil", "Soybean Oil", "United States", "007601", "SOYBEAN OIL", "US soybean oil stocks/use.", "Soybean Oil"))
 
     def energy_row(label, key, code):
         ser = series.get(key) or {}

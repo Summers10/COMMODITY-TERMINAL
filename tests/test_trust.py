@@ -19,10 +19,6 @@ WHEAT_EXPORTERS = [
     "United States", "European Union", "Russia", "Canada",
     "Australia", "Ukraine", "Argentina",
 ]
-ALLOWED_CROP = ("corn", "soy", "wheat", "oat", "cotton", "maize", "blé")
-BANNED_CROP = ("peanut", "rice", "sorghum", "barley", "sunflower", "sugarbeet", "durum")
-
-
 def load(name):
     return json.loads((DATA / name).read_text())
 
@@ -155,22 +151,6 @@ def test_energy_identities_and_computed_petroleum_average():
     crude = next(s for s in book["series"] if s["key"] == "crude_stocks")
     assert crude["avg5_basis"] == "computed from EIA weekly levels"
     assert abs((crude["value"] - crude["avg5"]) / crude["avg5"] * 100 - crude["vs_avg5_pct"]) < 0.15
-
-
-def test_crop_progress_keeps_only_the_desk_crops_and_is_current():
-    for name in ("us", "br", "fr", "ar"):
-        book = load(f"{name}.json")
-        assert book["rows"]
-        for row in book["rows"]:
-            crop = row["crop"].lower()
-            assert not any(b in crop for b in BANNED_CROP), row["crop"]
-            assert any(k in crop for k in ALLOWED_CROP), row["crop"]
-    us = load("us.json")
-    # NASS pauses for stretches of the winter. The file must name a report date.
-    assert us["report_date"][:4].isdigit()
-    assert age(us["report_date"]) <= 60
-    crops = {r["crop"] for r in us["rows"]}
-    assert crops <= {"Corn", "Soybeans", "Cotton", "Wheat, Winter", "Wheat, Spring", "Oats"}
 
 
 def test_cattle_on_feed_has_every_published_month():

@@ -38,7 +38,6 @@ Add these in the repository Actions secrets if the workflow should refresh that 
 
 | Secret | Used by |
 | --- | --- |
-| `NASS_API_KEY` | US crop progress (NASS Quick Stats). Cattle on feed does not need it. |
 | `EIA_API_KEY` | Not used. Energy is read from the public WPSR and WNGSR files. |
 | `FRED_API_KEY` | Not used. |
 
