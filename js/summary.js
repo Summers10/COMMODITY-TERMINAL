@@ -1,5 +1,5 @@
 /* Landing page: one glance per market. Figures are read from the official files. */
-let ENERGY = null, CATTLE = null, PROGRESS = null, CGC = null;
+let ENERGY = null, CATTLE = null, CGC = null;
 
 function signed(v, d){
   if(v===null || v===undefined || isNaN(v)) return na();
@@ -67,28 +67,6 @@ function cgcFlow(){
   if(!h || h.exp_cy==null || h.exp_ya==null || !h.exp_ya) return null;
   return (h.exp_cy/h.exp_ya - 1) * 100;
 }
-function cropDelta(group){
-  const us = PROGRESS && PROGRESS.us;
-  if(!us || !us.rows) return null;
-  const rows = us.rows.filter(r => cropGroupName(r.crop)===group);
-  if(!rows.length) return null;
-  const harvested = rows.find(r => r.metric==='harvested' && r.current>5 && r.current<99);
-  const cond = rows.find(r => r.metric==='condition_ge');
-  const planted = rows.find(r => r.metric==='planted' && r.current>1 && r.current<99);
-  const row = [harvested, cond, planted].find(r => r && r.current!=null && r.avg5!=null) || null;
-  if(!row) return null;
-  const label = row.metric==='condition_ge' ? 'cond' : row.metric.slice(0,4);
-  return {text: label+' '+(row.current-row.avg5>=0?'+':'')+(Math.round((row.current-row.avg5)*10)/10), v: row.current-row.avg5};
-}
-function cropGroupName(name){
-  const c = String(name||'').toLowerCase();
-  if(/wheat/.test(c)) return 'Wheat';
-  if(/corn/.test(c)) return 'Corn';
-  if(/soy/.test(c)) return 'Soybeans';
-  if(/canola|rapeseed/.test(c)) return 'Canola';
-  return null;
-}
-
 let SIGNALS = null;
 function renderSummary(){
   const root = document.getElementById('summary-root');
@@ -266,12 +244,9 @@ function loadGlance(){
   Promise.all([
     grab('data/energy.json'),
     grab('data/cattle.json'),
-    grab('data/us.json'),
     grab('data/cgc.json'),
-  ]).then(([e,c,u,g])=>{
+  ]).then(([e,c,g])=>{
     ENERGY = e; CATTLE = c; CGC = g;
-    PROGRESS = PROGRESS || {};
-    if(u) PROGRESS.us = u;
     if(typeof renderSummary==='function' && usdaReady && cftcReady && exportsReady) renderSummary();
   });
 }
