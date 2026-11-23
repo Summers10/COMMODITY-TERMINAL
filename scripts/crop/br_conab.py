@@ -6,9 +6,10 @@ from __future__ import annotations
 
 import io
 import re
+import time
 from datetime import date, datetime, timedelta
 
-from common import payload, rec, session, validate
+from common import payload, rec, validate
 
 INDEX = "https://www.gov.br/conab/pt-br/atuacao/informacoes-agropecuarias/safras/progresso-de-safra"
 
@@ -82,13 +83,34 @@ def parse_grid(grid: list[list]) -> tuple[str, list[dict]]:
     return (report.isoformat() if report else None), out
 
 
-def latest_xlsx_url(s) -> str:
-    html = s.get(INDEX, timeout=60).text
+def _get(url: str, timeout: int = 60):
+    """gov.br resets plain requests. A browser impersonation gets the official page."""
+    from curl_cffi import requests as creq
+
+    last = None
+    for attempt in range(4):
+        try:
+            response = creq.get(
+                url,
+                impersonate="chrome",
+                timeout=timeout,
+                headers={"Accept-Language": "pt-BR,pt;q=0.9,en;q=0.8"},
+            )
+            response.raise_for_status()
+            return response
+        except Exception as exc:  # noqa: BLE001 – retry the reset, then surface it
+            last = exc
+            time.sleep(2 * (attempt + 1))
+    raise RuntimeError(f"CONAB request failed for {url}: {last}")
+
+
+def latest_xlsx_url() -> str:
+    html = _get(INDEX, timeout=60).text
     folders = re.findall(r'href="(' + re.escape(INDEX) + r'/acompanhamento-das-lavouras-[^"/]+)', html)
     if not folders:
         raise RuntimeError("no weekly folders found on CONAB index page")
     for folder in dict.fromkeys(folders):        # newest first, de-duplicated
-        page = s.get(folder, timeout=60)
+        page = _get(folder, timeout=60)
         links = re.findall(r'href="([^"]*plantio[^"]*\.xlsx[^"]*)"', page.text, re.I)
         if links:
             url = links[0]
@@ -101,13 +123,10 @@ def latest_xlsx_url(s) -> str:
 def fetch() -> dict:
     import openpyxl
 
-    s = session()
-    url = latest_xlsx_url(s)
-    r = s.get(url, timeout=90)
-    r.raise_for_status()
+    url = latest_xlsx_url()
+    r = _get(url, timeout=90)
     if not r.content.startswith(b"PK"):           # got an HTML page, try Plone's download view
-        r = s.get(url + "/@@download/file", timeout=90)
-        r.raise_for_status()
+        r = _get(url + "/@@download/file", timeout=90)
         if not r.content.startswith(b"PK"):
             raise RuntimeError(f"CONAB link is not an xlsx file: {url}")
     wb = openpyxl.load_workbook(io.BytesIO(r.content), data_only=True, read_only=True)

@@ -16,6 +16,7 @@ on:
 
 permissions:
   contents: write
+  actions: write
 
 concurrency:
   group: fetch-cattle
@@ -42,8 +43,10 @@ jobs:
         if: always()
         run: python -m pytest -q tests
       - name: Commit
+        id: commit
         if: steps.trust.outcome == 'success'
         run: |
+          echo "changed=false" >> "$GITHUB_OUTPUT"
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           if [ -f data/cattle.json ]; then
@@ -52,6 +55,7 @@ jobs:
               git commit -m "Update cattle $(date -u +%Y-%m-%dT%H:%MZ)"
               for attempt in 1 2 3; do
                 if git pull --rebase -X theirs origin main && git push; then
+                  echo "changed=true" >> "$GITHUB_OUTPUT"
                   exit 0
                 fi
                 git rebase --abort 2>/dev/null || true
@@ -61,6 +65,11 @@ jobs:
               exit 1
             fi
           fi
+      - name: Publish the data commit
+        if: steps.commit.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run pages.yml --ref main
       - name: Fail the run when the fetch failed
         if: steps.cattle.outcome == 'failure'
         run: |
