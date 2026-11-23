@@ -19,6 +19,7 @@ on:
 
 permissions:
   contents: write
+  actions: write
 
 concurrency:
   group: fetch-cgc
@@ -47,8 +48,10 @@ jobs:
       - name: Trust audit
         run: python -m pytest -q tests
       - name: Commit
+        id: commit
         if: success()
         run: |
+          echo "changed=false" >> "$GITHUB_OUTPUT"
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add data/cgc.json data/sd.json data/aafc data/signals.json || true
@@ -58,6 +61,7 @@ jobs:
             git commit -m "Update CGC canola $(date -u +%Y-%m-%d)"
             for attempt in 1 2 3; do
               if git pull --rebase -X theirs origin main && git push; then
+                echo "changed=true" >> "$GITHUB_OUTPUT"
                 exit 0
               fi
               git rebase --abort 2>/dev/null || true
@@ -66,6 +70,11 @@ jobs:
             echo "Could not push" >&2
             exit 1
           fi
+      - name: Publish the data commit
+        if: steps.commit.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run pages.yml --ref main
       - name: Fail if a fetch failed
         if: steps.weekly.outcome == 'failure' || steps.sd.outcome == 'failure'
         run: |

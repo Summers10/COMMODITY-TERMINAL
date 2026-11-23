@@ -1,5 +1,8 @@
 name: Deploy GitHub Pages
 
+# A push made with the workflow GITHUB_TOKEN does not start this workflow.
+# Fetch jobs dispatch it after they commit. A merge from outside Actions still
+# starts it through the push trigger.
 on:
   push:
     branches: [main]
