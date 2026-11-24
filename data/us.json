@@ -3,13 +3,13 @@
  "country": "United States",
  "source": "USDA NASS Crop Progress",
  "source_url": "https://www.nass.usda.gov/Publications/National_Crop_Progress/",
- "report_date": "2026-11-15",
- "fetched_at": "2026-11-23T12:48:30+00:00",
+ "report_date": "2026-11-22",
+ "fetched_at": "2026-11-24T00:50:05+00:00",
  "beta": false,
  "notes": [
   "National row of the printed Crop Progress report. The 5-year average is the figure NASS prints.",
   "A cell printed (NA) is not available. It is not filled in.",
-  "Condition is good plus excellent from the printed shares. Released November 16, 2026."
+  "Condition is good plus excellent from the printed shares. Released November 23, 2026."
  ],
  "rows": [
   {
@@ -18,32 +18,10 @@
    "season": null,
    "region": "United States",
    "metric": "harvested",
-   "current": 88.0,
-   "prev_week": 81.0,
-   "last_year": 90.0,
-   "avg5": 92.0
-  },
-  {
-   "crop": "Soybeans",
-   "crop_local": null,
-   "season": null,
-   "region": "United States",
-   "metric": "harvested",
-   "current": 96.0,
-   "prev_week": 92.0,
-   "last_year": 93.0,
-   "avg5": 95.0
-  },
-  {
-   "crop": "Cotton",
-   "crop_local": null,
-   "season": null,
-   "region": "United States",
-   "metric": "bolls opening",
-   "current": 95.0,
-   "prev_week": 94.0,
-   "last_year": 99.0,
-   "avg5": 99.0
+   "current": 94.0,
+   "prev_week": 88.0,
+   "last_year": 95.0,
+   "avg5": 96.0
   },
   {
    "crop": "Cotton",
@@ -51,10 +29,10 @@
    "season": null,
    "region": "United States",
    "metric": "harvested",
-   "current": 77.0,
-   "prev_week": 71.0,
-   "last_year": 70.0,
-   "avg5": 71.0
+   "current": 84.0,
+   "prev_week": 77.0,
+   "last_year": 78.0,
+   "avg5": 79.0
   },
   {
    "crop": "Wheat, Winter",
@@ -62,10 +40,10 @@
    "season": null,
    "region": "United States",
    "metric": "planted",
-   "current": 92.0,
-   "prev_week": 89.0,
-   "last_year": 91.0,
-   "avg5": 94.0
+   "current": 95.0,
+   "prev_week": 92.0,
+   "last_year": 96.0,
+   "avg5": 97.0
   },
   {
    "crop": "Wheat, Winter",
@@ -73,10 +51,10 @@
    "season": null,
    "region": "United States",
    "metric": "emerged",
-   "current": 82.0,
-   "prev_week": 76.0,
-   "last_year": 78.0,
-   "avg5": 81.0
+   "current": 87.0,
+   "prev_week": 82.0,
+   "last_year": 86.0,
+   "avg5": 87.0
   },
   {
    "crop": "Wheat, Winter",
@@ -84,16 +62,16 @@
    "season": null,
    "region": "United States",
    "metric": "condition_ge",
-   "current": 53.0,
-   "prev_week": 49.0,
-   "last_year": 45.0,
+   "current": 54.0,
+   "prev_week": 53.0,
+   "last_year": 48.0,
    "avg5": null,
    "dist": {
     "vp": 3.0,
-    "pr": 10.0,
+    "pr": 9.0,
     "fr": 34.0,
     "gd": 43.0,
-    "ex": 10.0
+    "ex": 11.0
    }
   }
  ]
