@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-11-24T01:38:25+00:00",
+ "generated_at": "2026-11-24T02:26:54+00:00",
  "config": {
   "stu_bull_pct": 33,
   "stu_bear_pct": 67,
@@ -155,13 +155,13 @@
   {
    "feed": "CGC",
    "as_of": "2026-11-15",
-   "last_run": "2026-11-23 12:48",
+   "last_run": "2026-11-24 02:26",
    "cadence_days": 14
   },
   {
    "feed": "AAFC",
    "as_of": "2026-10-20",
-   "last_run": "2026-11-23 12:48",
+   "last_run": "2026-11-24 02:26",
    "cadence_days": 45
   },
   {
