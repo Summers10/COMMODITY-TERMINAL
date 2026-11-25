@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-11-25T23:04:03+00:00",
+ "generated_at": "2026-11-25T23:48:03+00:00",
  "config": {
   "stu_bull_pct": 33,
   "stu_bear_pct": 67,
@@ -136,8 +136,8 @@
   },
   {
    "feed": "EIA",
-   "as_of": "2026-11-13",
-   "last_run": "2026-11-25 04:53",
+   "as_of": "2026-11-20",
+   "last_run": "2026-11-25 23:48",
    "cadence_days": 14
   },
   {
@@ -1635,28 +1635,28 @@
      "label": "Crude (WTI)",
      "signals": {
       "energy_level": {
-       "state": "bullish",
+       "state": "neutral",
        "rule_id": "energy_level",
-       "as_of": "2026-11-13",
+       "as_of": "2026-11-20",
        "inputs": {
-        "vs_avg_pct": -3.7
+        "vs_avg_pct": -2.9
        },
-       "detail": "Stocks 417.797 versus the 5-year average 433.637 (-3.7%). computed from EIA weekly levels.",
+       "detail": "Stocks 418.906 versus the 5-year average 431.447 (-2.9%). computed from EIA weekly levels.",
        "reason": null,
-       "text": "\u25b2 -3.7%"
+       "text": "-2.9%"
       },
       "energy_change": {
        "state": "neutral",
        "rule_id": "energy_change",
-       "as_of": "2026-11-13",
+       "as_of": "2026-11-20",
        "inputs": {
-        "delta_pp": 0.677,
-        "change_pct": 0.8156,
-        "norm_pct": 0.1386
+        "delta_pp": 0.7733,
+        "change_pct": 0.2654,
+        "norm_pct": -0.5078
        },
-       "detail": "This week's stock change is +0.82% of the prior week. The same week of the prior five years averaged +0.14%. Difference +0.68 pp.",
+       "detail": "This week's stock change is +0.27% of the prior week. The same week of the prior five years averaged -0.51%. Difference +0.77 pp.",
        "reason": null,
-       "text": "+0.7 pp"
+       "text": "+0.8 pp"
       },
       "mm_extension": {
        "state": "neutral",
@@ -1688,15 +1688,15 @@
      "figures": [
       {
        "label": "Stocks",
-       "value": "417.797"
+       "value": "418.906"
       },
       {
        "label": "Week change",
-       "value": "+3.38"
+       "value": "+1.11"
       },
       {
        "label": "Vs 5-yr",
-       "value": "-3.7%"
+       "value": "-2.9%"
       }
      ],
      "page": "usda",
@@ -1708,26 +1708,26 @@
       "energy_level": {
        "state": "neutral",
        "rule_id": "energy_level",
-       "as_of": "2026-11-13",
+       "as_of": "2026-11-20",
        "inputs": {
-        "vs_avg_pct": 2.3
+        "vs_avg_pct": 1.8
        },
-       "detail": "Stocks 215.949 versus the 5-year average 211.026 (+2.3%). computed from EIA weekly levels.",
+       "detail": "Stocks 217.682 versus the 5-year average 213.904 (+1.8%). computed from EIA weekly levels.",
        "reason": null,
-       "text": "+2.3%"
+       "text": "+1.8%"
       },
       "energy_change": {
        "state": "neutral",
        "rule_id": "energy_change",
-       "as_of": "2026-11-13",
+       "as_of": "2026-11-20",
        "inputs": {
-        "delta_pp": 1.7312,
-        "change_pct": 2.4635,
-        "norm_pct": 0.7323
+        "delta_pp": -0.5638,
+        "change_pct": 0.8025,
+        "norm_pct": 1.3663
        },
-       "detail": "This week's stock change is +2.46% of the prior week. The same week of the prior five years averaged +0.73%. Difference +1.73 pp.",
+       "detail": "This week's stock change is +0.80% of the prior week. The same week of the prior five years averaged +1.37%. Difference -0.56 pp.",
        "reason": null,
-       "text": "+1.7 pp"
+       "text": "-0.6 pp"
       },
       "mm_extension": {
        "state": "bearish",
@@ -1759,15 +1759,15 @@
      "figures": [
       {
        "label": "Stocks",
-       "value": "215.949"
+       "value": "217.682"
       },
       {
        "label": "Week change",
-       "value": "+5.193"
+       "value": "+1.733"
       },
       {
        "label": "Vs 5-yr",
-       "value": "+2.3%"
+       "value": "+1.8%"
       }
      ],
      "page": "usda",
@@ -1779,26 +1779,26 @@
       "energy_level": {
        "state": "bullish",
        "rule_id": "energy_level",
-       "as_of": "2026-11-13",
+       "as_of": "2026-11-20",
        "inputs": {
-        "vs_avg_pct": -6.6
+        "vs_avg_pct": -8.0
        },
-       "detail": "Stocks 104.901 versus the 5-year average 112.352 (-6.6%). computed from EIA weekly levels.",
+       "detail": "Stocks 105.616 versus the 5-year average 114.849 (-8.0%). computed from EIA weekly levels.",
        "reason": null,
-       "text": "\u25b2 -6.6%"
+       "text": "\u25b2 -8.0%"
       },
       "energy_change": {
        "state": "neutral",
        "rule_id": "energy_change",
-       "as_of": "2026-11-13",
+       "as_of": "2026-11-20",
        "inputs": {
-        "delta_pp": 1.6987,
-        "change_pct": 1.5204,
-        "norm_pct": -0.1784
+        "delta_pp": -1.5913,
+        "change_pct": 0.6816,
+        "norm_pct": 2.2729
        },
-       "detail": "This week's stock change is +1.52% of the prior week. The same week of the prior five years averaged -0.18%. Difference +1.70 pp.",
+       "detail": "This week's stock change is +0.68% of the prior week. The same week of the prior five years averaged +2.27%. Difference -1.59 pp.",
        "reason": null,
-       "text": "+1.7 pp"
+       "text": "-1.6 pp"
       },
       "mm_extension": {
        "state": "neutral",
@@ -1830,15 +1830,15 @@
      "figures": [
       {
        "label": "Stocks",
-       "value": "104.901"
+       "value": "105.616"
       },
       {
        "label": "Week change",
-       "value": "+1.571"
+       "value": "+0.715"
       },
       {
        "label": "Vs 5-yr",
-       "value": "-6.6%"
+       "value": "-8.0%"
       }
      ],
      "page": "usda",
@@ -1850,26 +1850,26 @@
       "energy_level": {
        "state": "neutral",
        "rule_id": "energy_level",
-       "as_of": "2026-11-13",
+       "as_of": "2026-11-20",
        "inputs": {
         "vs_avg_pct": 2.1
        },
-       "detail": "Stocks 3882 versus the 5-year average 3802 (+2.1%). WNGSR published 5-year average.",
+       "detail": "Stocks 3858 versus the 5-year average 3778 (+2.1%). WNGSR published 5-year average.",
        "reason": null,
        "text": "+2.1%"
       },
       "energy_change": {
        "state": "neutral",
        "rule_id": "energy_change",
-       "as_of": "2026-11-13",
+       "as_of": "2026-11-20",
        "inputs": {
-        "delta_pp": 1.1947,
-        "change_pct": 0.5179,
-        "norm_pct": -0.6769
+        "delta_pp": 0.1808,
+        "change_pct": -0.6182,
+        "norm_pct": -0.799
        },
-       "detail": "This week's stock change is +0.52% of the prior week. The same week of the prior five years averaged -0.68%. Difference +1.19 pp.",
+       "detail": "This week's stock change is -0.62% of the prior week. The same week of the prior five years averaged -0.80%. Difference +0.18 pp.",
        "reason": null,
-       "text": "+1.2 pp"
+       "text": "+0.2 pp"
       },
       "mm_extension": {
        "state": "bullish",
@@ -1901,11 +1901,11 @@
      "figures": [
       {
        "label": "Stocks",
-       "value": "3,882"
+       "value": "3,858"
       },
       {
        "label": "Week change",
-       "value": "+20"
+       "value": "-24"
       },
       {
        "label": "Vs 5-yr",
