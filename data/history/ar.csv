@@ -20,3 +20,8 @@ report_date,crop,season,region,metric,current,last_year,avg5
 2026-11-19,Soybeans,2026/27,Argentina,planted,33.0,24.0,
 2026-11-19,Soybeans,2026/27,Argentina,planted,29.0,25.0,
 2026-11-19,Wheat,2026/27,Argentina,harvested,0.0,22.0,
+2026-11-26,Cotton,2026/27,Argentina,planted,32.0,28.0,
+2026-11-26,Corn,2026/27,Argentina,planted,50.0,51.0,
+2026-11-26,Soybeans,2026/27,Argentina,planted,40.0,36.0,
+2026-11-26,Soybeans,2026/27,Argentina,planted,36.0,39.0,
+2026-11-26,Wheat,2026/27,Argentina,harvested,0.0,32.0,
