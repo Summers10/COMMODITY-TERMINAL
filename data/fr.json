@@ -3,8 +3,8 @@
  "country": "France",
  "source": "FranceAgriMer Céré'Obs",
  "source_url": "https://cereobs.franceagrimer.fr/cereobs-sp/",
- "report_date": "2026-11-16",
- "fetched_at": "2026-11-27T04:18:18+00:00",
+ "report_date": "2026-11-23",
+ "fetched_at": "2026-11-27T21:59:12+00:00",
  "beta": false,
  "notes": [
   "Week-ending date shown (Céré'Obs publishes Fridays).",
@@ -18,9 +18,9 @@
    "region": "France",
    "metric": "planted",
    "current": 98.0,
-   "prev_week": 93.0,
-   "last_year": 95.0,
-   "avg5": 89.0
+   "prev_week": 98.0,
+   "last_year": 98.0,
+   "avg5": 93.0
   },
   {
    "crop": "Soft wheat",
@@ -28,10 +28,10 @@
    "season": null,
    "region": "France",
    "metric": "emerged",
-   "current": 75.0,
-   "prev_week": 63.0,
-   "last_year": 78.0,
-   "avg5": 74.0
+   "current": 89.0,
+   "prev_week": 75.0,
+   "last_year": 87.0,
+   "avg5": 82.0
   },
   {
    "crop": "Soft wheat",
@@ -39,10 +39,10 @@
    "season": null,
    "region": "France",
    "metric": "tillering",
-   "current": 2.0,
-   "prev_week": 1.0,
-   "last_year": 16.0,
-   "avg5": 14.0
+   "current": 6.0,
+   "prev_week": 2.0,
+   "last_year": 26.0,
+   "avg5": 22.0
   },
   {
    "crop": "Soft wheat",
@@ -51,8 +51,8 @@
    "region": "France",
    "metric": "condition_ge",
    "current": 94.0,
-   "prev_week": 95.0,
-   "last_year": 98.0,
+   "prev_week": 94.0,
+   "last_year": 97.0,
    "avg5": null,
    "dist": {
     "vp": 0.0,
