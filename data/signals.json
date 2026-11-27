@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-11-26T23:59:53+00:00",
+ "generated_at": "2026-11-27T00:44:31+00:00",
  "config": {
   "stu_bull_pct": 33,
   "stu_bear_pct": 67,
@@ -137,7 +137,7 @@
   {
    "feed": "EIA",
    "as_of": "2026-11-20",
-   "last_run": "2026-11-26 23:59",
+   "last_run": "2026-11-27 00:44",
    "cadence_days": 14
   },
   {
@@ -281,15 +281,15 @@
        "text": "\u25bc -8.8k / -217k"
       },
       "demand": {
-       "state": "bearish",
+       "state": null,
        "rule_id": "demand_yoy",
        "as_of": "2026-11-12",
        "inputs": {
         "yoy_pct": -28.1425
        },
        "detail": "Total export commitment -28.1% versus a year ago. Threshold 5%.",
-       "reason": null,
-       "text": "\u25bc -28.1%"
+       "reason": "stale: 2026-11-12 is older than 14 days",
+       "text": null
       },
       "seasonal": {
        "state": "bullish",
@@ -401,15 +401,15 @@
        "text": "\u25bc -2.4k / -32.6k"
       },
       "demand": {
-       "state": "bearish",
+       "state": null,
        "rule_id": "demand_yoy",
        "as_of": "2026-11-12",
        "inputs": {
         "yoy_pct": -30.5407
        },
        "detail": "Total export commitment -30.5% versus a year ago. Threshold 5%.",
-       "reason": null,
-       "text": "\u25bc -30.5%"
+       "reason": "stale: 2026-11-12 is older than 14 days",
+       "text": null
       },
       "seasonal": {
        "state": "bearish",
@@ -521,15 +521,15 @@
        "text": "\u25bc -4.7k / -26.1k"
       },
       "demand": {
-       "state": "bearish",
+       "state": null,
        "rule_id": "demand_yoy",
        "as_of": "2026-11-12",
        "inputs": {
         "yoy_pct": -30.5407
        },
        "detail": "Total export commitment -30.5% versus a year ago. Threshold 5%.",
-       "reason": null,
-       "text": "\u25bc -30.5%"
+       "reason": "stale: 2026-11-12 is older than 14 days",
+       "text": null
       },
       "seasonal": {
        "state": "neutral",
@@ -641,15 +641,15 @@
        "text": "\u25bc -0.0k / -14.2k"
       },
       "demand": {
-       "state": "bearish",
+       "state": null,
        "rule_id": "demand_yoy",
        "as_of": "2026-11-12",
        "inputs": {
         "yoy_pct": -30.5407
        },
        "detail": "Total export commitment -30.5% versus a year ago. Threshold 5%.",
-       "reason": null,
-       "text": "\u25bc -30.5%"
+       "reason": "stale: 2026-11-12 is older than 14 days",
+       "text": null
       },
       "seasonal": {
        "state": "bearish",
@@ -808,15 +808,15 @@
        "text": "\u25bc -4.4k / -107k"
       },
       "demand": {
-       "state": "bullish",
+       "state": null,
        "rule_id": "demand_yoy",
        "as_of": "2026-11-12",
        "inputs": {
         "yoy_pct": 79.883
        },
        "detail": "Total export commitment +79.9% versus a year ago. Threshold 5%.",
-       "reason": null,
-       "text": "\u25b2 +79.9%"
+       "reason": "stale: 2026-11-12 is older than 14 days",
+       "text": null
       },
       "seasonal": {
        "state": "neutral",
@@ -1044,15 +1044,15 @@
        "text": "+14.3k / -118k"
       },
       "demand": {
-       "state": "neutral",
+       "state": null,
        "rule_id": "demand_yoy",
        "as_of": "2026-11-12",
        "inputs": {
         "yoy_pct": 0.0617
        },
        "detail": "Total export commitment +0.1% versus a year ago. Threshold 5%.",
-       "reason": null,
-       "text": "+0.1%"
+       "reason": "stale: 2026-11-12 is older than 14 days",
+       "text": null
       },
       "seasonal": {
        "state": "neutral",
@@ -1164,15 +1164,15 @@
        "text": "\u25bc -3.7k / -65.8k"
       },
       "demand": {
-       "state": "bearish",
+       "state": null,
        "rule_id": "demand_yoy",
        "as_of": "2026-11-12",
        "inputs": {
         "yoy_pct": -75.5195
        },
        "detail": "Total export commitment -75.5% versus a year ago. Threshold 5%.",
-       "reason": null,
-       "text": "\u25bc -75.5%"
+       "reason": "stale: 2026-11-12 is older than 14 days",
+       "text": null
       },
       "seasonal": {
        "state": "bearish",
@@ -1515,15 +1515,15 @@
        "text": "\u25b2 8th pct"
       },
       "demand": {
-       "state": "bullish",
+       "state": null,
        "rule_id": "demand_yoy",
        "as_of": "2026-11-12",
        "inputs": {
         "yoy_pct": 14.3007
        },
        "detail": "Total export commitment +14.3% versus a year ago. Threshold 5%.",
-       "reason": null,
-       "text": "\u25b2 +14.3%"
+       "reason": "stale: 2026-11-12 is older than 14 days",
+       "text": null
       },
       "seasonal": {
        "state": "bullish",
